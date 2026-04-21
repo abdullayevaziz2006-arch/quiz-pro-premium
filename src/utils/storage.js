@@ -2,9 +2,10 @@ import { db } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Baza bilan ishlash uchun umumiy funksiyalar (Bitta hujjatda Massiv shaklida saqlash)
-const getData = async (collectionName, defaultData = []) => {
+const getData = async (teacherId, collectionName, defaultData = []) => {
+  if (!teacherId || teacherId === 'undefined') return defaultData;
   try {
-    const docRef = doc(db, 'QuizSystem', collectionName);
+    const docRef = doc(db, 'Teachers', teacherId, 'Data', collectionName);
     const snap = await getDoc(docRef);
     if (snap.exists() && snap.data().items) {
       return snap.data().items;
@@ -16,9 +17,10 @@ const getData = async (collectionName, defaultData = []) => {
   }
 };
 
-const saveData = async (collectionName, items) => {
+const saveData = async (teacherId, collectionName, items) => {
+  if (!teacherId || teacherId === 'undefined') return;
   try {
-    const docRef = doc(db, 'QuizSystem', collectionName);
+    const docRef = doc(db, 'Teachers', teacherId, 'Data', collectionName);
     await setDoc(docRef, { items }, { merge: true });
   } catch (error) {
     console.error(`Error saving ${collectionName}:`, error);
@@ -27,8 +29,8 @@ const saveData = async (collectionName, items) => {
 
 export const storage = {
   // Savollar uchun
-  getQuestions: async () => {
-    let questions = await getData('questions');
+  getQuestions: async (teacherId) => {
+    let questions = await getData(teacherId, 'questions');
     let modified = false;
     questions = questions.map(q => {
       if (!q.uid) {
@@ -37,41 +39,41 @@ export const storage = {
       }
       return q;
     });
-    if (modified) await storage.saveQuestions(questions);
+    if (modified) await storage.saveQuestions(teacherId, questions);
     return questions;
   },
-  saveQuestions: async (questions) => {
+  saveQuestions: async (teacherId, questions) => {
     const updated = questions.map(q => {
       if (!q.uid) {
         return { ...q, uid: Math.random().toString(36).substr(2, 9) + Date.now().toString(36) };
       }
       return q;
     });
-    await saveData('questions', updated);
+    await saveData(teacherId, 'questions', updated);
   },
 
   // Test Seanslari (Sessions) uchun
-  getSessions: async () => await getData('sessions'),
-  saveSession: async (session) => {
-    const sessions = await storage.getSessions();
+  getSessions: async (teacherId) => await getData(teacherId, 'sessions'),
+  saveSession: async (teacherId, session) => {
+    const sessions = await storage.getSessions(teacherId);
     const newSession = { 
       ...session, 
       id: session.id || Math.random().toString(36).substr(2, 9),
       createdAt: session.createdAt || new Date().toISOString()
     };
     sessions.push(newSession);
-    await saveData('sessions', sessions);
+    await saveData(teacherId, 'sessions', sessions);
     return newSession;
   },
-  deleteSession: async (id) => {
-    const sessions = await storage.getSessions();
+  deleteSession: async (teacherId, id) => {
+    const sessions = await storage.getSessions(teacherId);
     const updated = sessions.filter(s => s.id !== id);
-    await saveData('sessions', updated);
+    await saveData(teacherId, 'sessions', updated);
   },
 
   // Baholash mezonlari uchun
-  getCriteria: async () => {
-    const data = await getData('criteria', null);
+  getCriteria: async (teacherId) => {
+    const data = await getData(teacherId, 'criteria', null);
     if (!data) {
       return [
         { grade: 5, min: 18 },
@@ -82,23 +84,23 @@ export const storage = {
     }
     return data;
   },
-  saveCriteria: async (criteria) => await saveData('criteria', criteria),
+  saveCriteria: async (teacherId, criteria) => await saveData(teacherId, 'criteria', criteria),
 
   // Natijalar uchun
-  getResults: async () => await getData('results'),
-  saveResult: async (result) => {
-    const results = await storage.getResults();
+  getResults: async (teacherId) => await getData(teacherId, 'results'),
+  saveResult: async (teacherId, result) => {
+    const results = await storage.getResults(teacherId);
     const newResult = { ...result, id: result.id || Date.now() };
     results.push(newResult);
-    await saveData('results', results);
+    await saveData(teacherId, 'results', results);
   },
-  clearResults: async () => await saveData('results', []),
+  clearResults: async (teacherId) => await saveData(teacherId, 'results', []),
 
   // Sozlamalar
-  getSettings: async () => {
-    const data = await getData('settings', null);
+  getSettings: async (teacherId) => {
+    const data = await getData(teacherId, 'settings', null);
     if (!data || data.length === 0) return { questionsPerTest: 20 };
     return data[0]; // Objectni array orqali o'raymiz db-da
   },
-  saveSettings: async (settings) => await saveData('settings', [settings])
+  saveSettings: async (teacherId, settings) => await saveData(teacherId, 'settings', [settings])
 };

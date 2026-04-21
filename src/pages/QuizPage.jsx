@@ -24,18 +24,33 @@ const QuizPage = () => {
     setStudent(JSON.parse(info));
     
     const loadQuizData = async () => {
-      const allQuestions = await storage.getQuestions();
-      const settings = await storage.getSettings();
-      const sessions = await storage.getSessions();
+      let teacherId = null;
+      let sessionId = null;
+      
+      if (testId && testId.includes('_')) {
+        const parts = testId.split('_');
+        teacherId = parts[0];
+        sessionId = parts[1];
+      }
+
+      if (!teacherId) {
+        alert("Xatolik! Ushbu havolada Ustoz (Teacher) kodi aniqlanmadi.");
+        navigate('/');
+        return;
+      }
+
+      const allQuestions = await storage.getQuestions(teacherId);
+      const settings = await storage.getSettings(teacherId);
+      const sessions = await storage.getSessions(teacherId);
       let selected = [];
 
-      if (testId) {
-        const session = sessions.find(s => s.id === testId);
+      if (sessionId && sessionId !== 'random') {
+        const session = sessions.find(s => s.id === sessionId);
         if (session) {
-          selected = allQuestions.filter(q => session.questionIds.includes(q.uid));
+          selected = allQuestions.filter(q => session.questionIds && session.questionIds.includes(q.uid));
           selected = [...selected].sort(() => 0.5 - Math.random());
         } else {
-          alert('Kechirasiz, ushbu test topilmadi yoki o\'chirilgan.');
+          alert("Kechirasiz, ushbu test topilmadi yoki ustozingiz uni o'chirgan.");
           navigate('/');
           return;
         }
@@ -107,6 +122,11 @@ const QuizPage = () => {
   const processResult = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
     
+    let teacherId = null;
+    if (testId && testId.includes('_')) {
+        teacherId = testId.split('_')[0];
+    }
+    
     let score = 0;
     const analysis = questions.map((q, idx) => {
       const isCorrect = answers[idx] === q.correct;
@@ -120,7 +140,7 @@ const QuizPage = () => {
       };
     });
 
-    const criteria = await storage.getCriteria();
+    const criteria = await storage.getCriteria(teacherId);
     let grade = 2;
     const sortedCriteria = [...criteria].sort((a, b) => b.min - a.min);
     for (const c of sortedCriteria) {
@@ -131,7 +151,9 @@ const QuizPage = () => {
     }
 
     const resultData = { student, score, total: questions.length, grade, analysis, id: Date.now() };
-    await storage.saveResult(resultData);
+    if (teacherId) {
+      await storage.saveResult(teacherId, resultData);
+    }
     sessionStorage.setItem('last_result', JSON.stringify(resultData));
     
     setTimeout(() => { navigate('/results'); }, 100);

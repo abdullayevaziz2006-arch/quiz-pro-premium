@@ -32,25 +32,32 @@ const AdminPanel = () => {
   const [loginPass, setLoginPass] = useState('');
   const [authError, setAuthError] = useState('');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [adminUid, setAdminUid] = useState(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
        if (user) {
           setIsAuthenticated(true);
-          loadData();
+          setAdminUid(user.uid);
        } else {
           setIsAuthenticated(false);
+          setAdminUid(null);
        }
     });
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (adminUid) loadData();
+  }, [adminUid]);
+
   const loadData = async () => {
-    setQuestions(await storage.getQuestions());
-    setCriteria(await storage.getCriteria());
-    setResults(await storage.getResults());
-    setSettings(await storage.getSettings());
-    setSessions(await storage.getSessions());
+    if(!adminUid) return;
+    setQuestions(await storage.getQuestions(adminUid));
+    setCriteria(await storage.getCriteria(adminUid));
+    setResults(await storage.getResults(adminUid));
+    setSettings(await storage.getSettings(adminUid));
+    setSessions(await storage.getSessions(adminUid));
   };
 
   const handleLogin = async (e) => {
@@ -78,12 +85,12 @@ const AdminPanel = () => {
     e.preventDefault();
     if (editingId !== null) {
       const updated = questions.map((q, idx) => idx === editingId ? newQuestion : q);
-      await storage.saveQuestions(updated);
+      await storage.saveQuestions(adminUid, updated);
       setQuestions(updated);
       setEditingId(null);
     } else {
       const updated = [...questions, { ...newQuestion, uid: Date.now().toString() }];
-      await storage.saveQuestions(updated);
+      await storage.saveQuestions(adminUid, updated);
       setQuestions(updated);
     }
     setNewQuestion({ text: '', options: ['', '', '', ''], correct: 0 });
@@ -101,7 +108,7 @@ const AdminPanel = () => {
       
       if (importedQuestions.length > 0) {
         const updated = [...questions, ...importedQuestions];
-        await storage.saveQuestions(updated);
+        await storage.saveQuestions(adminUid, updated);
         setQuestions(updated);
         alert(`${importedQuestions.length} ta savol yuklandi!`);
       }
@@ -112,7 +119,7 @@ const AdminPanel = () => {
   const deleteQuestion = async (index) => {
     if(window.confirm("Savolni o'chirmoqchimisiz?")) {
       const updated = questions.filter((_, i) => i !== index);
-      await storage.saveQuestions(updated);
+      await storage.saveQuestions(adminUid, updated);
       setQuestions(updated);
     }
   };
@@ -149,7 +156,7 @@ const AdminPanel = () => {
       return;
     }
 
-    const newSession = await storage.saveSession({
+    const newSession = await storage.saveSession(adminUid, {
       name: sessionName || `Test ${sessions.length + 1}`,
       questionIds: qIds
     });
@@ -162,13 +169,13 @@ const AdminPanel = () => {
 
   const handleDeleteSession = async (id) => {
     if (window.confirm("O'chirmoqchimisiz?")) {
-      await storage.deleteSession(id);
+      await storage.deleteSession(adminUid, id);
       setSessions(sessions.filter(s => s.id !== id));
     }
   };
 
   const copySessionLink = (id) => {
-    const link = id ? `${window.location.origin}/quiz?testId=${id}` : `${window.location.origin}/quiz`;
+    const link = id ? `${window.location.origin}/quiz?testId=${adminUid}_${id}` : `${window.location.origin}/quiz?testId=${adminUid}_random`;
     navigator.clipboard.writeText(link);
     alert("Havola nusxalandi!");
   };
@@ -187,7 +194,7 @@ const AdminPanel = () => {
     const updated = [...criteria];
     updated[index][field] = parseInt(value) || 0;
     setCriteria(updated);
-    await storage.saveCriteria(updated);
+    await storage.saveCriteria(adminUid, updated);
   };
 
   if (!isAuthenticated) {

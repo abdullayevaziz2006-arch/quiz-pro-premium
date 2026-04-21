@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Users, School, ArrowRight, GraduationCap } from 'lucide-react';
 
 const StudentEntry = () => {
@@ -11,10 +11,17 @@ const StudentEntry = () => {
     faculty: ''
   });
 
+  const [searchParams] = useSearchParams();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     sessionStorage.setItem('student_info', JSON.stringify(formData));
-    navigate('/start-quiz');
+    const testId = searchParams.get('testId');
+    if (testId) {
+      navigate(`/start-quiz?testId=${testId}`);
+    } else {
+      navigate('/start-quiz');
+    }
   };
 
   return (
