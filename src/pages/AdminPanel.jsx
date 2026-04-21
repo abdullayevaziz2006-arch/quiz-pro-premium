@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { auth } from '../utils/firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
 import { 
@@ -31,6 +31,7 @@ const AdminPanel = () => {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPass, setLoginPass] = useState('');
   const [authError, setAuthError] = useState('');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -56,9 +57,20 @@ const AdminPanel = () => {
     e.preventDefault();
     try {
       setAuthError('');
-      await signInWithEmailAndPassword(auth, loginEmail, loginPass);
+      if (isRegisterMode) {
+        await createUserWithEmailAndPassword(auth, loginEmail, loginPass);
+        alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+      } else {
+        await signInWithEmailAndPassword(auth, loginEmail, loginPass);
+      }
     } catch (err) {
-      setAuthError("Email yoki Parol noto'g'ri, yoki foydalanuvchi topilmadi. Parolni tekshiring.");
+      if (err.code === 'auth/email-already-in-use') {
+         setAuthError("Bu elektron pochta allaqachon ro'yxatdan o'tgan. Tizimga kirishni tanlang.");
+      } else if (err.code === 'auth/operation-not-allowed') {
+         setAuthError("Firebase'da Email bilan kirish yoqilmagan! Iltimos, asboblar panelidan Authentication'ni yoqing.");
+      } else {
+         setAuthError(isRegisterMode ? "Ro'yxatdan o'tishda xatolik. Parol kamida 6 ta harf-raqam bo'lishi kerak." : "Email yoki Parol noto'g'ri. Agar registratsiya qilmagan bo'lsangiz, avval ro'yxatdan o'ting.");
+      }
     }
   };
 
@@ -186,23 +198,28 @@ const AdminPanel = () => {
             <div className="mx-auto w-20 h-20 rounded-[28px] bg-accent/10 text-accent flex justify-center items-center mb-2 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
                <AlertCircle size={40} />
             </div>
-            <h2 className="text-3xl font-black mb-2">Admin Kirish</h2>
+            <h2 className="text-3xl font-black mb-2">{isRegisterMode ? "Yangi Admin Yaratish" : "Admin Kirish"}</h2>
             {authError && <p className="text-danger text-sm font-bold bg-danger/10 p-3 rounded-xl">{authError}</p>}
             <input 
               type="email" 
               required
-              placeholder="Admin Pochtasi" 
+              placeholder="Admin Pochtasi (Email)" 
               className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold"
               value={loginEmail} onChange={e => setLoginEmail(e.target.value)} 
             />
             <input 
               type="password" 
               required
-              placeholder="Maxfiy Parol" 
+              placeholder="Maxfiy Parol (kamida 6 ta belgi)" 
               className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold tracking-widest text-xl"
               value={loginPass} onChange={e => setLoginPass(e.target.value)} 
             />
-            <button type="submit" className="btn btn-primary py-4 mt-2 rounded-[20px] text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)]">KIRISH</button>
+            <button type="submit" className="btn btn-primary py-4 mt-2 rounded-[20px] text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)]">
+              {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
+            </button>
+            <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); setAuthError(''); }} className="text-sm font-bold text-text-secondary hover:text-accent transition-all mt-2">
+              {isRegisterMode ? "Menda profil bor. Tizimga kirish" : "Profil yo'qmi? Ro'yxatdan o'tish"}
+            </button>
          </form>
       </div>
     );
