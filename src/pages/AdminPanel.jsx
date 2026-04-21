@@ -74,9 +74,9 @@ const AdminPanel = () => {
       if (err.code === 'auth/email-already-in-use') {
          setAuthError("Bu elektron pochta allaqachon ro'yxatdan o'tgan. Tizimga kirishni tanlang.");
       } else if (err.code === 'auth/operation-not-allowed') {
-         setAuthError("Firebase'da Email bilan kirish yoqilmagan! Iltimos, asboblar panelidan Authentication'ni yoqing.");
+         setAuthError("Firebase yopilgan: Asboblar panelidan Authentication -> Email/Password yoqing.");
       } else {
-         setAuthError(isRegisterMode ? "Ro'yxatdan o'tishda xatolik. Parol kamida 6 ta harf-raqam bo'lishi kerak." : "Email yoki Parol noto'g'ri. Agar registratsiya qilmagan bo'lsangiz, avval ro'yxatdan o'ting.");
+         setAuthError(`Xatolik: ${err.message} (Code: ${err.code})`);
       }
     }
   };
