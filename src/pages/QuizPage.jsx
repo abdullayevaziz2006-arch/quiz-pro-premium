@@ -184,10 +184,10 @@ const QuizPage = () => {
 
       {/* Modern Quiz Header */}
       <div className="glass p-6 md:p-8 rounded-[32px] sticky top-6 z-50 flex flex-col gap-6 shadow-2xl backdrop-blur-3xl bg-white/5 border-white/10">
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
+          <div className="flex flex-col gap-1 w-full md:w-auto flex-1">
             <span className="text-xs font-black text-accent uppercase tracking-[0.2em]">Savol {currentIdx + 1} / {questions.length}</span>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden border border-white/5 mt-2 min-w-[150px]">
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden border border-white/5 mt-2 md:min-w-[200px]">
               <div 
                 className="bg-gradient-to-r from-accent to-purple-500 h-full rounded-full transition-all duration-700 shadow-[0_0_15px_rgba(79,70,229,0.5)]" 
                 style={{ width: `${progress}%` }}
@@ -195,7 +195,7 @@ const QuizPage = () => {
             </div>
           </div>
           
-          <div className={`flex items-center gap-3 px-6 py-4 rounded-[24px] transition-all duration-500 border border-white/10 shadow-lg ${
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-[24px] transition-all duration-500 border border-white/10 shadow-lg md:ml-6 self-end md:self-auto ${
             isTimeCritical ? 'bg-danger/20 text-danger border-danger/30 scale-105 animate-pulse' : 'bg-black/20 text-accent/90'
           }`}>
             <Timer size={24} className={isTimeCritical ? 'animate-bounce' : ''} />
@@ -217,24 +217,24 @@ const QuizPage = () => {
               <button
                 key={idx}
                 onClick={() => selectOption(idx)}
-                className={`p-6 md:p-8 rounded-[28px] border-2 transition-all duration-300 flex items-center gap-6 group relative overflow-hidden text-left ${
+                className={`p-4 md:p-8 rounded-[28px] border-2 transition-all duration-300 flex items-center gap-4 md:gap-6 group relative overflow-hidden text-left ${
                   isSelected 
                   ? 'border-accent bg-accent/10 shadow-[0_10px_30px_-10px_rgba(79,70,229,0.5)] scale-[1.02]' 
                   : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg transition-all shrink-0 ${
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center font-black text-base md:text-lg transition-all shrink-0 ${
                   isSelected ? 'bg-accent text-white shadow-lg' : 'bg-black/20 text-text-secondary group-hover:text-accent group-hover:bg-accent/10'
                 }`}>
                   {String.fromCharCode(65 + idx)}
                 </div>
                 
-                <span className={`text-xl font-bold leading-relaxed flex-1 ${isSelected ? 'text-accent' : 'text-text-primary'}`}>
+                <span className={`text-base md:text-xl font-bold leading-relaxed flex-1 ${isSelected ? 'text-accent' : 'text-text-primary'}`}>
                   {opt}
                 </span>
 
-                <div className={`absolute right-6 transition-all duration-500 origin-center ${isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
-                  <CheckCircle2 size={36} className="text-accent" />
+                <div className={`absolute right-4 md:right-6 transition-all duration-500 origin-center ${isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
+                  <CheckCircle2 size={24} className="text-accent md:w-9 md:h-9" />
                 </div>
               </button>
             );
