@@ -669,7 +669,7 @@ const AdminPanel = () => {
 
                       <div className="flex gap-2 p-2 bg-black/20 rounded-[20px] border border-white/5">
                         <div className="flex-1 px-4 py-2 font-mono text-[10px] text-accent/80 truncate self-center">
-                          /quiz?testId={s.id}
+                          /quiz?testId={adminUid}_{s.id}
                         </div>
                         <button 
                           onClick={() => copySessionLink(s.id)} 

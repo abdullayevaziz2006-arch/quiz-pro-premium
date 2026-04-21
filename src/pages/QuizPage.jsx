@@ -29,8 +29,8 @@ const QuizPage = () => {
       
       if (testId && testId.includes('_')) {
         const parts = testId.split('_');
-        teacherId = parts[0];
-        sessionId = parts[1];
+        teacherId = parts[0]?.trim();
+        sessionId = parts[1]?.trim();
       }
 
       if (!teacherId) {
@@ -50,7 +50,7 @@ const QuizPage = () => {
           selected = allQuestions.filter(q => session.questionIds && session.questionIds.includes(q.uid));
           selected = [...selected].sort(() => 0.5 - Math.random());
         } else {
-          alert("Kechirasiz, ushbu test topilmadi yoki ustozingiz uni o'chirgan.");
+          alert(`Test idsi topilmadi! (Uid: ${teacherId}, Session: ${sessionId}, Baza Seanslari: ${sessions.length}ta). Iltimos havola to'g'ri nusxalanganini tekshiring.`);
           navigate('/');
           return;
         }
