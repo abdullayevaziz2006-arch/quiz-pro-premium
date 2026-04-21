@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { storage } from '../utils/storage';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../utils/firebase';
 import { CheckCircle2, ChevronRight, ChevronLeft, AlertCircle, Timer } from 'lucide-react';
 
 const QuizPage = () => {
@@ -50,7 +52,14 @@ const QuizPage = () => {
           selected = allQuestions.filter(q => session.questionIds && session.questionIds.includes(q.uid));
           selected = [...selected].sort(() => 0.5 - Math.random());
         } else {
-          alert(`Test idsi topilmadi! (Uid: ${teacherId}, Session: ${sessionId}, Baza Seanslari: ${sessions.length}ta). Iltimos havola to'g'ri nusxalanganini tekshiring.`);
+          let directError = "None";
+          try {
+             // To'g'ridan to'g'ri o'qib ko'ramiz xato bilish uchun
+             await getDoc(doc(db, 'Teachers', teacherId, 'Data', 'sessions'));
+          } catch(err) {
+             directError = err.message || "Unknown error";
+          }
+          alert(`Test idsi topilmadi! (Uid: '${teacherId}', Session: '${sessionId}', Baza Seanslari: ${sessions.length}ta).\nFirebase Xatosi: ${directError}\nIltimos ekran rasmini yuboring!`);
           navigate('/');
           return;
         }
