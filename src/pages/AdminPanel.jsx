@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
+import { auth } from '../utils/firebase';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
 import { 
@@ -25,24 +27,51 @@ const AdminPanel = () => {
   const [newQuestion, setNewQuestion] = useState({ text: '', options: ['', '', '', ''], correct: 0 });
   const [editingId, setEditingId] = useState(null);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [authError, setAuthError] = useState('');
+
   useEffect(() => {
-    setQuestions(storage.getQuestions());
-    setCriteria(storage.getCriteria());
-    setResults(storage.getResults());
-    setSettings(storage.getSettings());
-    setSessions(storage.getSessions());
+    const unsub = onAuthStateChanged(auth, (user) => {
+       if (user) {
+          setIsAuthenticated(true);
+          loadData();
+       } else {
+          setIsAuthenticated(false);
+       }
+    });
+    return () => unsub();
   }, []);
 
-  const handleAddQuestion = (e) => {
+  const loadData = async () => {
+    setQuestions(await storage.getQuestions());
+    setCriteria(await storage.getCriteria());
+    setResults(await storage.getResults());
+    setSettings(await storage.getSettings());
+    setSessions(await storage.getSessions());
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      setAuthError('');
+      await signInWithEmailAndPassword(auth, loginEmail, loginPass);
+    } catch (err) {
+      setAuthError("Email yoki Parol noto'g'ri, yoki foydalanuvchi topilmadi. Parolni tekshiring.");
+    }
+  };
+
+  const handleAddQuestion = async (e) => {
     e.preventDefault();
     if (editingId !== null) {
       const updated = questions.map((q, idx) => idx === editingId ? newQuestion : q);
-      storage.saveQuestions(updated);
+      await storage.saveQuestions(updated);
       setQuestions(updated);
       setEditingId(null);
     } else {
       const updated = [...questions, { ...newQuestion, uid: Date.now().toString() }];
-      storage.saveQuestions(updated);
+      await storage.saveQuestions(updated);
       setQuestions(updated);
     }
     setNewQuestion({ text: '', options: ['', '', '', ''], correct: 0 });
@@ -60,7 +89,7 @@ const AdminPanel = () => {
       
       if (importedQuestions.length > 0) {
         const updated = [...questions, ...importedQuestions];
-        storage.saveQuestions(updated);
+        await storage.saveQuestions(updated);
         setQuestions(updated);
         alert(`${importedQuestions.length} ta savol yuklandi!`);
       }
@@ -68,29 +97,47 @@ const AdminPanel = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const deleteQuestion = (index) => {
+  const deleteQuestion = async (index) => {
     if(window.confirm("Savolni o'chirmoqchimisiz?")) {
       const updated = questions.filter((_, i) => i !== index);
-      storage.saveQuestions(updated);
+      await storage.saveQuestions(updated);
       setQuestions(updated);
     }
   };
 
-  const handleCreateSession = () => {
+  const handleCreateSession = async () => {
     let qIds = [];
     if (genMode === 'random') {
-      const shuffled = [...questions].sort(() => 0.5 - Math.random());
+      const usedIds = sessions.reduce((acc, sess) => acc.concat(sess.questionIds || []), []);
+      let activePool = questions.filter(q => !usedIds.includes(q.uid));
+      
+      if (activePool.length < randomCount) {
+        if (activePool.length === 0) {
+            const proceed = window.confirm(`Toza (ishlatilmagan) savollar umuman qolmagan! Eski foydalanilgan savollardan ${randomCount} ta olib qayta test ochaylikmi?`);
+            if(!proceed) return;
+            activePool = [...questions];
+        } else {
+            const proceed = window.confirm(`Bazada faqatgina ${activePool.length} ta ishlatilmagan yangi savol qiymati qoldi (Sizga ${randomCount} ta kerak).\nKamiga eski foydalanilganlardan qo'shaymi?\n\n- [OK] Ha qo'shaver\n- [Cancel] Yo'q, faqat shu ${activePool.length} toza savol bilan yarat!`);
+            if (proceed) {
+               const needed = randomCount - activePool.length;
+               const oldPool = questions.filter(q => usedIds.includes(q.uid)).sort(() => 0.5 - Math.random());
+               activePool = [...activePool, ...oldPool.slice(0, needed)];
+            }
+        }
+      }
+
+      const shuffled = [...activePool].sort(() => 0.5 - Math.random());
       qIds = shuffled.slice(0, randomCount).map(q => q.uid);
     } else {
       qIds = selectedQIds;
     }
 
     if (qIds.length === 0) {
-      alert("Savollarni tanlang!");
+      alert("Savollarni tanlang yaki yetarli emas!");
       return;
     }
 
-    const newSession = storage.saveSession({
+    const newSession = await storage.saveSession({
       name: sessionName || `Test ${sessions.length + 1}`,
       questionIds: qIds
     });
@@ -98,12 +145,12 @@ const AdminPanel = () => {
     setSessions([...sessions, newSession]);
     setSessionName('');
     setSelectedQIds([]);
-    alert("Test seansi yaratildi!");
+    alert("Test seansi muvaffaqiyatli yaratildi! U takrorlanmas noyob savollardan iborat.");
   };
 
-  const handleDeleteSession = (id) => {
+  const handleDeleteSession = async (id) => {
     if (window.confirm("O'chirmoqchimisiz?")) {
-      storage.deleteSession(id);
+      await storage.deleteSession(id);
       setSessions(sessions.filter(s => s.id !== id));
     }
   };
@@ -124,12 +171,42 @@ const AdminPanel = () => {
     );
   };
 
-  const handleCriteriaChange = (index, field, value) => {
+  const handleCriteriaChange = async (index, field, value) => {
     const updated = [...criteria];
     updated[index][field] = parseInt(value) || 0;
     setCriteria(updated);
-    storage.saveCriteria(updated);
+    await storage.saveCriteria(updated);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] animate-fade p-4">
+         <form onSubmit={handleLogin} className="card p-10 max-w-md w-full glass shadow-2xl flex flex-col gap-6 text-center border-white/10 rounded-[32px] relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-purple-500 to-accent"></div>
+            <div className="mx-auto w-20 h-20 rounded-[28px] bg-accent/10 text-accent flex justify-center items-center mb-2 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+               <AlertCircle size={40} />
+            </div>
+            <h2 className="text-3xl font-black mb-2">Admin Kirish</h2>
+            {authError && <p className="text-danger text-sm font-bold bg-danger/10 p-3 rounded-xl">{authError}</p>}
+            <input 
+              type="email" 
+              required
+              placeholder="Admin Pochtasi" 
+              className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold"
+              value={loginEmail} onChange={e => setLoginEmail(e.target.value)} 
+            />
+            <input 
+              type="password" 
+              required
+              placeholder="Maxfiy Parol" 
+              className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold tracking-widest text-xl"
+              value={loginPass} onChange={e => setLoginPass(e.target.value)} 
+            />
+            <button type="submit" className="btn btn-primary py-4 mt-2 rounded-[20px] text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)]">KIRISH</button>
+         </form>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 max-w-7xl mx-auto w-full pb-20 px-4 md:px-8">

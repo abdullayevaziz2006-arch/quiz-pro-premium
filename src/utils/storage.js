@@ -1,18 +1,34 @@
-const STORAGE_KEYS = {
-  QUESTIONS: 'quiz_questions',
-  CRITERIA: 'quiz_criteria',
-  RESULTS: 'quiz_results',
-  SETTINGS: 'quiz_settings',
-  SESSIONS: 'quiz_sessions',
+import { db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+// Baza bilan ishlash uchun umumiy funksiyalar (Bitta hujjatda Massiv shaklida saqlash)
+const getData = async (collectionName, defaultData = []) => {
+  try {
+    const docRef = doc(db, 'QuizSystem', collectionName);
+    const snap = await getDoc(docRef);
+    if (snap.exists() && snap.data().items) {
+      return snap.data().items;
+    }
+    return defaultData;
+  } catch (error) {
+    console.error(`Error getting ${collectionName}:`, error);
+    return defaultData;
+  }
+};
+
+const saveData = async (collectionName, items) => {
+  try {
+    const docRef = doc(db, 'QuizSystem', collectionName);
+    await setDoc(docRef, { items }, { merge: true });
+  } catch (error) {
+    console.error(`Error saving ${collectionName}:`, error);
+  }
 };
 
 export const storage = {
   // Savollar uchun
-  getQuestions: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.QUESTIONS);
-    let questions = data ? JSON.parse(data) : [];
-    
-    // Har bir savolga UID borligini ta'minlash
+  getQuestions: async () => {
+    let questions = await getData('questions');
     let modified = false;
     questions = questions.map(q => {
       if (!q.uid) {
@@ -21,78 +37,68 @@ export const storage = {
       }
       return q;
     });
-
-    if (modified) storage.saveQuestions(questions);
+    if (modified) await storage.saveQuestions(questions);
     return questions;
   },
-  saveQuestions: (questions) => {
+  saveQuestions: async (questions) => {
     const updated = questions.map(q => {
       if (!q.uid) {
         return { ...q, uid: Math.random().toString(36).substr(2, 9) + Date.now().toString(36) };
       }
       return q;
     });
-    localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
+    await saveData('questions', updated);
   },
 
   // Test Seanslari (Sessions) uchun
-  getSessions: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.SESSIONS);
-    return data ? JSON.parse(data) : [];
-  },
-  saveSession: (session) => {
-    const sessions = storage.getSessions();
+  getSessions: async () => await getData('sessions'),
+  saveSession: async (session) => {
+    const sessions = await storage.getSessions();
     const newSession = { 
       ...session, 
       id: session.id || Math.random().toString(36).substr(2, 9),
       createdAt: session.createdAt || new Date().toISOString()
     };
     sessions.push(newSession);
-    localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
+    await saveData('sessions', sessions);
     return newSession;
   },
-  deleteSession: (id) => {
-    const sessions = storage.getSessions();
+  deleteSession: async (id) => {
+    const sessions = await storage.getSessions();
     const updated = sessions.filter(s => s.id !== id);
-    localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(updated));
+    await saveData('sessions', updated);
   },
 
   // Baholash mezonlari uchun
-  getCriteria: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.CRITERIA);
-    return data ? JSON.parse(data) : [
-      { grade: 5, min: 18 },
-      { grade: 4, min: 15 },
-      { grade: 3, min: 10 },
-      { grade: 2, min: 0 }
-    ];
+  getCriteria: async () => {
+    const data = await getData('criteria', null);
+    if (!data) {
+      return [
+        { grade: 5, min: 18 },
+        { grade: 4, min: 15 },
+        { grade: 3, min: 10 },
+        { grade: 2, min: 0 }
+      ];
+    }
+    return data;
   },
-  saveCriteria: (criteria) => {
-    localStorage.setItem(STORAGE_KEYS.CRITERIA, JSON.stringify(criteria));
-  },
+  saveCriteria: async (criteria) => await saveData('criteria', criteria),
 
   // Natijalar uchun
-  getResults: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.RESULTS);
-    return data ? JSON.parse(data) : [];
-  },
-  saveResult: (result) => {
-    const results = storage.getResults();
-    // Re-use the existing ID if it exists, otherwise create new
+  getResults: async () => await getData('results'),
+  saveResult: async (result) => {
+    const results = await storage.getResults();
     const newResult = { ...result, id: result.id || Date.now() };
     results.push(newResult);
-    localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(results));
+    await saveData('results', results);
   },
-  clearResults: () => {
-    localStorage.removeItem(STORAGE_KEYS.RESULTS);
-  },
+  clearResults: async () => await saveData('results', []),
 
-  // Sozlamalar (Savollar soni va h.k.)
-  getSettings: () => {
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : { questionsPerTest: 20 };
+  // Sozlamalar
+  getSettings: async () => {
+    const data = await getData('settings', null);
+    if (!data || data.length === 0) return { questionsPerTest: 20 };
+    return data[0]; // Objectni array orqali o'raymiz db-da
   },
-  saveSettings: (settings) => {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-  }
+  saveSettings: async (settings) => await saveData('settings', [settings])
 };

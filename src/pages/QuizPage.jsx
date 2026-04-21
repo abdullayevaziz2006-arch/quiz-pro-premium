@@ -23,32 +23,36 @@ const QuizPage = () => {
     }
     setStudent(JSON.parse(info));
     
-    const allQuestions = storage.getQuestions();
-    const settings = storage.getSettings();
-    const sessions = storage.getSessions();
-    let selected = [];
+    const loadQuizData = async () => {
+      const allQuestions = await storage.getQuestions();
+      const settings = await storage.getSettings();
+      const sessions = await storage.getSessions();
+      let selected = [];
 
-    if (testId) {
-      const session = sessions.find(s => s.id === testId);
-      if (session) {
-        selected = allQuestions.filter(q => session.questionIds.includes(q.uid));
-        selected = [...selected].sort(() => 0.5 - Math.random());
+      if (testId) {
+        const session = sessions.find(s => s.id === testId);
+        if (session) {
+          selected = allQuestions.filter(q => session.questionIds.includes(q.uid));
+          selected = [...selected].sort(() => 0.5 - Math.random());
+        } else {
+          alert('Kechirasiz, ushbu test topilmadi yoki o\'chirilgan.');
+          navigate('/');
+          return;
+        }
       } else {
-        alert('Kechirasiz, ushbu test topilmadi yoki o\'chirilgan.');
+        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+        selected = shuffled.slice(0, settings.questionsPerTest || allQuestions.length);
+      }
+
+      if (selected.length === 0) {
+        alert('Test savollari topilmadi. Admin bilan bog\'laning (Savollar bazasi bo\'sh bo\'lishi mumkin).');
         navigate('/');
         return;
       }
-    } else {
-      const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-      selected = shuffled.slice(0, settings.questionsPerTest || allQuestions.length);
-    }
+      setQuestions(selected);
+    };
 
-    if (selected.length === 0) {
-      alert('Test savollari topilmadi. Admin bilan bog\'laning.');
-      navigate('/');
-      return;
-    }
-    setQuestions(selected);
+    loadQuizData();
   }, [navigate, testId]);
 
   useEffect(() => {
@@ -100,7 +104,7 @@ const QuizPage = () => {
     setAnswers({ ...answers, [currentIdx]: optIdx });
   };
 
-  const processResult = () => {
+  const processResult = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
     
     let score = 0;
@@ -116,7 +120,7 @@ const QuizPage = () => {
       };
     });
 
-    const criteria = storage.getCriteria();
+    const criteria = await storage.getCriteria();
     let grade = 2;
     const sortedCriteria = [...criteria].sort((a, b) => b.min - a.min);
     for (const c of sortedCriteria) {
@@ -127,7 +131,7 @@ const QuizPage = () => {
     }
 
     const resultData = { student, score, total: questions.length, grade, analysis, id: Date.now() };
-    storage.saveResult(resultData);
+    await storage.saveResult(resultData);
     sessionStorage.setItem('last_result', JSON.stringify(resultData));
     
     setTimeout(() => { navigate('/results'); }, 100);
