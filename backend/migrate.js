@@ -24,7 +24,8 @@ async function migrate() {
 
   try {
     // 1. Specify Teacher ID
-    const teacherIds = ['bGOxiynutTb0UpjTlagpWeaUuI32'];
+    const teacherIds = ['WqCgiJd1Fhdvhq923wL6YVRHgsm2'];
+
     console.log(`Migrating for teacher: ${teacherIds[0]}`);
 
     for (const teacherId of teacherIds) {
