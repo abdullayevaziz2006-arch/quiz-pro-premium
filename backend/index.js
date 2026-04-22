@@ -48,10 +48,6 @@ app.post('/api/:teacherId/questions/bulk', ensureTeacher, async (req, res) => {
   const { teacherId } = req.params;
 
   try {
-    // For simplicity in this migration, we'll clear and re-insert if bulk saving,
-    // or we can do a more complex merge. storage.js usually sends the whole list.
-    await prisma.question.deleteMany({ where: { teacherId } });
-    
     const data = items.map(q => ({
       uid: q.uid,
       text: q.text,
@@ -62,8 +58,13 @@ app.post('/api/:teacherId/questions/bulk', ensureTeacher, async (req, res) => {
       teacherId
     }));
 
-    await prisma.question.createMany({ data });
+    await prisma.$transaction([
+      prisma.question.deleteMany({ where: { teacherId } }),
+      prisma.question.createMany({ data })
+    ]);
     res.json({ success: true });
+
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -76,22 +77,33 @@ app.get('/api/:teacherId/sessions', ensureTeacher, async (req, res) => {
     where: { teacherId: req.params.teacherId },
     orderBy: { createdAt: 'desc' }
   });
-  res.json(sessions);
+  const parsed = sessions.map(s => ({
+    ...s,
+    questionIds: JSON.parse(s.questionIds || '[]')
+  }));
+  res.json(parsed);
 });
+
 
 app.post('/api/:teacherId/sessions', ensureTeacher, async (req, res) => {
   const { teacherId } = req.params;
   const session = req.body;
-  const newSession = await prisma.session.create({
-    data: {
-      id: session.id,
-      name: session.name,
-      isActive: session.isActive !== undefined ? session.isActive : true,
-      teacherId
-    }
-  });
-  res.json(newSession);
+  try {
+    const newSession = await prisma.session.create({
+      data: {
+        name: session.name,
+        isActive: session.isActive !== undefined ? session.isActive : true,
+        questionIds: JSON.stringify(session.questionIds || []),
+        teacherId
+      }
+    });
+    res.json(newSession);
+  } catch (err) {
+    console.error('Error creating session:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 app.delete('/api/:teacherId/sessions/:id', ensureTeacher, async (req, res) => {
   await prisma.session.delete({ where: { id: req.params.id } });

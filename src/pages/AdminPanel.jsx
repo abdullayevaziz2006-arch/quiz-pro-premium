@@ -175,10 +175,15 @@ const AdminPanel = () => {
       questionIds: qIds
     });
 
-    setSessions([...sessions, newSession]);
-    setSessionName('');
-    setSelectedQIds([]);
-    alert("Test seansi muvaffaqiyatli yaratildi! U takrorlanmas noyob savollardan iborat.");
+    if (newSession) {
+      setSessions([...sessions, newSession]);
+      setSessionName('');
+      setSelectedQIds([]);
+      alert("Test seansi muvaffaqiyatli yaratildi!");
+    } else {
+      alert("Xatolik: Test seansini saqlab bo'lmadi. Iltimos, qaytadan urinib ko'ring.");
+    }
+
   };
 
   const handleDeleteSession = async (id) => {
