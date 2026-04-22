@@ -2,7 +2,6 @@ let BASE_URL = import.meta.env.VITE_API_URL || 'quiz-pro-premium-production.up.r
 if (!BASE_URL.startsWith('http')) {
   BASE_URL = `https://${BASE_URL}`;
 }
-// Agar oxirida /api bo'lmasa, qo'shamiz
 const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 
 const handleResponse = async (response) => {
@@ -14,17 +13,15 @@ const handleResponse = async (response) => {
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.indexOf("application/json") !== -1) {
     return await response.json();
-  } else {
-    const text = await response.text();
-    console.warn("Expected JSON, but got:", text.substring(0, 100));
-    return null;
   }
+  return null;
 };
 
 export const storage = {
+  // Savollar
   async getQuestions(uid) {
     try {
-      const res = await fetch(`${API_URL}/questions/${uid}`);
+      const res = await fetch(`${API_URL}/${uid}/questions`);
       return await handleResponse(res) || [];
     } catch (err) {
       console.error("Error fetching questions:", err);
@@ -33,10 +30,10 @@ export const storage = {
   },
   async saveQuestions(uid, questions) {
     try {
-      const res = await fetch(`${API_URL}/questions/bulk`, {
+      const res = await fetch(`${API_URL}/${uid}/questions/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, questions })
+        body: JSON.stringify({ items: questions }) // Backend 'items' kutmoqda
       });
       return await handleResponse(res);
     } catch (err) {
@@ -44,11 +41,14 @@ export const storage = {
       throw err;
     }
   },
+
+  // Mezonlar
   async getCriteria(uid) {
     try {
-      const res = await fetch(`${API_URL}/criteria/${uid}`);
+      const res = await fetch(`${API_URL}/${uid}/criteria`);
       const data = await handleResponse(res);
-      return data || [
+      if (data && data.length > 0) return data;
+      return [
         { grade: 5, min: 90 },
         { grade: 4, min: 70 },
         { grade: 3, min: 50 },
@@ -65,10 +65,10 @@ export const storage = {
   },
   async saveCriteria(uid, criteria) {
     try {
-      const res = await fetch(`${API_URL}/criteria`, {
+      const res = await fetch(`${API_URL}/${uid}/criteria/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, criteria })
+        body: JSON.stringify({ items: criteria })
       });
       return await handleResponse(res);
     } catch (err) {
@@ -76,9 +76,11 @@ export const storage = {
       throw err;
     }
   },
+
+  // Natijalar
   async getResults(uid) {
     try {
-      const res = await fetch(`${API_URL}/results/${uid}`);
+      const res = await fetch(`${API_URL}/${uid}/results`);
       return await handleResponse(res) || [];
     } catch (err) {
       return [];
@@ -86,10 +88,10 @@ export const storage = {
   },
   async saveResult(uid, result) {
     try {
-      const res = await fetch(`${API_URL}/results`, {
+      const res = await fetch(`${API_URL}/${uid}/results`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, result })
+        body: JSON.stringify(result)
       });
       return await handleResponse(res);
     } catch (err) {
@@ -99,16 +101,18 @@ export const storage = {
   },
   async clearResults(uid) {
     try {
-      const res = await fetch(`${API_URL}/results/${uid}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/${uid}/results/all`, { method: 'DELETE' });
       return await handleResponse(res);
     } catch (err) {
       console.error("Error clearing results:", err);
       throw err;
     }
   },
+
+  // Havolalar (Sessions)
   async getSessions(uid) {
     try {
-      const res = await fetch(`${API_URL}/sessions/${uid}`);
+      const res = await fetch(`${API_URL}/${uid}/sessions`);
       return await handleResponse(res) || [];
     } catch (err) {
       return [];
@@ -116,10 +120,10 @@ export const storage = {
   },
   async saveSession(uid, session) {
     try {
-      const res = await fetch(`${API_URL}/sessions`, {
+      const res = await fetch(`${API_URL}/${uid}/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, session })
+        body: JSON.stringify(session)
       });
       return await handleResponse(res);
     } catch (err) {
@@ -129,28 +133,30 @@ export const storage = {
   },
   async deleteSession(uid, sessionId) {
     try {
-      const res = await fetch(`${API_URL}/sessions/${uid}/${sessionId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/${uid}/sessions/${sessionId}`, { method: 'DELETE' });
       return await handleResponse(res);
     } catch (err) {
       console.error("Error deleting session:", err);
       throw err;
     }
   },
+
+  // Sozlamalar
   async getSettings(uid) {
     try {
-      const res = await fetch(`${API_URL}/settings/${uid}`);
+      const res = await fetch(`${API_URL}/${uid}/settings`);
       const data = await handleResponse(res);
-      return data || { questionsPerTest: 20, timePerQuestion: 120 };
+      return data || { questionsPerTest: 20 };
     } catch (err) {
-      return { questionsPerTest: 20, timePerQuestion: 120 };
+      return { questionsPerTest: 20 };
     }
   },
   async saveSettings(uid, settings) {
     try {
-      const res = await fetch(`${API_URL}/settings`, {
+      const res = await fetch(`${API_URL}/${uid}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, settings })
+        body: JSON.stringify(settings)
       });
       return await handleResponse(res);
     } catch (err) {
