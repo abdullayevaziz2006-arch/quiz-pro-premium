@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id        String     @id // Firebase UID
+  email     String?
+  questions Question[]
+  sessions  Session[]
+  results   Result[]
+  criteria  Criteria[]
+  settings  Settings?
+  createdAt DateTime   @default(now())
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  teacherId     String
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  uid           String?  // Keep original UID for compatibility
+  text          String
+  options       String   // JSON stringified array
+  correctAnswer String
+  subject       String?
+  level         String?
+  createdAt     DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  results   Result[]
+}
+
+model Result {
+  id        String   @id @default(cuid())
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  sessionId String?
+  session   Session? @relation(fields: [sessionId], references: [id])
+  student   String   // JSON stringified object {name, surname, group}
+  score     Int
+  total     Int
+  answers   String   // JSON stringified array
+  date      DateTime @default(now())
+}
+
+model Criteria {
+  id        Int     @id @default(autoincrement())
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  grade     Int
+  min       Int
+}
+
+model Settings {
+  id               Int     @id @default(autoincrement())
+  teacherId        String  @unique
+  teacher          Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questionsPerTest Int     @default(20)
+}
+

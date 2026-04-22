@@ -16,6 +16,7 @@ const QuizPage = () => {
   const [timeLeft, setTimeLeft] = useState(120);
   const [student, setStudent] = useState(null);
   const timerRef = useRef(null);
+  const isSubmittingData = useRef(false);
 
   useEffect(() => {
     const info = sessionStorage.getItem('student_info');
@@ -129,6 +130,9 @@ const QuizPage = () => {
   };
 
   const processResult = async () => {
+    if (isSubmittingData.current) return;
+    isSubmittingData.current = true;
+
     if (timerRef.current) clearInterval(timerRef.current);
     
     let teacherId = null;

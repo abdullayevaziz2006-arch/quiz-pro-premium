@@ -1,80 +1,58 @@
-import { db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Baza bilan ishlash uchun umumiy funksiyalar (Bitta hujjatda Massiv shaklida saqlash)
-const getData = async (teacherId, collectionName, defaultData = []) => {
+const fetchData = async (teacherId, path, defaultData = []) => {
   if (!teacherId || teacherId === 'undefined') return defaultData;
   try {
-    const docRef = doc(db, 'Teachers', teacherId, 'Data', collectionName);
-    const snap = await getDoc(docRef);
-    if (snap.exists() && snap.data().items) {
-      return snap.data().items;
-    }
-    return defaultData;
+    const res = await fetch(`${API_URL}/${teacherId}/${path}`);
+    if (!res.ok) throw new Error('Network response was not ok');
+    return await res.json();
   } catch (error) {
-    console.error(`Error getting ${collectionName}:`, error);
+    console.error(`Error fetching ${path}:`, error);
     return defaultData;
   }
 };
 
-const saveData = async (teacherId, collectionName, items) => {
+const postData = async (teacherId, path, data) => {
   if (!teacherId || teacherId === 'undefined') return;
   try {
-    const docRef = doc(db, 'Teachers', teacherId, 'Data', collectionName);
-    await setDoc(docRef, { items }, { merge: true });
+    const res = await fetch(`${API_URL}/${teacherId}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+    return await res.json();
   } catch (error) {
-    console.error(`Error saving ${collectionName}:`, error);
+    console.error(`Error posting ${path}:`, error);
   }
 };
 
 export const storage = {
   // Savollar uchun
   getQuestions: async (teacherId) => {
-    let questions = await getData(teacherId, 'questions');
-    let modified = false;
-    questions = questions.map(q => {
-      if (!q.uid) {
-        modified = true;
-        return { ...q, uid: Math.random().toString(36).substr(2, 9) + Date.now().toString(36) };
-      }
-      return q;
-    });
-    if (modified) await storage.saveQuestions(teacherId, questions);
-    return questions;
+    return await fetchData(teacherId, 'questions');
   },
   saveQuestions: async (teacherId, questions) => {
-    const updated = questions.map(q => {
-      if (!q.uid) {
-        return { ...q, uid: Math.random().toString(36).substr(2, 9) + Date.now().toString(36) };
-      }
-      return q;
-    });
-    await saveData(teacherId, 'questions', updated);
+    await postData(teacherId, 'questions/bulk', { items: questions });
   },
 
   // Test Seanslari (Sessions) uchun
-  getSessions: async (teacherId) => await getData(teacherId, 'sessions'),
+  getSessions: async (teacherId) => await fetchData(teacherId, 'sessions'),
   saveSession: async (teacherId, session) => {
-    const sessions = await storage.getSessions(teacherId);
-    const newSession = { 
-      ...session, 
-      id: session.id || Math.random().toString(36).substr(2, 9),
-      createdAt: session.createdAt || new Date().toISOString()
-    };
-    sessions.push(newSession);
-    await saveData(teacherId, 'sessions', sessions);
-    return newSession;
+    return await postData(teacherId, 'sessions', session);
   },
   deleteSession: async (teacherId, id) => {
-    const sessions = await storage.getSessions(teacherId);
-    const updated = sessions.filter(s => s.id !== id);
-    await saveData(teacherId, 'sessions', updated);
+    try {
+      await fetch(`${API_URL}/${teacherId}/sessions/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Error deleting session:', err);
+    }
   },
 
   // Baholash mezonlari uchun
   getCriteria: async (teacherId) => {
-    const data = await getData(teacherId, 'criteria', null);
-    if (!data) {
+    const data = await fetchData(teacherId, 'criteria', null);
+    if (!data || data.length === 0) {
       return [
         { grade: 5, min: 18 },
         { grade: 4, min: 15 },
@@ -84,23 +62,30 @@ export const storage = {
     }
     return data;
   },
-  saveCriteria: async (teacherId, criteria) => await saveData(teacherId, 'criteria', criteria),
+  saveCriteria: async (teacherId, criteria) => {
+    await postData(teacherId, 'criteria/bulk', { items: criteria });
+  },
 
   // Natijalar uchun
-  getResults: async (teacherId) => await getData(teacherId, 'results'),
-  saveResult: async (teacherId, result) => {
-    const results = await storage.getResults(teacherId);
-    const newResult = { ...result, id: result.id || Date.now() };
-    results.push(newResult);
-    await saveData(teacherId, 'results', results);
+  getResults: async (teacherId) => {
+    return await fetchData(teacherId, 'results');
   },
-  clearResults: async (teacherId) => await saveData(teacherId, 'results', []),
+  saveResult: async (teacherId, result) => {
+    await postData(teacherId, 'results', result);
+  },
+  clearResults: async (teacherId) => {
+    try {
+      await fetch(`${API_URL}/${teacherId}/results/all`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Error clearing results:', err);
+    }
+  },
 
   // Sozlamalar
   getSettings: async (teacherId) => {
-    const data = await getData(teacherId, 'settings', null);
-    if (!data || data.length === 0) return { questionsPerTest: 20 };
-    return data[0]; // Objectni array orqali o'raymiz db-da
+    return await fetchData(teacherId, 'settings', { questionsPerTest: 20 });
   },
-  saveSettings: async (teacherId, settings) => await saveData(teacherId, 'settings', [settings])
+  saveSettings: async (teacherId, settings) => {
+    await postData(teacherId, 'settings', settings);
+  }
 };

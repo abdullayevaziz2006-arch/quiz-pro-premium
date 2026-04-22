@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { auth } from '../utils/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
 import { 
@@ -78,6 +78,20 @@ const AdminPanel = () => {
       } else {
          setAuthError(`Xatolik: ${err.message} (Code: ${err.code})`);
       }
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!loginEmail) {
+      setAuthError("Iltimos, parolni tiklash uchun avval pochtangizni (Email) kiriting.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, loginEmail);
+      alert(`Parolni tiklash havolasi ${loginEmail} pochtasiga yuborildi. Iltimos pochta qutingizni tekshiring!`);
+      setAuthError('');
+    } catch (err) {
+      setAuthError("Parolni tiklashda xatolik yuz berdi: " + err.message);
     }
   };
 
@@ -224,9 +238,16 @@ const AdminPanel = () => {
             <button type="submit" className="btn btn-primary py-4 mt-2 rounded-[20px] text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)]">
               {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
             </button>
-            <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); setAuthError(''); }} className="text-sm font-bold text-text-secondary hover:text-accent transition-all mt-2">
-              {isRegisterMode ? "Menda profil bor. Tizimga kirish" : "Profil yo'qmi? Ro'yxatdan o'tish"}
-            </button>
+            <div className="flex flex-col gap-2 mt-2">
+               <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); setAuthError(''); }} className="text-sm font-bold text-text-secondary hover:text-accent transition-all">
+                 {isRegisterMode ? "Menda profil bor. Tizimga kirish" : "Profil yo'qmi? Ro'yxatdan o'tish"}
+               </button>
+               {!isRegisterMode && (
+                 <button type="button" onClick={handleResetPassword} className="text-sm font-bold text-accent/80 hover:text-accent transition-all underline decoration-accent/30 underline-offset-4">
+                   Parolni unutdim (Tiklash)
+                 </button>
+               )}
+            </div>
          </form>
       </div>
     );
@@ -411,19 +432,26 @@ const AdminPanel = () => {
                    <table className="w-full text-left border-collapse">
                      <thead>
                        <tr className="border-b border-white/10 text-text-secondary text-sm uppercase tracking-widest">
-                         <th className="p-6 font-black">F.I.Sh</th>
-                         <th className="p-6 font-black">To'g'ri</th>
-                         <th className="p-6 font-black">Baho</th>
-                         <th className="p-6 font-black text-center">Batafsil</th>
+                         <th className="p-4 md:p-6 font-black">F.I.Sh</th>
+                         <th className="p-4 md:p-6 font-black">Guruh / Fakultet</th>
+                         <th className="p-4 md:p-6 font-black">To'g'ri</th>
+                         <th className="p-4 md:p-6 font-black">Baho</th>
+                         <th className="p-4 md:p-6 font-black text-center">Batafsil</th>
                        </tr>
                      </thead>
                      <tbody>
                        {results.map((res, idx) => (
                          <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-all">
-                           <td className="p-6 font-bold text-lg">{res.student?.name} {res.student?.surname}</td>
-                           <td className="p-6"><span className="bg-success/20 text-success px-4 py-2 rounded-xl font-bold tracking-widest">{res.score}/{res.total}</span></td>
-                           <td className="p-6"><span className="bg-accent/20 text-accent px-4 py-2 rounded-xl font-black text-xl">{res.grade}</span></td>
-                           <td className="p-6 text-center">
+                           <td className="p-4 md:p-6 font-bold text-lg">{res.student?.name} {res.student?.surname}</td>
+                           <td className="p-4 md:p-6 text-sm text-text-secondary font-medium">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-white bg-black/20 px-3 py-1 rounded-lg w-max border border-white/5">{res.student?.group || '-'}</span>
+                                <span className="text-xs opacity-70 px-1">{res.student?.faculty || '-'}</span>
+                              </div>
+                           </td>
+                           <td className="p-4 md:p-6"><span className="bg-success/20 text-success px-4 py-2 rounded-xl text-sm md:text-base font-bold tracking-widest">{res.score}/{res.total}</span></td>
+                           <td className="p-4 md:p-6"><span className="bg-accent/20 text-accent px-4 py-2 rounded-xl font-black text-lg md:text-xl">{res.grade}</span></td>
+                           <td className="p-4 md:p-6 text-center">
                               <button onClick={() => {setSelectedResult(res); window.scrollTo(0, 0);}} className="inline-flex items-center gap-2 text-accent px-6 py-3 rounded-[16px] bg-accent/10 hover:bg-accent hover:text-white transition-all font-bold shadow-sm">
                                  <Eye size={18}/> Tahlil
                               </button>
