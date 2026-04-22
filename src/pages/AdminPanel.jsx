@@ -217,19 +217,24 @@ const AdminPanel = () => {
                   <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white" rows={2} />
                   <div className="grid md:grid-cols-2 gap-4">
                     {q.options?.map((opt, oIdx) => (
-                      <div key={oIdx} className={`p-5 rounded-[24px] border-2 flex items-start gap-4 transition-all ${String(q.correctAnswer) === String(oIdx) ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/5' : 'border-white/5 bg-black/20'}`}>
+                      <div key={oIdx} className={`p-6 rounded-[24px] border-2 transition-all relative flex items-start gap-5 ${String(q.correctAnswer) === String(oIdx) ? 'border-green-500/50 bg-green-500/10 border-l-8 border-l-green-500' : 'border-white/5 bg-black/20 opacity-60'}`}>
                         <button 
                           onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
-                          className={`w-10 h-10 min-w-[40px] rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-all ${String(q.correctAnswer) === String(oIdx) ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                          className={`w-12 h-12 min-w-[48px] rounded-2xl flex items-center justify-center font-black text-lg shrink-0 transition-all ${String(q.correctAnswer) === String(oIdx) ? 'bg-green-500 text-white shadow-xl shadow-green-500/40' : 'bg-white/5 text-white/40 hover:text-white'}`}
                         >
-                          {String(q.correctAnswer) === String(oIdx) ? <Check size={18} strokeWidth={3} /> : String.fromCharCode(65 + oIdx)}
+                          {String.fromCharCode(65 + oIdx)}
                         </button>
                         <textarea 
                           value={opt} 
                           onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
-                          className={`bg-transparent border-none flex-1 font-semibold text-sm focus:outline-none resize-none leading-relaxed transition-colors ${String(q.correctAnswer) === String(oIdx) ? 'text-white' : 'text-white/40'}`}
+                          className={`bg-transparent border-none flex-1 font-bold text-lg focus:outline-none resize-none leading-relaxed transition-colors ${String(q.correctAnswer) === String(oIdx) ? 'text-white' : 'text-white/20'}`}
                           rows={Math.max(1, Math.ceil(opt.length / 40))}
                         />
+                        {String(q.correctAnswer) === String(oIdx) && (
+                          <div className="absolute top-1/2 -translate-y-1/2 right-8 text-green-500">
+                             <CheckCircle size={32} strokeWidth={3} />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
