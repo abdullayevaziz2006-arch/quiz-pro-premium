@@ -4,7 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 require('dotenv').config();
 
 const app = express();
+// Triggering rebuild for latest schema changes
 const prisma = new PrismaClient();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
