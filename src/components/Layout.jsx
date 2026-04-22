@@ -8,18 +8,19 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="glass flex items-center justify-between px-8 py-5 mx-4 mt-4 rounded-[32px] sticky top-4 z-[100] shadow-xl max-w-7xl md:mx-auto w-[calc(100%-32px)] border-white/5 bg-white/5">
-        <div className="flex items-center gap-3">
-          <div className="text-accent">
-            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M25 35L40 30V70L25 65V35Z" fill="currentColor" />
-              <path d="M45 25L65 20V80L45 75V25Z" fill="currentColor" />
-              <path d="M70 15L95 10V90L70 85V15Z" fill="currentColor" />
+        <div className="flex items-center gap-4">
+          <div className="text-accent shrink-0">
+            <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 40L32 35V65L15 60V40Z" fill="currentColor" />
+              <path d="M38 30L62 25V75L38 70V30Z" fill="currentColor" />
+              <path d="M68 20L95 15V85L68 80V20Z" fill="currentColor" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-accent tracking-tighter uppercase">
+          <h1 className="text-2xl md:text-3xl font-black text-accent tracking-tighter uppercase leading-none">
             Ranch Quiz
           </h1>
         </div>
+
 
         <button 
           onClick={toggleTheme}
