@@ -263,6 +263,10 @@ const AdminPanel = () => {
       
       {/* Tab Navigation */}
       <div className="flex flex-wrap items-center justify-center gap-3 p-2.5 glass rounded-[40px] sticky top-6 z-[100] shadow-2xl backdrop-blur-2xl border-white/5 mx-auto bg-white/5">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[10px] px-3 py-1 rounded-full border border-white/10 opacity-50">
+          ID: {adminUid}
+        </div>
+
         {[
           { id: 'questions', label: 'Savollar', icon: BookOpen },
           { id: 'criteria', label: 'Baholash', icon: Award },

@@ -65,9 +65,10 @@ app.post('/api/:teacherId/questions/bulk', ensureTeacher, async (req, res) => {
     }));
 
     await prisma.$transaction([
-      prisma.question.deleteMany({ where: { teacherId } }),
-      prisma.question.createMany({ data })
+      // prisma.question.deleteMany({ where: { teacherId } }),
+      prisma.question.createMany({ data, skipDuplicates: true })
     ]);
+
     res.json({ success: true });
 
 
