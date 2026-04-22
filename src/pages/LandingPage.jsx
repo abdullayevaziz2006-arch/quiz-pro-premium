@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Star, Shield, Zap, LayoutGrid, Award, Github } from 'lucide-react';
+import { ArrowRight, Star, Shield, Zap, LayoutGrid, Award, Globe } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ const LandingPage = () => {
         <p className="text-sm font-medium">© 2026 Ranch Pro System. All rights reserved.</p>
         <div className="flex gap-6">
           <Award size={20} />
-          <Github size={20} />
+          <Globe size={20} />
         </div>
       </footer>
     </div>
