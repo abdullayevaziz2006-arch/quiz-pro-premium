@@ -1,43 +1,48 @@
 export const parseWordQuiz = (text) => {
-  // Regex: ? belgilari orasidagi matnni (savol) va keyingi ? gacha bo'lgan qismni (variantlar) oladi
-  const regex = /\?([\s\S]+?)\?([\s\S]+?)(?=\?|$)/g;
+  // Matnni ? belgisi bo'yicha bo'laklarga bo'lamiz
+  // Har bir bo'lak bitta savol va uning javoblarini o'z ichiga oladi
+  const segments = text.split(/\n\?|\r\n\?|^\?/).filter(s => s.trim().length > 0);
   const questions = [];
-  let match;
 
-  while ((match = regex.exec(text)) !== null) {
-    const questionText = match[1].trim();
-    const optionsBlock = match[2].trim();
-    
-    // Variantlarni +, = va qator tashlashlar bo'yicha ajratamiz
-    const lines = optionsBlock.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    
+  segments.forEach(segment => {
+    const lines = segment.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length < 2) return;
+
+    let questionText = '';
     const options = [];
     let correctIdx = -1;
 
+    // Birinchi qismni savol matni sifatida yig'amiz (to + yoki = belgisi kelguncha)
+    let parsingOptions = false;
+
     lines.forEach(line => {
-      // Ba'zida mammoth qo'shimcha belgilarni qo'shishi mumkin, shuning uchun startsWith dan ehtiyotkorlik bilan foydalanamiz
-      if (line.includes('+')) {
-        const text = line.replace(/^\+/, '').trim();
-        if (text) {
-          correctIdx = options.length;
-          options.push(text);
+      if (line.startsWith('+') || line.startsWith('=')) {
+        parsingOptions = true;
+        const isCorrect = line.startsWith('+');
+        const optText = line.substring(1).trim();
+        
+        if (optText) {
+          if (isCorrect) correctIdx = options.length;
+          options.push(optText);
         }
-      } else if (line.includes('=')) {
-        const text = line.replace(/^=/, '').trim();
-        if (text) {
-          options.push(text);
-        }
+      } else if (!parsingOptions) {
+        // Savol matni bir necha qatordan iborat bo'lishi mumkin
+        questionText += (questionText ? ' ' : '') + line;
       }
     });
 
-    if (options.length >= 2 && correctIdx !== -1) {
+    // Savol oxiridagi so'roq belgisini tozalash (agar bo'lsa)
+    questionText = questionText.replace(/\?$/, '').trim();
+
+    if (questionText && options.length >= 2 && correctIdx !== -1) {
       questions.push({
         text: questionText,
         options: options,
         correct: correctIdx
       });
     }
-  }
+  });
 
   return questions;
 };
+
