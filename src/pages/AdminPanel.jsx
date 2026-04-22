@@ -9,7 +9,7 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash
+  Filter, Trash, Zap
 } from 'lucide-react';
 
 const AdminPanel = () => {
