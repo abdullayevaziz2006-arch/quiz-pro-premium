@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { auth } from '../utils/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
 import { 
-  Plus, Trash, Edit2, Upload, Download, Check, Copy, Share2, Eye, X, 
-  ChevronDown, ChevronUp, ChevronLeft, BookOpen, AlertCircle, CheckCircle2, Link as LinkIcon,
-  Dices, ScrollText, ListChecks, Search, Trash2, Edit3, Award, Users, FileUp
+  Plus, Trash2, Check, Copy, Share2, LogOut, 
+  BookOpen, AlertCircle, CheckCircle, Link2,
+  BarChart3, Award, Settings, FileUp, Save, Lock
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -18,21 +18,11 @@ const AdminPanel = () => {
   const [sessions, setSessions] = useState([]);
   const [genMode, setGenMode] = useState('random');
   const [selectedQIds, setSelectedQIds] = useState([]);
-  const [sessionSearch, setSessionSearch] = useState('');
   const [sessionName, setSessionName] = useState('');
   const [randomCount, setRandomCount] = useState(20);
-  const [settings, setSettings] = useState({ questionsPerTest: 20 });
-  const [selectedResult, setSelectedResult] = useState(null);
-  
-  const [newQuestion, setNewQuestion] = useState({ text: '', options: ['', '', '', ''], correct: 0 });
-  const [editingId, setEditingId] = useState(null);
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPass, setLoginPass] = useState('');
-  const [authError, setAuthError] = useState('');
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [adminUid, setAdminUid] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -56,58 +46,20 @@ const AdminPanel = () => {
     setQuestions(await storage.getQuestions(adminUid));
     setCriteria(await storage.getCriteria(adminUid));
     setResults(await storage.getResults(adminUid));
-    setSettings(await storage.getSettings(adminUid));
     setSessions(await storage.getSessions(adminUid));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      setAuthError('');
-      if (isRegisterMode) {
-        await createUserWithEmailAndPassword(auth, loginEmail, loginPass);
-        alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
-      } else {
-        await signInWithEmailAndPassword(auth, loginEmail, loginPass);
-      }
-    } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-         setAuthError("Bu elektron pochta allaqachon ro'yxatdan o'tgan. Tizimga kirishni tanlang.");
-      } else if (err.code === 'auth/operation-not-allowed') {
-         setAuthError("Firebase yopilgan: Asboblar panelidan Authentication -> Email/Password yoqing.");
-      } else {
-         setAuthError(`Xatolik: ${err.message} (Code: ${err.code})`);
-      }
-    }
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
   };
 
-  const handleResetPassword = async () => {
-    if (!loginEmail) {
-      setAuthError("Iltimos, parolni tiklash uchun avval pochtangizni (Email) kiriting.");
-      return;
-    }
+  const handleLogin = async (email, password) => {
     try {
-      await sendPasswordResetEmail(auth, loginEmail);
-      alert(`Parolni tiklash havolasi ${loginEmail} pochtasiga yuborildi. Iltimos pochta qutingizni tekshiring!`);
-      setAuthError('');
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      setAuthError("Parolni tiklashda xatolik yuz berdi: " + err.message);
+      showToast("Email yoki parol xato!", "error");
     }
-  };
-
-  const handleAddQuestion = async (e) => {
-    e.preventDefault();
-    if (editingId !== null) {
-      const updated = questions.map((q, idx) => idx === editingId ? newQuestion : q);
-      await storage.saveQuestions(adminUid, updated);
-      setQuestions(updated);
-      setEditingId(null);
-    } else {
-      const updated = [...questions, { ...newQuestion, uid: Date.now().toString() }];
-      await storage.saveQuestions(adminUid, updated);
-      setQuestions(updated);
-    }
-    setNewQuestion({ text: '', options: ['', '', '', ''], correct: 0 });
   };
 
   const handleFileUpload = async (e) => {
@@ -122,51 +74,39 @@ const AdminPanel = () => {
       
       if (importedQuestions.length > 0) {
         const updated = [...questions, ...importedQuestions];
-        await storage.saveQuestions(adminUid, updated);
         setQuestions(updated);
-        alert(`${importedQuestions.length} ta savol yuklandi!`);
+        showToast(`${importedQuestions.length} ta savol yuklandi!`);
+      } else {
+        showToast("Savollar topilmadi. Formatni tekshiring.", "error");
       }
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const deleteQuestion = async (index) => {
-    if(window.confirm("Savolni o'chirmoqchimisiz?")) {
-      const updated = questions.filter((_, i) => i !== index);
-      await storage.saveQuestions(adminUid, updated);
-      setQuestions(updated);
+  const handleSaveQuestions = async () => {
+    if (questions.length === 0) {
+      showToast("Saqlash uchun savollar yo'q!", "error");
+      return;
     }
+    await storage.saveQuestions(adminUid, questions);
+    showToast("Barcha savollar saqlandi!");
   };
 
   const handleCreateSession = async () => {
     let qIds = [];
     if (genMode === 'random') {
-      const usedIds = sessions.reduce((acc, sess) => acc.concat(sess.questionIds || []), []);
-      let activePool = questions.filter(q => !usedIds.includes(q.uid));
-      
-      if (activePool.length < randomCount) {
-        if (activePool.length === 0) {
-            const proceed = window.confirm(`Toza (ishlatilmagan) savollar umuman qolmagan! Eski foydalanilgan savollardan ${randomCount} ta olib qayta test ochaylikmi?`);
-            if(!proceed) return;
-            activePool = [...questions];
-        } else {
-            const proceed = window.confirm(`Bazada faqatgina ${activePool.length} ta ishlatilmagan yangi savol qiymati qoldi (Sizga ${randomCount} ta kerak).\nKamiga eski foydalanilganlardan qo'shaymi?\n\n- [OK] Ha qo'shaver\n- [Cancel] Yo'q, faqat shu ${activePool.length} toza savol bilan yarat!`);
-            if (proceed) {
-               const needed = randomCount - activePool.length;
-               const oldPool = questions.filter(q => usedIds.includes(q.uid)).sort(() => 0.5 - Math.random());
-               activePool = [...activePool, ...oldPool.slice(0, needed)];
-            }
-        }
+      if (questions.length < randomCount) {
+        showToast(`Savollar yetarli emas! (Jami: ${questions.length})`, "error");
+        return;
       }
-
-      const shuffled = [...activePool].sort(() => 0.5 - Math.random());
+      const shuffled = [...questions].sort(() => 0.5 - Math.random());
       qIds = shuffled.slice(0, randomCount).map(q => q.uid);
     } else {
       qIds = selectedQIds;
     }
 
     if (qIds.length === 0) {
-      alert("Savollarni tanlang yaki yetarli emas!");
+      showToast("Savollarni tanlang!", "error");
       return;
     }
 
@@ -176,553 +116,343 @@ const AdminPanel = () => {
     });
 
     if (newSession) {
-      setSessions([...sessions, newSession]);
+      setSessions([newSession, ...sessions]);
       setSessionName('');
       setSelectedQIds([]);
-      alert("Test seansi muvaffaqiyatli yaratildi!");
+      showToast("Test havolasi yaratildi!");
     } else {
-      alert("Xatolik: Test seansini saqlab bo'lmadi. Iltimos, qaytadan urinib ko'ring.");
+      showToast("Saqlashda xatolik yuz berdi.", "error");
     }
+  };
 
+  const copyToClipboard = (id) => {
+    const url = `${window.location.origin}/quiz?testId=${adminUid}_${id}`;
+    navigator.clipboard.writeText(url);
+    showToast("Havola nusxalandi!");
   };
 
   const handleDeleteSession = async (id) => {
-    if (window.confirm("O'chirmoqchimisiz?")) {
+    if (window.confirm("Ushbu testni o'chirmoqchimisiz?")) {
       await storage.deleteSession(adminUid, id);
       setSessions(sessions.filter(s => s.id !== id));
+      showToast("Test o'chirildi.");
     }
   };
 
-  const copySessionLink = (id) => {
-    const link = id ? `${window.location.origin}/quiz?testId=${adminUid}_${id}` : `${window.location.origin}/quiz?testId=${adminUid}_random`;
-    navigator.clipboard.writeText(link);
-    alert("Havola nusxalandi!");
-  };
-
-  const filteredQuestions = questions.filter(q => 
-    q.text.toLowerCase().includes(sessionSearch.toLowerCase())
+  if (!isAuthenticated) return (
+    <div className="min-h-screen flex items-center justify-center p-6 mesh-bg">
+      <div className="premium-card glass max-w-md w-full text-center space-y-8 animate-slide-up">
+        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+          <Lock className="text-primary" size={40} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black heading-gradient">Ranch Admin</h2>
+          <p className="text-text-dim">Boshqaruv paneliga xush kelibsiz</p>
+        </div>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(e.target.email.value, e.target.password.value); }}>
+          <input className="input-field" type="email" name="email" placeholder="Email" required />
+          <input className="input-field" type="password" name="password" placeholder="Parol" required />
+          <button type="submit" className="btn btn-primary w-full py-5 text-lg">Kirish</button>
+        </form>
+      </div>
+    </div>
   );
 
-  const toggleQuestionSelection = (uid) => {
-    setSelectedQIds(prev => 
-      prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]
-    );
-  };
-
-  const handleCriteriaChange = async (index, field, value) => {
-    const updated = [...criteria];
-    updated[index][field] = parseInt(value) || 0;
-    setCriteria(updated);
-    await storage.saveCriteria(adminUid, updated);
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] animate-fade p-4">
-         <form onSubmit={handleLogin} className="card p-10 max-w-md w-full glass shadow-2xl flex flex-col gap-6 text-center border-white/10 rounded-[32px] relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-purple-500 to-accent"></div>
-            <div className="mx-auto w-20 h-20 rounded-[28px] bg-accent/10 text-accent flex justify-center items-center mb-2 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-               <AlertCircle size={40} />
-            </div>
-            <h2 className="text-3xl font-black mb-2">{isRegisterMode ? "Yangi Admin Yaratish" : "Admin Kirish"}</h2>
-            {authError && <p className="text-danger text-sm font-bold bg-danger/10 p-3 rounded-xl">{authError}</p>}
-            <input 
-              type="email" 
-              required
-              placeholder="Admin Pochtasi (Email)" 
-              className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold"
-              value={loginEmail} onChange={e => setLoginEmail(e.target.value)} 
-            />
-            <input 
-              type="password" 
-              required
-              placeholder="Maxfiy Parol (kamida 6 ta belgi)" 
-              className="w-full text-center px-6 py-4 rounded-[20px] bg-black/20 focus:bg-white/5 border border-white/10 outline-none transition-all placeholder:text-text-secondary/50 font-bold tracking-widest text-xl"
-              value={loginPass} onChange={e => setLoginPass(e.target.value)} 
-            />
-            <button type="submit" className="btn btn-primary py-4 mt-2 rounded-[20px] text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)]">
-              {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
-            </button>
-            <div className="flex flex-col gap-2 mt-2">
-               <button type="button" onClick={() => { setIsRegisterMode(!isRegisterMode); setAuthError(''); }} className="text-sm font-bold text-text-secondary hover:text-accent transition-all">
-                 {isRegisterMode ? "Menda profil bor. Tizimga kirish" : "Profil yo'qmi? Ro'yxatdan o'tish"}
-               </button>
-               {!isRegisterMode && (
-                 <button type="button" onClick={handleResetPassword} className="text-sm font-bold text-accent/80 hover:text-accent transition-all underline decoration-accent/30 underline-offset-4">
-                   Parolni unutdim (Tiklash)
-                 </button>
-               )}
-            </div>
-         </form>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-10 max-w-7xl mx-auto w-full pb-20 px-4 md:px-8">
-      
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap items-center justify-center gap-3 p-2.5 glass rounded-[40px] sticky top-6 z-[100] shadow-2xl backdrop-blur-2xl border-white/5 mx-auto bg-white/5">
+    <div className="min-h-screen pb-20 mesh-bg">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[1000] px-8 py-4 rounded-2xl shadow-2xl backdrop-blur-xl animate-slide-up flex items-center gap-4 ${
+          toast.type === 'success' ? 'bg-success/20 text-success border border-success/30' : 'bg-danger/20 text-danger border border-danger/30'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle size={24} /> : <AlertCircle size={24} />}
+          <span className="font-bold">{toast.message}</span>
+        </div>
+      )}
 
-
-        {[
-          { id: 'questions', label: 'Savollar', icon: BookOpen },
-          { id: 'criteria', label: 'Baholash', icon: Award },
-          { id: 'results', label: 'Natijalar', icon: Users },
-          { id: 'access', label: 'Ulashish', icon: Share2 }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-3 px-8 py-4 rounded-[28px] transition-all duration-500 font-bold border-none outline-none cursor-pointer group ${
-              activeTab === tab.id 
-              ? 'bg-accent text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.5)] scale-105' 
-              : 'text-text-secondary hover:bg-white/10 hover:text-accent'
-            }`}
-          >
-            <tab.icon size={22} className={activeTab === tab.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
-            <span className="hidden lg:inline text-sm tracking-wide">{tab.label}</span>
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header */}
+        <header className="py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 animate-slide-up">
+          <div className="space-y-2">
+            <h1 className="text-5xl font-black heading-primary">Ranch Quiz</h1>
+            <p className="text-text-dim font-medium">Savollarni boshqarish va testlar yaratish portali</p>
+          </div>
+          <button onClick={() => auth.signOut()} className="btn btn-secondary px-8">
+            <LogOut size={20} /> Chiqish
           </button>
-        ))}
-        
-        <div className="w-[1px] h-8 bg-white/10 mx-2 hidden lg:block"></div>
+        </header>
 
-        <label className="flex items-center gap-3 px-8 py-4 rounded-[28px] bg-bg-accent text-accent font-bold cursor-pointer hover:bg-accent hover:text-white transition-all duration-500 border-none outline-none shadow-sm">
-          <FileUp size={22} />
-          <span className="hidden lg:inline text-sm">Word yuklash</span>
-          <input type="file" accept=".docx" onChange={handleFileUpload} className="hidden" />
-        </label>
-      </div>
+        {/* Navigation Tabs */}
+        <nav className="flex flex-wrap gap-3 mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          {[
+            { id: 'questions', label: 'Savollar', icon: BookOpen },
+            { id: 'sessions', label: 'Havolalar', icon: Share2 },
+            { id: 'results', label: 'Natijalar', icon: BarChart3 },
+            { id: 'criteria', label: 'Baholash', icon: Award },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-secondary'} rounded-2xl px-6 py-4`}
+            >
+              <tab.icon size={20} /> {tab.label}
+            </button>
+          ))}
+        </nav>
 
-      {activeTab === 'questions' && (
-        <div className="animate-fade flex flex-col gap-10">
-          <form onSubmit={handleAddQuestion} className="card p-8 md:p-12 flex flex-col gap-8 relative overflow-hidden shadow-2xl border-white/10 relative z-10 group">
-             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-accent via-purple-500 to-accent"></div>
-            
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center border border-accent/20 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
-                <Edit3 size={24} />
-              </div>
-              <h3 className="text-3xl font-black tracking-tight">{editingId !== null ? 'Savolni Tahrirlash' : 'Yangi Savol Yaratish'}</h3>
-            </div>
-
-            <div className="relative group/textarea z-20">
-              <div className="absolute -inset-1 bg-gradient-to-r from-accent to-purple-600 rounded-[22px] blur-md opacity-20 group-focus-within/textarea:opacity-60 transition duration-500"></div>
-              <textarea 
-                required
-                className="relative w-full p-6 rounded-[20px] border border-white/10 bg-bg-secondary focus:bg-white/5 outline-none text-xl transition-all shadow-inner resize-none font-medium text-text-primary placeholder:text-text-secondary/50 focus:ring-2 focus:ring-accent/50"
-                value={newQuestion.text}
-                onChange={(e) => setNewQuestion({...newQuestion, text: e.target.value})}
-                placeholder="Bu yerga ajoyib savolingizni yozing..."
-                style={{ minHeight: '140px' }}
-              />
-            </div>
-
-            <div className="space-y-3">
-               <label className="text-xs font-black uppercase tracking-[0.2em] text-text-secondary ml-2">Javob variantlari (To'g'risini belgilang)</label>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 z-20">
-                 {newQuestion.options.map((opt, idx) => (
-                   <div key={idx} className={`relative flex gap-4 items-center p-3 rounded-[24px] border-2 transition-all duration-300 overflow-hidden ${newQuestion.correct === idx ? 'border-accent bg-accent/5 ring-4 ring-accent/10 shadow-lg shadow-accent/10 scale-[1.02] z-10' : 'border-white/10 bg-white/5 hover:border-accent/40'}`}>
-                     {newQuestion.correct === idx && <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-accent shadow-[0_0_10px_rgba(79,70,229,1)]"></div>}
-                     
-                     <label className="cursor-pointer flex items-center justify-center ml-2 p-2 rounded-full hover:bg-accent/10 transition-all shrink-0">
-                       <input 
-                         type="radio" 
-                         name="correct" 
-                         className="cursor-pointer scale-[1.8] accent-accent"
-                         checked={newQuestion.correct === idx}
-                         onChange={() => setNewQuestion({...newQuestion, correct: idx})}
-                       />
-                     </label>
-
-                     <input 
-                       required
-                       className="flex-1 py-4 pr-4 border-none bg-transparent outline-none text-text-primary placeholder:text-text-secondary/40 font-bold text-lg"
-                       value={opt}
-                       onChange={(e) => {
-                         const newOpts = [...newQuestion.options];
-                         newOpts[idx] = e.target.value;
-                         setNewQuestion({...newQuestion, options: newOpts});
-                       }}
-                       placeholder={`${String.fromCharCode(65+idx)}-javobni yozing`}
-                     />
-                   </div>
-                 ))}
-               </div>
-            </div>
-
-            <div className="flex justify-end mt-4">
-               <button type="submit" className="btn btn-primary py-5 px-12 text-xl rounded-[24px] shadow-[0_10px_25px_rgba(79,70,229,0.4)] flex items-center gap-3"> 
-                  {editingId !== null ? <><Check size={24} /> Tahrirni saqlash</> : <><Plus size={24} /> Savolni qo'shish</>}
-               </button>
-            </div>
-          </form>
-
-          <div className="grid grid-cols-1 gap-6">
-            {questions.length === 0 ? (
-                <div className="p-16 flex flex-col items-center justify-center gap-4 text-text-secondary border-2 border-dashed border-white/10 rounded-[32px] bg-black/10 mx-4">
-                   <AlertCircle size={48} className="opacity-50" />
-                   <p className="font-medium text-lg">Hali savollar kiritilmagan. Yuqoridagi formadan qo'shing yoki Word fayl yuklang.</p>
+        {/* Content Area */}
+        <main className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          {activeTab === 'questions' && (
+            <div className="space-y-8">
+              <div className="premium-card glass flex flex-col md:flex-row gap-6 justify-between items-center">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-bold">Savollar Bazasi</h3>
+                  <p className="text-text-dim">Jami {questions.length} ta savol yuklangan</p>
                 </div>
-            ) : (
-                questions.map((q, idx) => (
-                  <div key={idx} className="card glass p-8 flex flex-col gap-6 hover:border-accent/40 transition-all duration-300">
-                    <div className="flex justify-between items-start gap-4">
-                      <h4 className="font-bold text-xl leading-snug flex-1"><span className="text-accent">{idx+1}.</span> {q.text}</h4>
-                      <div className="flex gap-2 shrink-0 bg-black/20 p-2 rounded-2xl border border-white/5">
-                        <button onClick={() => {setNewQuestion(q); setEditingId(idx); window.scrollTo({top:0, behavior:'smooth'})}} className="p-3 text-accent hover:bg-accent/20 rounded-xl transition-all"><Edit3 size={20} /></button>
-                        <button onClick={() => deleteQuestion(idx)} className="p-3 text-danger hover:bg-danger/20 rounded-xl transition-all"><Trash2 size={20} /></button>
+                <div className="flex flex-wrap gap-4 w-full md:w-auto">
+                  <label className="btn btn-secondary cursor-pointer flex-1 md:flex-none">
+                    <FileUp size={20} /> Word Yuklash
+                    <input type="file" className="hidden" accept=".docx" onChange={handleFileUpload} />
+                  </label>
+                  <button onClick={() => { setQuestions([{ uid: Date.now().toString(), text: 'Yangi savol', options: ['A', 'B', 'C', 'D'], correct: 0 }, ...questions]); }} className="btn btn-primary flex-1 md:flex-none">
+                    <Plus size={20} /> Qo'shish
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-6">
+                {questions.map((q, idx) => (
+                  <div key={q.uid} className="premium-card glass group">
+                    <div className="flex flex-col gap-6">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <textarea
+                            value={q.text}
+                            onChange={(e) => {
+                              const updated = [...questions];
+                              updated[idx].text = e.target.value;
+                              setQuestions(updated);
+                            }}
+                            className="bg-transparent border-none text-xl font-bold w-full resize-none focus:ring-0 p-0 text-white"
+                            rows={2}
+                          />
+                        </div>
+                        <button onClick={() => setQuestions(questions.filter((_, i) => i !== idx))} className="text-danger/40 hover:text-danger p-2 transition-colors">
+                          <Trash2 size={24} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {q.options.map((opt, optIdx) => (
+                          <div key={optIdx} className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                            q.correct === optIdx ? 'border-success bg-success/5' : 'border-white/5 bg-black/20'
+                          }`}>
+                            <button 
+                              onClick={() => {
+                                const updated = [...questions];
+                                updated[idx].correct = optIdx;
+                                setQuestions(updated);
+                              }}
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${
+                                q.correct === optIdx ? 'bg-success text-white' : 'bg-white/5 text-text-dim'
+                              }`}
+                            >
+                              {String.fromCharCode(65 + optIdx)}
+                            </button>
+                            <input
+                              value={opt}
+                              onChange={(e) => {
+                                const updated = [...questions];
+                                updated[idx].options[optIdx] = e.target.value;
+                                setQuestions(updated);
+                              }}
+                              className="bg-transparent border-none flex-1 font-medium text-white focus:ring-0"
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {q.options.map((opt, oIdx) => (
-                        <div key={oIdx} className={`p-4 rounded-xl border-2 text-[15px] font-medium flex items-center gap-3 transition-all ${oIdx === q.correct ? 'border-success bg-success/10 text-success' : 'border-white/5 bg-black/10 opacity-70'}`}>
-                          <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-black border ${oIdx === q.correct ? 'bg-success text-white border-success' : 'border-white/20'}`}>
-                             {String.fromCharCode(65+oIdx)}
-                          </span>
-                          {opt}
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'criteria' && (
-        <div className="card glass p-8 md:p-12 flex flex-col gap-8 animate-fade">
-          <h3 className="text-3xl font-black">Baholash Mezonlari</h3>
-          <p className="text-text-secondary">Ushbu jarayonda har bir 5 baholik shkala uchun kamida nechta to'g'ri javob kerakligini belgilaysiz.</p>
-          <div className="flex flex-col gap-4">
-            {criteria.map((c, idx) => (
-              <div key={idx} className="flex items-center gap-6 p-6 border-2 border-white/5 rounded-2xl bg-black/10 hover:border-accent/30 transition-all">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-accent text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-accent/20">
-                   {c.grade}
-                </div>
-                <div className="flex-1 flex items-center gap-4">
-                   <span className="text-text-secondary font-bold uppercase tracking-widest text-xs hidden md:inline">O'tish bali:</span>
-                   <input 
-                     type="number" 
-                     value={c.min} 
-                     onChange={(e) => handleCriteriaChange(idx, 'min', e.target.value)}
-                     className="flex-1 md:w-32 md:flex-none p-4 rounded-xl border-2 border-white/10 bg-transparent text-xl font-bold focus:border-accent outline-none transition-all text-center text-accent"
-                   />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'results' && (
-        <div className="animate-fade">
-          {!selectedResult ? (
-            <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center px-2">
-                <h3 className="text-3xl font-black">Talabalar Natijalari</h3>
-                {results.length > 0 && (
-                   <button onClick={() => {if(window.confirm("Barcha natijalar ochib ketadi, ishonchingiz komilmi?")){storage.clearResults(); setResults([])}}} className="text-danger flex items-center gap-2 px-6 py-3 rounded-[20px] bg-danger/10 hover:bg-danger hover:text-white transition-all font-bold">
-                      <Trash size={18}/> Tozalash
-                   </button>
-                )}
+                ))}
               </div>
               
-              {results.length === 0 ? (
-                 <div className="p-16 border-2 border-dashed border-white/10 rounded-[32px] bg-black/10 flex flex-col items-center gap-4">
-                    <Users size={48} className="opacity-30" />
-                    <p className="text-text-secondary font-medium">Hali hech qanday talaba test topshirmadi.</p>
-                 </div>
-              ) : (
-                 <div className="overflow-x-auto glass rounded-[32px] p-6 border-white/5 shadow-xl bg-white/5">
-                   <table className="w-full text-left border-collapse">
-                     <thead>
-                       <tr className="border-b border-white/10 text-text-secondary text-sm uppercase tracking-widest">
-                         <th className="p-4 md:p-6 font-black">F.I.Sh</th>
-                         <th className="p-4 md:p-6 font-black">Guruh / Fakultet</th>
-                         <th className="p-4 md:p-6 font-black">To'g'ri</th>
-                         <th className="p-4 md:p-6 font-black">Baho</th>
-                         <th className="p-4 md:p-6 font-black text-center">Batafsil</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {results.map((res, idx) => (
-                         <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-all">
-                           <td className="p-4 md:p-6 font-bold text-lg">{res.student?.name} {res.student?.surname}</td>
-                           <td className="p-4 md:p-6 text-sm text-text-secondary font-medium">
-                              <div className="flex flex-col gap-1">
-                                <span className="text-white bg-black/20 px-3 py-1 rounded-lg w-max border border-white/5">{res.student?.group || '-'}</span>
-                                <span className="text-xs opacity-70 px-1">{res.student?.faculty || '-'}</span>
-                              </div>
-                           </td>
-                           <td className="p-4 md:p-6"><span className="bg-success/20 text-success px-4 py-2 rounded-xl text-sm md:text-base font-bold tracking-widest">{res.score}/{res.total}</span></td>
-                           <td className="p-4 md:p-6"><span className="bg-accent/20 text-accent px-4 py-2 rounded-xl font-black text-lg md:text-xl">{res.grade}</span></td>
-                           <td className="p-4 md:p-6 text-center">
-                              <button onClick={() => {setSelectedResult(res); window.scrollTo(0, 0);}} className="inline-flex items-center gap-2 text-accent px-6 py-3 rounded-[16px] bg-accent/10 hover:bg-accent hover:text-white transition-all font-bold shadow-sm">
-                                 <Eye size={18}/> Tahlil
-                              </button>
-                           </td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
-                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-8 animate-fade pb-10 max-w-5xl mx-auto w-full">
-               <div className="flex flex-col md:flex-row justify-between items-center gap-6 p-6 md:p-8 glass rounded-[32px] shadow-lg border-white/5 bg-accent/5">
-                  <div className="flex flex-col gap-2 relative z-10">
-                     <span className="text-xs font-black uppercase tracking-[0.2em] text-accent">O'quvchi Tahlili</span>
-                     <h3 className="text-3xl md:text-4xl font-black text-text-primary">
-                        {selectedResult.student?.name} {selectedResult.student?.surname}
-                     </h3>
-                  </div>
-                  <button onClick={() => setSelectedResult(null)} className="btn py-4 px-10 rounded-[20px] bg-black/20 hover:bg-black/30 border border-white/10 font-bold shrink-0 shadow-xl">
-                     <ChevronLeft size={20} className="mr-2" /> Orqaga qytish
-                  </button>
-               </div>
-               
-               <div className="grid grid-cols-1 gap-6">
-                 {!selectedResult.analysis || selectedResult.analysis.length === 0 ? (
-                    <div className="p-12 text-center text-text-secondary border-2 border-dashed border-white/10 rounded-[32px] bg-black/10">
-                       <AlertCircle size={48} className="mx-auto mb-4 opacity-30" />
-                       <p className="font-bold text-lg">Ushbu natija uchun tahlil ma'lumotlari saqlanmagan.</p>
-                       <p className="text-sm opacity-70 mt-2">(Faqatgina yangi ishlangan testlarda batafsil tahlil mavjud)</p>
-                    </div>
-                 ) : (
-                    selectedResult.analysis.map((item, idx) => (
-                      <div key={idx} className={`card glass p-5 md:p-6 rounded-[24px] border-l-[8px] bg-white/5 transition-all shadow-sm ${item.isCorrect ? 'border-l-success' : 'border-l-danger'}`}>
-                        <div className="flex justify-between items-start gap-3 mb-5">
-                           <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${item.isCorrect ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-                                  {item.isCorrect ? 'To\'g\'ri javob' : 'Xato qilingan'}
-                                </span>
-                                {(item.selected === undefined || item.selected === null) && (
-                                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-warning/20 text-warning">
-                                    Javob belgilanmagan
-                                  </span>
-                                )}
-                              </div>
-                              <h4 className="text-lg font-bold leading-snug">{idx+1}. {item.question}</h4>
-                           </div>
-                           {item.isCorrect ? <CheckCircle2 size={24} className="text-success shrink-0" /> : <AlertCircle size={24} className="text-danger shrink-0" />}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {(Array.isArray(item.options) ? item.options : []).map((opt, oIdx) => {
-                             let statusClass = 'border-white/5 bg-black/10 opacity-70';
-                             let label = null;
-                             
-                             if (oIdx === item.correct) {
-                                statusClass = 'border-success bg-success/10 text-success opacity-100 ring-2 ring-success/20 font-bold';
-                                if (oIdx === item.selected) {
-                                   label = <span className="ml-auto text-[10px] font-black uppercase bg-success text-white px-2 py-1 rounded-md">Sizning javobingiz</span>;
-                                } else {
-                                   label = <span className="ml-auto text-[10px] font-black uppercase bg-success/20 text-success px-2 py-1 rounded-md">To'g'ri javob</span>;
-                                }
-                             } else if (oIdx === item.selected && !item.isCorrect) {
-                                statusClass = 'border-danger bg-danger/10 text-danger opacity-100 font-bold shadow-sm shadow-danger/10';
-                                label = <span className="ml-auto text-[10px] font-black uppercase bg-danger text-white px-2 py-1 rounded-md">Belgilangan xato</span>;
-                             }
-                             
-                             return (
-                               <div key={oIdx} className={`p-3 rounded-xl border-2 text-[14px] flex items-center gap-3 transition-all ${statusClass}`}>
-                                  <span className="w-7 h-7 shrink-0 flex items-center justify-center font-black rounded-lg bg-white/5 text-xs border border-white/10">
-                                     {String.fromCharCode(65+oIdx)}
-                                  </span>
-                                  <span className="flex-1">{opt}</span>
-                                  {label}
-                               </div>
-                             )
-                          })}
-                        </div>
-                      </div>
-                    ))
-                 )}
-               </div>
-               <div className="flex justify-center mt-6">
-                  <button onClick={() => setSelectedResult(null)} className="btn btn-primary py-5 px-12 rounded-[24px] shadow-2xl">Yopish</button>
-               </div>
+              <div className="fixed bottom-10 right-10 z-50">
+                <button onClick={handleSaveQuestions} className="btn btn-primary px-10 py-6 rounded-3xl shadow-[0_20px_50px_rgba(255,59,0,0.5)] scale-110">
+                  <Save size={24} /> Barcha O'zgarishlarni Saqlash
+                </button>
+              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {activeTab === 'access' && (
-        <div className="animate-fade space-y-12 py-4">
-          
-          {/* Header Section */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-             <div className="inline-flex p-5 bg-accent/10 rounded-[40px] text-accent mb-4 shadow-inner ring-1 ring-accent/20">
-                <Share2 size={48} className="animate-bounce" />
-             </div>
-             <h2 className="text-5xl font-black tracking-tighter">Testlarni Ulashish</h2>
-             <p className="text-text-secondary text-lg">Talabalar uchun maxsus havolalar yarating va ularni nazorat qiling.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Create Section */}
-            <div className="lg:col-span-7 flex flex-col gap-8">
-              <div className="card glass p-8 md:p-12 space-y-10 relative overflow-hidden group">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700"></div>
-                
-                <div className="flex items-center gap-4 pb-6 border-b border-white/5">
-                  <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center text-white shadow-lg shadow-accent/30">
-                    <Plus size={24} />
-                  </div>
-                  <h4 className="text-3xl font-black tracking-tight">Yangi Test Yaratish</h4>
-                </div>
-
-                <div className="space-y-8 relative z-10">
-                  <div className="space-y-3">
-                    <label className="text-xs font-black uppercase tracking-[0.2em] text-accent ml-2">Testga nom bering</label>
+          {activeTab === 'sessions' && (
+            <div className="space-y-8">
+              <div className="premium-card glass grid md:grid-cols-3 gap-8">
+                <div className="md:col-span-2 space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-black text-primary uppercase tracking-widest">Test Nomi</label>
                     <input 
-                      value={sessionName} 
-                      onChange={(e) => setSessionName(e.target.value)} 
+                      className="input-field" 
                       placeholder="Masalan: 2-Smena matematika..." 
-                      className="w-full p-5 rounded-[24px] border-2 border-white/5 bg-white/5 focus:border-accent focus:bg-white/10 outline-none transition-all text-xl font-bold placeholder:opacity-30" 
+                      value={sessionName}
+                      onChange={e => setSessionName(e.target.value)}
                     />
                   </div>
-
-                  <div className="space-y-3">
-                    <label className="text-xs font-black uppercase tracking-[0.2em] text-accent ml-2">Tanlash usuli</label>
-                    <div className="flex gap-2 p-1.5 bg-black/10 rounded-[22px] border border-white/5">
-                      <button 
-                        type="button"
-                        onClick={() => setGenMode('random')} 
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[18px] transition-all duration-300 font-bold border-none outline-none cursor-pointer ${genMode === 'random' ? 'bg-accent text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                      >
-                        <Dices size={18} /> Tasodifiy
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => setGenMode('manual')} 
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[18px] transition-all duration-300 font-bold border-none outline-none cursor-pointer ${genMode === 'manual' ? 'bg-accent text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                      >
-                        <ListChecks size={18} /> Manuel
-                      </button>
-                    </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button onClick={() => setGenMode('random')} className={`btn ${genMode === 'random' ? 'btn-primary' : 'btn-secondary'} py-5`}>
+                      Tasodifiy
+                    </button>
+                    <button onClick={() => setGenMode('manual')} className={`btn ${genMode === 'manual' ? 'btn-primary' : 'btn-secondary'} py-5`}>
+                      Tanlash
+                    </button>
                   </div>
-
                   {genMode === 'random' ? (
-                    <div className="space-y-4 animate-fade">
-                      <label className="text-xs font-black uppercase tracking-[0.2em] text-accent ml-2">Savollar soni</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-primary uppercase tracking-widest">Savollar soni</label>
                       <input 
                         type="number" 
-                        value={randomCount} 
-                        onChange={(e) => setRandomCount(e.target.value)} 
-                        className="w-full p-4 rounded-[20px] border-2 border-white/5 bg-white/5 focus:border-accent text-3xl font-black text-center text-accent outline-none" 
+                        className="input-field" 
+                        value={randomCount}
+                        onChange={e => setRandomCount(parseInt(e.target.value))}
                       />
                     </div>
                   ) : (
-                    <div className="space-y-4 animate-fade">
-                      <div className="relative">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-accent" size={18} />
-                        <input 
-                          value={sessionSearch} 
-                          onChange={(e) => setSessionSearch(e.target.value)} 
-                          placeholder="Savollarni qidirish..." 
-                          className="w-full pl-14 pr-6 py-4 border-2 border-white/5 rounded-[20px] bg-white/5 focus:border-accent outline-none" 
-                        />
-                      </div>
-                      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                        {filteredQuestions.map((q) => {
-                          const isSelected = selectedQIds.includes(q.uid);
-                          return (
-                            <div 
-                              key={q.uid} 
-                              onClick={() => toggleQuestionSelection(q.uid)} 
-                              className={`p-4 rounded-[18px] border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${
-                                isSelected 
-                                ? 'border-accent bg-accent/10 shadow-sm' 
-                                : 'border-white/5 bg-white/5 hover:border-white/10'
-                              }`}
-                            >
-                              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 ${
-                                isSelected ? 'bg-accent border-accent text-white' : 'border-white/20'
-                              }`}>
-                                {isSelected && <Check size={14} strokeWidth={4} />}
-                              </div>
-                              <p className={`text-sm leading-snug truncate ${isSelected ? 'text-white font-bold' : 'text-text-secondary'}`}>
-                                {q.text}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    <div className="max-h-[300px] overflow-y-auto space-y-2 custom-scrollbar pr-2">
+                      {questions.map(q => (
+                        <div key={q.uid} className={`flex items-center gap-4 p-4 rounded-xl border transition-all cursor-pointer ${
+                          selectedQIds.includes(q.uid) ? 'border-primary bg-primary/5' : 'border-white/5 bg-black/20'
+                        }`} onClick={() => {
+                          if (selectedQIds.includes(q.uid)) setSelectedQIds(selectedQIds.filter(id => id !== q.uid));
+                          else setSelectedQIds([...selectedQIds, q.uid]);
+                        }}>
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center ${selectedQIds.includes(q.uid) ? 'bg-primary text-white' : 'bg-white/10'}`}>
+                            {selectedQIds.includes(q.uid) && <Check size={14} />}
+                          </div>
+                          <span className="truncate text-sm font-medium">{q.text}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
+                  <button onClick={handleCreateSession} className="btn btn-primary w-full py-5 text-lg">
+                    <Link2 size={20} /> Havola Yaratish
+                  </button>
+                </div>
+                <div className="bg-primary/5 rounded-3xl p-8 border border-primary/10 flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center text-primary">
+                    <Share2 size={32} />
+                  </div>
+                  <h4 className="text-xl font-bold">Ulashish</h4>
+                  <p className="text-sm text-text-dim">Havola yarating va uni talabalarga yuboring. Ular darhol testni boshlashlari mumkin.</p>
+                </div>
+              </div>
 
-                  <button 
-                    onClick={handleCreateSession} 
-                    className="w-full py-5 rounded-[22px] bg-accent text-white text-lg font-black uppercase tracking-widest shadow-xl shadow-accent/20 hover:translate-y-[-2px] active:translate-y-[0px] transition-all flex items-center justify-center gap-3 mt-4 border-none outline-none cursor-pointer"
-                  >
-                    <Plus size={22} /> Havola Yaratish
+              <div className="grid gap-4">
+                {sessions.map(s => (
+                  <div key={s.id} className="premium-card glass flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
+                        <BookOpen size={28} />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold">{s.name}</h4>
+                        <p className="text-text-dim text-sm">{s.questionIds.length} ta savol • {new Date(s.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 w-full md:w-auto">
+                      <button onClick={() => copyToClipboard(s.id)} className="btn btn-secondary flex-1 md:flex-none">
+                        <Copy size={18} /> Nusxa
+                      </button>
+                      <button onClick={() => handleDeleteSession(s.id)} className="btn btn-secondary text-danger hover:bg-danger/10 border-danger/20 flex-1 md:flex-none">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'results' && (
+            <div className="space-y-8">
+              <div className="premium-card glass flex justify-between items-center">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-bold">Imtihon Natijalari</h3>
+                  <p className="text-text-dim">Jami {results.length} ta urinish</p>
+                </div>
+              </div>
+
+              <div className="premium-card glass overflow-x-auto p-0">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="p-6 text-sm font-black text-primary uppercase">Talaba</th>
+                      <th className="p-6 text-sm font-black text-primary uppercase">Ball</th>
+                      <th className="p-6 text-sm font-black text-primary uppercase">Baho</th>
+                      <th className="p-6 text-sm font-black text-primary uppercase">Sana</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map(r => (
+                      <tr key={r.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="p-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary">
+                              {r.student.name[0]}
+                            </div>
+                            <span className="font-bold">{r.student.name} {r.student.surname}</span>
+                          </div>
+                        </td>
+                        <td className="p-6 font-mono font-bold text-lg">{r.score}/{r.total}</td>
+                        <td className="p-6">
+                          <span className={`badge ${r.grade >= 4 ? 'badge-success' : 'badge-primary'}`}>
+                            {r.grade} Baho
+                          </span>
+                        </td>
+                        <td className="p-6 text-text-dim text-sm">{new Date(r.date).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'criteria' && (
+            <div className="max-w-2xl mx-auto space-y-8">
+              <div className="premium-card glass space-y-8">
+                <div className="text-center space-y-2">
+                  <h3 className="text-3xl font-black heading-gradient">Baholash Mezonlari</h3>
+                  <p className="text-text-dim">Ballarga qarab baholarni belgilang</p>
+                </div>
+                <div className="space-y-6">
+                  {criteria.map((c, idx) => (
+                    <div key={idx} className="flex items-center gap-6 p-6 bg-black/20 rounded-3xl border border-white/5">
+                      <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-3xl font-black text-primary">
+                        {c.grade}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <label className="text-xs font-black text-text-dim uppercase tracking-widest">Minimal Ball</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          value={c.min}
+                          onChange={(e) => {
+                            const updated = [...criteria];
+                            updated[idx].min = parseInt(e.target.value);
+                            setCriteria(updated);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => storage.saveCriteria(adminUid, criteria).then(() => showToast("Mezonlar saqlandi!"))} className="btn btn-primary w-full py-5 text-lg">
+                    <Save size={20} /> Mezonlarni Saqlash
                   </button>
                 </div>
               </div>
             </div>
-
-            {/* List Section */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-3">
-                  <ScrollText className="text-accent" />
-                  <h4 className="text-2xl font-black tracking-tight">Mavjud Testlar</h4>
-                </div>
-                <span className="px-3 py-1 bg-white/5 rounded-full text-xs font-bold text-text-secondary">{sessions.length} ta seans</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                {sessions.length === 0 ? (
-                  <div className="p-20 text-center glass rounded-[40px] opacity-30 italic flex flex-col items-center gap-4">
-                    <AlertCircle size={48} />
-                    <p>Hali testlar yaratilmagan</p>
-                  </div>
-                ) : (
-                  sessions.map((s) => (
-                    <div key={s.id} className="card glass p-6 space-y-6 group hover:translate-y-[-8px] transition-all duration-500 border-white/10 hover:border-accent/40 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button 
-                            onClick={() => handleDeleteSession(s.id)} 
-                            className="w-10 h-10 rounded-xl bg-danger/10 text-danger hover:bg-danger hover:text-white transition-all flex items-center justify-center"
-                          >
-                           <Trash size={18} />
-                         </button>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-black text-accent uppercase tracking-widest">{new Date(s.createdAt).toLocaleDateString()}</div>
-                        <h5 className="font-black text-2xl tracking-tighter truncate pr-10">{s.name}</h5>
-                        <div className="flex items-center gap-2 text-text-secondary font-medium">
-                           <BookOpen size={14} /> {s.questionIds.length} ta savol
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 p-2 bg-black/20 rounded-[20px] border border-white/5">
-                        <div className="flex-1 px-4 py-2 font-mono text-[10px] text-accent/80 truncate self-center">
-                          /quiz?testId={adminUid}_{s.id}
-                        </div>
-                        <button 
-                          onClick={() => copySessionLink(s.id)} 
-                          className="w-12 h-12 rounded-2xl bg-accent text-white shadow-lg shadow-accent/20 flex items-center justify-center hover:scale-110 active:scale-90 transition-all shrink-0"
-                          title="Nusxalash"
-                        >
-                          <Copy size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ).reverse()}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+          )}
+        </main>
+      </div>
     </div>
   );
 };
