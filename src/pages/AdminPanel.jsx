@@ -56,7 +56,12 @@ const AdminPanel = () => {
         storage.getSessions(adminUid),
         storage.getSettings(adminUid)
       ]);
-      setQuestions(Array.isArray(qs) ? qs : []);
+      // Normalize questions to use correctAnswer
+      const normalizedQs = (qs || []).map(q => ({
+        ...q,
+        correctAnswer: String(q.correctAnswer !== undefined ? q.correctAnswer : (q.correct !== undefined ? q.correct : ''))
+      }));
+      setQuestions(normalizedQs);
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
@@ -188,7 +193,7 @@ const AdminPanel = () => {
                        uid: Math.random().toString(36).substr(2, 9),
                        text: q.text,
                        options: q.options,
-                       correctAnswer: String(q.correct) // Backend kutayotgan correctAnswer
+                       correctAnswer: String(q.correct)
                      }));
                      setQuestions([...questions, ...imported]);
                      showToast(`${imported.length} ta savol qo'shildi`);
@@ -199,9 +204,14 @@ const AdminPanel = () => {
             </div>
             <div className="grid gap-6">
               {filteredQuestions.map((q, idx) => (
-                <div key={q.uid} className="bg-card border border-white/5 p-10 rounded-[40px] space-y-8">
+                <div key={q.uid} className={`bg-card border p-10 rounded-[40px] space-y-8 transition-all ${!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1' ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-white/5'}`}>
                   <div className="flex justify-between items-start">
-                    <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold">SAVOL #{questions.length - idx}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold">SAVOL #{questions.length - idx}</span>
+                      {(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') && (
+                        <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1"><AlertCircle size={12} /> To'g'ri javobni tanlang!</span>
+                      )}
+                    </div>
                     <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="text-white/10 hover:text-red-500"><Trash2 size={24} /></button>
                   </div>
                   <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white" rows={2} />
@@ -228,28 +238,20 @@ const AdminPanel = () => {
               <h3 className="text-2xl font-bold">Yangi Havola</h3>
               <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-primary" placeholder="Test Nomi" value={sessionName} onChange={e => setSessionName(e.target.value)} />
               <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setGenMode('random')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'random' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
+                  <button onClick={() => setGenMode('random')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'random' ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
                     <Zap size={16} /> Tasodifiy
                   </button>
-                  <button onClick={() => setGenMode('manual')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'manual' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
+                  <button onClick={() => setGenMode('manual')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'manual' ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
                     <Filter size={16} /> Qo'lda
                   </button>
                 </div>
-
                 {genMode === 'random' && (
                   <div className="space-y-3 animate-in zoom-in duration-300">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-2">Tasodifiy savollar soni</label>
-                    <input 
-                      type="number" 
-                      className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-primary/50 transition-all text-white font-bold" 
-                      placeholder="Masalan: 20" 
-                      value={settings.questionsPerTest} 
-                      onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value)})} 
-                    />
+                    <input type="number" className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-primary/50 transition-all text-white font-bold" placeholder="Masalan: 20" value={settings.questionsPerTest} onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value)})} />
                   </div>
                 )}
-
-                {genMode === 'manual' && (
+              {genMode === 'manual' && (
                 <div className="max-h-60 overflow-y-auto bg-black/40 rounded-2xl p-4 space-y-2 border border-white/5">
                   {questions.map(q => (
                     <div key={q.uid} onClick={() => setSelectedQIds(prev => prev.includes(q.uid) ? prev.filter(id => id !== q.uid) : [...prev, q.uid])} className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedQIds.includes(q.uid) ? 'border-primary bg-primary/5' : 'border-white/5 bg-white/5 text-white/40'}`}>
