@@ -340,6 +340,152 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {activeTab === 'sessions' && (
+          <div className="grid lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Create Session Form */}
+            <div className="bg-card border border-white/5 p-10 rounded-[40px] space-y-10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-blue-500">
+                <Link2 size={150} />
+              </div>
+              
+              <div className="space-y-2 relative z-10">
+                <h3 className="text-2xl font-bold">Yangi Havola</h3>
+                <p className="text-white/40 text-sm">Talabalar uchun maxsus test seansini yarating</p>
+              </div>
+
+              <div className="space-y-8 relative z-10">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-2">Test Seansi Nomi</label>
+                  <input 
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-primary/50 transition-all font-medium" 
+                    placeholder="Masalan: Yakuniy Nazorat - 2024" 
+                    value={sessionName} 
+                    onChange={e => setSessionName(e.target.value)} 
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-2">Savollarni Tanlash Usuli</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      onClick={() => setGenMode('random')} 
+                      className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${
+                        genMode === 'random' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'
+                      }`}
+                    >
+                      <Zap size={16} /> Tasodifiy
+                    </button>
+                    <button 
+                      onClick={() => setGenMode('manual')} 
+                      className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${
+                        genMode === 'manual' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'
+                      }`}
+                    >
+                      <Filter size={16} /> Qo'lda Tanlash
+                    </button>
+                  </div>
+                </div>
+
+                {genMode === 'manual' && (
+                   <div className="space-y-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-2">Savollar Ro'yxati ({selectedQIds.length} tanlandi)</label>
+                      <div className="max-h-60 overflow-y-auto bg-black/40 rounded-2xl border border-white/10 p-4 space-y-2 thin-scrollbar">
+                        {questions.map(q => (
+                          <div 
+                            key={q.uid} 
+                            onClick={() => setSelectedQIds(prev => prev.includes(q.uid) ? prev.filter(id => id !== q.uid) : [...prev, q.uid])}
+                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center gap-4 ${
+                              selectedQIds.includes(q.uid) ? 'border-primary bg-primary/5 text-white' : 'border-white/5 bg-white/5 text-white/40'
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded flex items-center justify-center border ${selectedQIds.includes(q.uid) ? 'bg-primary border-primary' : 'border-white/20'}`}>
+                              {selectedQIds.includes(q.uid) && <Check size={14} className="text-white" />}
+                            </div>
+                            <span className="text-sm font-medium truncate">{q.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                   </div>
+                )}
+
+                <button 
+                  onClick={() => {
+                    const qIds = genMode === 'random' ? [...questions].sort(() => 0.5-Math.random()).slice(0, settings.questionsPerTest || 20).map(q => q.uid) : selectedQIds;
+                    if(qIds.length === 0) return showToast("Iltimos, savollarni tanlang yoki tasodifiy rejimni yoqing", "error");
+                    storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
+                      setSessions([s, ...sessions]);
+                      setSessionName('');
+                      setSelectedQIds([]);
+                      showToast("Yangi havola muvaffaqiyatli yaratildi");
+                    });
+                  }} 
+                  className="w-full bg-primary hover:bg-primary/90 py-5 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3"
+                >
+                  <Link2 size={24} /> Havola Yaratish
+                </button>
+              </div>
+            </div>
+
+            {/* Sessions List */}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between px-2">
+                <h3 className="text-xl font-bold">Mavjud Havolalar</h3>
+                <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold text-white/30 uppercase tracking-widest">{sessions.length} ta aktiv</span>
+              </div>
+              <div className="grid gap-4">
+                {sessions.map(s => (
+                  <div key={s.id} className="bg-card border border-white/5 p-8 rounded-[32px] flex justify-between items-center group hover:border-primary/20 transition-all">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-white/20 group-hover:text-primary group-hover:bg-primary/10 transition-all border border-white/5 group-hover:border-primary/20">
+                        <Share2 size={24} />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-xl">{s.name}</h4>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">{s.questionIds.length} savol</span>
+                          <span className="w-1 h-1 bg-white/10 rounded-full"></span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-green-500">Aktiv</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`);
+                          showToast("Havola nusxalandi!");
+                        }} 
+                        className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all hover:text-primary group-hover:border-primary/30"
+                      >
+                        Nusxa Olish
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if(window.confirm("Ushbu havolani o'chirib tashlamoqchimisiz?")) {
+                            storage.deleteSession(adminUid, s.id);
+                            setSessions(sessions.filter(it => it.id !== s.id));
+                            showToast("Havola o'chirildi", "error");
+                          }
+                        }} 
+                        className="p-3 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {sessions.length === 0 && (
+                   <div className="p-20 text-center space-y-4 bg-white/[0.01] border border-dashed border-white/10 rounded-[40px]">
+                      <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-white/10">
+                        <Share2 size={40} />
+                      </div>
+                      <p className="text-white/20 font-bold uppercase tracking-widest text-xs">Hali havolalar yaratilmagan</p>
+                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'results' && (
           <div className="bg-card border border-white/5 rounded-[48px] overflow-hidden">
             <div className="p-10 md:p-14 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 bg-white/[0.01]">
