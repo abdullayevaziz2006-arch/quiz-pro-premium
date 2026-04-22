@@ -6,45 +6,47 @@ const Layout = ({ children }) => {
   const isQuiz = location.pathname.startsWith('/quiz');
 
   return (
-    <div className="app-layout">
-      {/* Background stays at the bottom and doesn't intercept clicks */}
-      <div className="hero-bg"></div>
-      
+    <div className="min-h-screen bg-surface flex flex-col font-sans selection:bg-primary selection:text-white">
       {!isQuiz && (
-        <header className="site-header">
-          <div className="container flex justify-between items-center w-full">
-            <Link to="/" className="flex items-center gap-3" style={{ textDecoration: 'none', color: 'white' }}>
-              <div className="w-10 h-10 bg-[#FF3B00] rounded-xl flex items-center justify-center font-black text-xl">R</div>
+        <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-4 no-underline group">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">R</div>
               <div className="flex flex-col">
-                <span className="text-lg font-black leading-none">Ranch <span className="text-[#FF3B00]">Pro</span></span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-dim">Quiz Systems</span>
+                <span className="text-xl font-heading font-black text-white leading-none">Ranch <span className="text-primary">Pro</span></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Quiz Systems</span>
               </div>
             </Link>
             
-            <nav className="flex items-center gap-6">
-              <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-dim hover:text-white transition-colors" style={{ textDecoration: 'none' }}>Platforma</Link>
-              <Link to="/admin" className="btn btn-primary px-6 py-2 text-[10px] uppercase tracking-widest">Admin Panel</Link>
+            <nav className="flex items-center gap-8">
+              <Link to="/" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors no-underline">Platforma</Link>
+              <Link to="/admin" className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 no-underline">Admin Panel</Link>
             </nav>
           </div>
         </header>
       )}
 
-      <main className="site-main">
-        <div className="container">
+      <main className="flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-6 py-12">
           {children}
         </div>
       </main>
 
       {!isQuiz && (
-        <footer className="site-footer">
-          <div className="container flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-dim text-[10px] font-bold tracking-widest uppercase">
-              © {new Date().getFullYear()} Ranch Quiz Pro. All rights reserved.
-            </p>
-            <div className="flex items-center gap-6 text-dim">
-              <span className="text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:text-[#FF3B00]">Privacy</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:text-[#FF3B00]">Terms</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:text-[#FF3B00]">Support</span>
+        <footer className="py-12 border-t border-white/5 bg-black/20">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                © {new Date().getFullYear()} Ranch Quiz Pro. All rights reserved.
+              </p>
+              <p className="text-white/20 text-[9px] uppercase tracking-widest">Precision and Innovation</p>
+            </div>
+            <div className="flex items-center gap-10">
+              {['Privacy', 'Terms', 'Support'].map(item => (
+                <span key={item} className="text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-primary cursor-pointer transition-colors">
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
         </footer>
