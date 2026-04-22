@@ -12,11 +12,13 @@ const LandingPage = () => {
 
       <div className="text-center z-[100] relative space-y-6">
         <div className="inline-flex py-1 px-3 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-bold tracking-widest uppercase mb-4 shadow-sm backdrop-blur-md">
-          QuizPro Premium 2024
+          Ranch Quiz 2025
         </div>
-        <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-600">
+
+        <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-accent to-orange-600">
           Kelajak Test Tizimi
         </h2>
+
         <p className="text-text-secondary max-w-2xl mx-auto text-lg md:text-xl font-medium leading-relaxed">
           O'quv markazlari va ta'lim muassasalari uchun mo'ljallangan <b>sun'iy intellektdan</b> ham aqlli reyting va tahlil platformasi.
         </p>
@@ -29,7 +31,8 @@ const LandingPage = () => {
             <ShieldCheck size={56} />
           </div>
           <div>
-            <h3 className="text-3xl font-black mb-3 text-text-primary group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-accent group-hover:to-purple-500 transition-all">Admin Panel</h3>
+            <h3 className="text-3xl font-black mb-3 text-text-primary group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-accent group-hover:to-orange-500 transition-all">Admin Panel</h3>
+
             <p className="text-text-secondary font-medium px-4">Testlarni yarating, tahlil qiling va markazni to'liq boshqaring.</p>
           </div>
           <div className="mt-auto pt-6 flex items-center justify-center gap-2 text-accent font-bold group-hover:translate-x-2 transition-transform">
