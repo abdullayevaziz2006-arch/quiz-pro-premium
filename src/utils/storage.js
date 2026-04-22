@@ -1,4 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://ranch-quiz-backend.railway.app/api'; // Iltimos, o'zingizning Railway manzilingizni shu erga yozing
+let BASE_URL = import.meta.env.VITE_API_URL || 'quiz-pro-premium-production.up.railway.app';
+if (!BASE_URL.startsWith('http')) {
+  BASE_URL = `https://${BASE_URL}`;
+}
+// Agar oxirida /api bo'lmasa, qo'shamiz
+const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 
 const handleResponse = async (response) => {
   if (!response.ok) {
