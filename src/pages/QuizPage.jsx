@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { storage } from '../utils/storage';
-import { CheckCircle2, ChevronRight, ChevronLeft, AlertCircle, Timer, GraduationCap, X } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, AlertCircle, Timer, GraduationCap, X, BookOpen } from 'lucide-react';
 
 const QuizPage = () => {
   const navigate = useNavigate();
