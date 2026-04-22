@@ -227,11 +227,29 @@ const AdminPanel = () => {
             <div className="bg-card border border-white/5 p-10 rounded-[40px] space-y-8">
               <h3 className="text-2xl font-bold">Yangi Havola</h3>
               <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-primary" placeholder="Test Nomi" value={sessionName} onChange={e => setSessionName(e.target.value)} />
-              <div className="flex gap-4">
-                <button onClick={() => setGenMode('random')} className={`flex-1 py-4 rounded-xl font-bold text-xs uppercase border ${genMode === 'random' ? 'bg-primary border-primary' : 'bg-white/5 border-white/5 text-white/40'}`}>Tasodifiy</button>
-                <button onClick={() => setGenMode('manual')} className={`flex-1 py-4 rounded-xl font-bold text-xs uppercase border ${genMode === 'manual' ? 'bg-primary border-primary' : 'bg-white/5 border-white/5 text-white/40'}`}>Qo'lda</button>
-              </div>
-              {genMode === 'manual' && (
+              <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => setGenMode('random')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'random' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
+                    <Zap size={16} /> Tasodifiy
+                  </button>
+                  <button onClick={() => setGenMode('manual')} className={`py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border transition-all ${genMode === 'manual' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>
+                    <Filter size={16} /> Qo'lda
+                  </button>
+                </div>
+
+                {genMode === 'random' && (
+                  <div className="space-y-3 animate-in zoom-in duration-300">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-2">Tasodifiy savollar soni</label>
+                    <input 
+                      type="number" 
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-primary/50 transition-all text-white font-bold" 
+                      placeholder="Masalan: 20" 
+                      value={settings.questionsPerTest} 
+                      onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value)})} 
+                    />
+                  </div>
+                )}
+
+                {genMode === 'manual' && (
                 <div className="max-h-60 overflow-y-auto bg-black/40 rounded-2xl p-4 space-y-2 border border-white/5">
                   {questions.map(q => (
                     <div key={q.uid} onClick={() => setSelectedQIds(prev => prev.includes(q.uid) ? prev.filter(id => id !== q.uid) : [...prev, q.uid])} className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedQIds.includes(q.uid) ? 'border-primary bg-primary/5' : 'border-white/5 bg-white/5 text-white/40'}`}>
