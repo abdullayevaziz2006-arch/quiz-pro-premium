@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Users, School, ArrowRight, GraduationCap } from 'lucide-react';
+import { User, Users, School, ArrowRight, GraduationCap, ChevronLeft } from 'lucide-react';
 
 const StudentEntry = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const testId = searchParams.get('testId');
+
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -11,87 +14,106 @@ const StudentEntry = () => {
     faculty: ''
   });
 
-  const [searchParams] = useSearchParams();
-
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.name || !formData.surname) return;
+    
+    // Ma'lumotlarni saqlash va testni boshlash
     sessionStorage.setItem('student_info', JSON.stringify(formData));
-    const testId = searchParams.get('testId');
-    if (testId) {
-      navigate(`/start-quiz?testId=${testId}`);
-    } else {
-      navigate('/start-quiz');
-    }
+    navigate(`/start-quiz?testId=${testId}`);
   };
 
   return (
-    <div className="flex-1 flex justify-center items-center py-12 px-4 relative overflow-hidden">
-      {/* Background Animated Blobs for Login */}
-      <div className="absolute top-20 right-20 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob z-[0]"></div>
-      <div className="absolute bottom-20 left-20 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 z-[0]"></div>
+    <div className="relative min-h-[80vh] flex items-center justify-center py-12 px-6">
+      {/* Decorative Blur */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
 
-      <div className="card w-full max-w-xl animate-fade glass p-10 md:p-14 relative z-10 bg-white/5 backdrop-blur-3xl border-white/10 shadow-2xl">
-        <div className="text-center mb-12 relative">
-          <div className="inline-flex p-6 rounded-[32px] bg-accent/10 text-accent mb-6 ring-1 ring-accent/20 shadow-inner">
-            <GraduationCap size={48} className="animate-pulse" />
+      <div className="w-full max-w-2xl bg-card border border-white/5 p-10 md:p-16 rounded-[40px] shadow-2xl relative overflow-hidden">
+        {/* Header Icon */}
+        <div className="text-center space-y-6 mb-12">
+          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto text-primary border border-primary/20">
+            <GraduationCap size={40} />
           </div>
-          <h2 className="text-4xl font-black tracking-tighter mb-3 text-transparent bg-clip-text bg-gradient-to-r from-text-primary to-text-secondary">Talaba Portali</h2>
-          <p className="text-text-secondary font-medium">
-            Testni boshlash uchun shaxsiy ma'lumotlaringizni kiriting
-          </p>
+          <div className="space-y-2">
+            <h2 className="text-4xl font-heading font-black tracking-tight">Talaba Portali</h2>
+            <p className="text-white/40 text-sm">Testni boshlash uchun ma'lumotlaringizni to'ldiring</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-accent ml-2"><User size={14} /> Ism</label>
+              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary ml-2">
+                <User size={14} /> Ismingiz
+              </label>
               <input 
                 required
-                placeholder="Ismingiz"
+                placeholder="Masalan: Azizbek"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full p-4 rounded-[20px] border-2 border-white/5 bg-white/5 focus:border-accent outline-none transition-all font-bold"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-accent ml-2"><User size={14} /> Familiya</label>
+              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary ml-2">
+                <User size={14} /> Familiyangiz
+              </label>
               <input 
                 required
-                placeholder="Familiyangiz"
+                placeholder="Masalan: Abdullayev"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                 value={formData.surname}
                 onChange={(e) => setFormData({...formData, surname: e.target.value})}
-                className="w-full p-4 rounded-[20px] border-2 border-white/5 bg-white/5 focus:border-accent outline-none transition-all font-bold"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-accent ml-2"><Users size={14} /> Guruh</label>
+            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary ml-2">
+              <Users size={14} /> Guruhingiz
+            </label>
             <input 
               required
-              placeholder="Guruhingiz (masalan: 211-TI)"
+              placeholder="Masalan: 211-TI"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
               value={formData.group}
               onChange={(e) => setFormData({...formData, group: e.target.value})}
-              className="w-full p-4 rounded-[20px] border-2 border-white/5 bg-white/5 focus:border-accent outline-none transition-all font-bold"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-accent ml-2"><School size={14} /> Fakultet</label>
+            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary ml-2">
+              <School size={14} /> Fakultet
+            </label>
             <input 
               required
-              placeholder="Fakultetingiz nomi"
+              placeholder="Masalan: TATU, AKT"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
               value={formData.faculty}
               onChange={(e) => setFormData({...formData, faculty: e.target.value})}
-              className="w-full p-4 rounded-[20px] border-2 border-white/5 bg-white/5 focus:border-accent outline-none transition-all font-bold"
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-full py-6 mt-6 justify-center text-xl shadow-2xl shadow-accent/40 hover:shadow-accent/50 group transition-all rounded-[24px]">
-            Testni boshlash <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
-          </button>
+          <div className="pt-6 flex flex-col sm:flex-row gap-4">
+            <button 
+              type="button" 
+              onClick={() => navigate('/')}
+              className="flex-1 flex items-center justify-center gap-2 px-8 py-5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all"
+            >
+              <ChevronLeft size={20} /> Orqaga
+            </button>
+            <button 
+              type="submit" 
+              className="flex-[2] flex items-center justify-center gap-3 px-8 py-5 bg-primary hover:bg-primary/90 rounded-2xl font-black text-xl shadow-xl shadow-primary/20 transition-all group"
+            >
+              Testni Boshlash <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </form>
+
+        {/* Subtle Bottom Accent */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-30"></div>
       </div>
     </div>
   );

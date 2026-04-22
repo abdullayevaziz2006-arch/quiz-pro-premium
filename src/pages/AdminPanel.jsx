@@ -296,6 +296,7 @@ const AdminPanel = () => {
                 <thead>
                   <tr className="text-[10px] font-bold uppercase tracking-widest text-white/30">
                     <th className="p-10">Talaba F.I.SH</th>
+                    <th className="p-10 text-center">Guruh / Fakultet</th>
                     <th className="p-10 text-center">Natija</th>
                     <th className="p-10 text-center">Baho</th>
                     <th className="p-10 text-right">Sana</th>
@@ -308,6 +309,12 @@ const AdminPanel = () => {
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary">{r.student.name[0]}</div>
                           <span className="font-bold text-lg">{r.student.name} {r.student.surname}</span>
+                        </div>
+                      </td>
+                      <td className="p-10 text-center">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-white/80">{r.student.group}</span>
+                          <span className="text-[10px] text-white/20 uppercase tracking-widest">{r.student.faculty}</span>
                         </div>
                       </td>
                       <td className="p-10 text-center">

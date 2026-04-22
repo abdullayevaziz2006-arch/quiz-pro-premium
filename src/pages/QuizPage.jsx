@@ -92,7 +92,19 @@ const QuizPage = () => {
       if (score >= c.min && grade === 2) grade = c.grade;
     });
 
-    const resultData = { student, score, total: questions.length, grade, analysis, date: new Date().toISOString() };
+    const resultData = { 
+      student: {
+        name: student.name,
+        surname: student.surname,
+        group: student.group || 'Noma\'lum',
+        faculty: student.faculty || 'Noma\'lum'
+      }, 
+      score, 
+      total: questions.length, 
+      grade, 
+      analysis, 
+      date: new Date().toISOString() 
+    };
     await storage.saveResult(teacherId, resultData);
     sessionStorage.setItem('last_result', JSON.stringify(resultData));
     navigate('/results');
