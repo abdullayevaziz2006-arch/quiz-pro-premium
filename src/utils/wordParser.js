@@ -1,93 +1,57 @@
 export const parseWordQuiz = (html) => {
-  // HTML formatida o'qish orqali qalin (bold) va tagiga chizilgan (underline) matnlarni aniqlay olamiz
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const text = doc.body.innerText || doc.body.textContent;
   
-  // Savollarni ajratib olish (savollar odatda yangi qatordan boshlanadi)
-  const segments = html.split(/<p[^>]*>\s*\?\s*/i).filter(s => s.trim().length > 0);
+  // Savollarni ajratib olish (savollar odatda yangi qatordan boshlanadi va ? bilan tugaydi yoki boshlanadi)
+  // Biz har bir <p> ni tekshiramiz
+  const pTags = Array.from(doc.querySelectorAll('p, li'));
   const questions = [];
+  let currentQuestion = null;
 
-  segments.forEach(segment => {
-    // Segment ichidan savol matni va variantlarni ajratamiz
-    // Variantlar odatda yangi <p> yoki <li> ichida bo'ladi
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = segment;
-    
-    const pTags = tempDiv.querySelectorAll('p');
-    if (pTags.length < 2) return;
+  pTags.forEach(p => {
+    const text = p.innerText.trim();
+    if (!text) return;
 
-    let questionText = pTags[0].innerText.trim();
-    const options = [];
-    let correctIdx = -1;
+    // Agar matn ? bilan tugasa yoki segment boshida ? bo'lsa - bu SAVOL
+    if (text.includes('?') || text.length > 50 && !currentQuestion) {
+      if (currentQuestion && currentQuestion.options.length >= 2) {
+        questions.push(currentQuestion);
+      }
+      currentQuestion = {
+        text: text.replace(/^\d+[\s.)]*/, '').trim(), // Raqamlarni tozalash (1. Savol...)
+        options: [],
+        correct: -1
+      };
+    } else if (currentQuestion) {
+      // Bu VARIANT bo'lishi mumkin
+      // TO'G'RI JAVOBNI ANIQLASH (HAR XIL USULLAR):
+      const isBold = p.querySelector('strong, b, span[style*="bold"]') !== null;
+      const isUnderlined = p.querySelector('u, span[style*="underline"]') !== null;
+      const hasCorrectText = /\(to['`]?g['`]?ri\)/i.test(text) || /\(correct\)/i.test(text) || /\(t\)/i.test(text);
+      const hasMarker = text.startsWith('+') || text.startsWith('*');
 
-    for (let i = 1; i < pTags.length; i++) {
-      const p = pTags[i];
-      const optText = p.innerText.trim();
-      
-      if (optText) {
-        // TO'G'RI JAVOBNI ANIQLASH:
-        // 1. Matn boshida + yoki * bo'lsa
-        // 2. Matn qalin (strong/b) bo'lsa
-        // 3. Matn tagiga chizilgan (u) bo'lsa
-        const isBold = p.querySelector('strong, b') !== null;
-        const isUnderlined = p.querySelector('u') !== null;
-        const hasMarker = optText.startsWith('+') || optText.startsWith('*');
+      let cleanOpt = text
+        .replace(/^\([a-z]\)/i, '') // (a) (b) larni tozalash
+        .replace(/^[a-z][\s.)]*/i, '') // a) b. larni tozalash
+        .replace(/\(to['`]?g['`]?ri\)/i, '')
+        .replace(/\(correct\)/i, '')
+        .replace(/\(t\)/i, '')
+        .replace(/^[+*]/, '')
+        .trim();
 
-        let cleanOpt = optText;
-        if (hasMarker) cleanOpt = optText.substring(1).trim();
-
-        if (hasMarker || isBold || isUnderlined) {
-          correctIdx = options.length;
+      if (cleanOpt) {
+        if (isBold || isUnderlined || hasCorrectText || hasMarker) {
+          currentQuestion.correct = currentQuestion.options.length;
         }
-        
-        options.push(cleanOpt);
+        currentQuestion.options.push(cleanOpt);
       }
-    }
-
-    if (questionText && options.length >= 2) {
-      questions.push({
-        text: questionText,
-        options: options,
-        correct: correctIdx !== -1 ? correctIdx : 0 // Agar topilmasa, birinchisini belgilab qo'yamiz (o'qituvchi o'zgartirishi uchun)
-      });
     }
   });
 
-  return questions;
-};
-
-// Eskisini ham qo'llab-quvvatlash uchun (agar faqat matn kelsa)
-export const parseTextQuiz = (text) => {
-  const segments = text.split(/\n\?|\r\n\?|^\?/).filter(s => s.trim().length > 0);
-  const questions = [];
-
-  segments.forEach(segment => {
-    const lines = segment.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 0);
-    if (lines.length < 2) return;
-
-    let questionText = lines[0];
-    const options = [];
-    let correctIdx = -1;
-
-    for(let i=1; i<lines.length; i++) {
-      const line = lines[i];
-      if (line.startsWith('+') || line.startsWith('*')) {
-        correctIdx = options.length;
-        options.push(line.substring(1).trim());
-      } else {
-        options.push(line.replace(/^[=-]/, '').trim());
-      }
-    }
-
-    if (questionText && options.length >= 2) {
-      questions.push({
-        text: questionText,
-        options: options,
-        correct: correctIdx !== -1 ? correctIdx : 0
-      });
-    }
-  });
+  // Oxirgi savolni qo'shish
+  if (currentQuestion && currentQuestion.options.length >= 2) {
+    questions.push(currentQuestion);
+  }
 
   return questions;
 };
