@@ -13,8 +13,12 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          {/* ENDI BOSH SAHIFA - ADMIN PANEL (LOGIN) */}
+          <Route path="/" element={<AdminPanel />} />
           <Route path="/admin" element={<AdminPanel />} />
+          
+          {/* TALABALAR UCHUN TESTGA KIRISH QISMI */}
+          <Route path="/test" element={<LandingPage />} />
           <Route path="/quiz" element={<StudentEntry />} />
           <Route path="/start-quiz" element={<QuizPage />} />
           <Route path="/results" element={<ResultsPage />} />
