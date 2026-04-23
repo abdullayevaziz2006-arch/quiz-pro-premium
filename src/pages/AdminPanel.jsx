@@ -200,41 +200,42 @@ const AdminPanel = () => {
                       {(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') ? (
                         <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-2 animate-pulse"><AlertCircle size={14} /> To'g'ri javobni tanlang!</span>
                       ) : (
-                        <span className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-2"><CheckCircle size={14} /> To'g'ri javob tayyor</span>
+                        <span className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-2"><CheckCircle size={14} /> To'g'ri javob tayyor ({q.correctAnswer})</span>
                       )}
-                      {debugMode && <span className="px-2 py-1 bg-orange-500/20 text-orange-500 rounded text-[9px] font-mono">DB: "{q.correctAnswer}"</span>}
+                      {debugMode && <span className="px-2 py-1 bg-orange-500/20 text-orange-500 rounded text-[9px] font-mono">DEBUG: {JSON.stringify(q)}</span>}
                     </div>
                     <button onClick={() => { if(window.confirm("O'chirilsinmi?")) setQuestions(questions.filter(it => it.uid !== q.uid)) }} className="text-white/10 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                   </div>
                   <textarea value={q.text || ''} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white leading-tight" rows={2} />
                   
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-5">
                     {q.options?.map((opt, oIdx) => {
+                      const cleanCorrect = String(q.correctAnswer).trim().toLowerCase();
+                      const cleanOpt = String(opt || '').trim().toLowerCase();
+                      const letter = String.fromCharCode(65 + oIdx).toLowerCase();
+
                       const isCorrect = 
-                        String(q.correctAnswer) === String(oIdx) || 
-                        String(q.correctAnswer).toUpperCase() === String.fromCharCode(65 + oIdx) ||
-                        String(q.correctAnswer).trim() === String(opt || '').trim();
+                        cleanCorrect === String(oIdx) || 
+                        cleanCorrect === letter ||
+                        cleanCorrect === cleanOpt ||
+                        cleanCorrect.startsWith(letter + ')') ||
+                        cleanCorrect.startsWith(letter + '.');
 
                       return (
-                        <div key={oIdx} className={`p-8 rounded-[32px] border-2 transition-all duration-300 relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/10 border-l-[16px] border-l-green-500 shadow-[0_0_50px_rgba(34,197,94,0.15)] opacity-100 scale-[1.02]' : 'border-white/5 bg-black/20 opacity-30'}`}>
+                        <div key={oIdx} className={`p-8 rounded-[32px] border-4 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/5 border-l-[16px]' : 'border-white/5 bg-black/20'}`}>
                           <button 
                             onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
-                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl shadow-green-500/40' : 'bg-white/5 text-white/30 hover:text-white'}`}
+                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl' : 'bg-white/5 text-white/30 hover:text-white'}`}
                           >
                             {isCorrect ? <Check size={32} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
                           </button>
-                          <div className="flex-1 space-y-3 pt-1">
+                          <div className="flex-1 pt-1">
                              <textarea 
                               value={opt || ''} 
                               onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
-                              className={`w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed transition-colors ${isCorrect ? 'text-white' : 'text-white/40'}`}
+                              className="w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed text-white"
                               rows={Math.max(1, Math.ceil((opt || '').length / 40))}
                             />
-                            {isCorrect && (
-                              <div className="flex items-center gap-2 text-green-400 font-black text-[11px] uppercase tracking-[0.2em] animate-pulse">
-                                <CheckCircle size={14} strokeWidth={3} /> TO'G'RI JAVOB
-                              </div>
-                            )}
                           </div>
                         </div>
                       );
