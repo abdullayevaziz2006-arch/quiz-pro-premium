@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { storage } from '../utils/storage';
 import { auth } from '../utils/firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
 import { 
@@ -9,7 +9,7 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles
+  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -26,6 +26,7 @@ const AdminPanel = () => {
   const [adminUid, setAdminUid] = useState(null);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -35,8 +36,8 @@ const AdminPanel = () => {
       } else {
         setIsAuthenticated(false);
         setAdminUid(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
     return () => unsub();
   }, []);
@@ -90,6 +91,22 @@ const AdminPanel = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    try {
+      if (isRegisterMode) {
+        await createUserWithEmailAndPassword(auth, email, password);
+        showToast("Ro'yxatdan o'tdingiz!");
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (err) {
+      alert("Xatolik: " + err.message);
+    }
+  };
+
   const stats = useMemo(() => ({
     totalStudents: results?.length || 0,
     totalQuestions: questions?.length || 0,
@@ -103,28 +120,34 @@ const AdminPanel = () => {
 
   if (!isAuthenticated && !loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#050505] p-6 text-white font-sans">
-      <div className="w-full max-w-md bg-[#0a0a0a] border border-white/5 p-12 rounded-[48px] shadow-[0_0_80px_rgba(255,87,34,0.1)] space-y-8 text-center">
-        <div className="w-24 h-24 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-3xl flex items-center justify-center mx-auto text-white shadow-2xl shadow-orange-900/40 rotate-3">
-          <Lock size={48} />
+      <div className="w-full max-w-md bg-[#0a0a0a] border border-white/5 p-12 rounded-[48px] shadow-[0_0_80px_rgba(255,87,34,0.1)] space-y-8 text-center relative overflow-hidden">
+        {/* Background Glow */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/10 rounded-full blur-[80px]"></div>
+        
+        <div className="w-24 h-24 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-3xl flex items-center justify-center mx-auto text-white shadow-2xl shadow-orange-900/40 rotate-3 transition-transform hover:rotate-0 duration-500">
+          {isRegisterMode ? <UserPlus size={48} /> : <Lock size={48} />}
         </div>
+        
         <div className="space-y-2">
-          <h2 className="text-4xl font-black tracking-tight">Xush Kelibsiz</h2>
-          <p className="text-white/40 text-sm font-medium">Boshqaruv paneliga kiring</p>
+          <h2 className="text-4xl font-black tracking-tight">{isRegisterMode ? "Ro'yxatdan o'tish" : "Xush Kelibsiz"}</h2>
+          <p className="text-white/40 text-sm font-medium">{isRegisterMode ? "Yangi admin hisobini yarating" : "Boshqaruv paneliga kiring"}</p>
         </div>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          try {
-            await signInWithEmailAndPassword(auth, e.target.email.value, e.target.password.value);
-          } catch (err) {
-            alert("Login yoki parol xato");
-          }
-        }} className="space-y-5">
+
+        <form onSubmit={handleAuth} className="space-y-5 relative z-10">
           <div className="space-y-4">
             <input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-white outline-none focus:border-orange-500 focus:bg-white/[0.05] transition-all" type="email" name="email" placeholder="Email manzilingiz" required />
             <input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-white outline-none focus:border-orange-500 focus:bg-white/[0.05] transition-all" type="password" name="password" placeholder="Maxfiy parol" required />
           </div>
-          <button type="submit" className="w-full bg-gradient-to-r from-orange-600 to-orange-500 py-5 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-orange-900/30">TIZIMGA KIRISH</button>
+          <button type="submit" className="w-full bg-gradient-to-r from-orange-600 to-orange-500 py-5 rounded-2xl font-black text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-orange-900/30">
+            {isRegisterMode ? "RO'YXATDAN O'TISH" : "TIZIMGA KIRISH"}
+          </button>
         </form>
+
+        <div className="pt-4">
+           <button onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-white/20 hover:text-orange-500 text-xs font-bold uppercase tracking-widest transition-colors">
+             {isRegisterMode ? "Akkauntingiz bormi? Kirish" : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"}
+           </button>
+        </div>
       </div>
     </div>
   );

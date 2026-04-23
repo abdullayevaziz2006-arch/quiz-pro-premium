@@ -3,22 +3,15 @@ import { useLocation, Link } from 'react-router-dom';
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const path = location.pathname;
   
-  // Header'ni yashirish kerak bo'lgan sahifalar
-  const isQuizPage = location.pathname.startsWith('/quiz');
-  const isStartQuiz = location.pathname.startsWith('/start-quiz');
-  const isResultsPage = location.pathname === '/results';
-  const isAdminLogin = location.pathname === '/admin' && !localStorage.getItem('is_authenticated'); // Login holatiga qarab
-
-  // Admin sahifasida ekanligini aniqlash (Header'ni yashirish uchun)
-  const isAuthPage = location.pathname === '/admin' || isQuizPage || isStartQuiz || isResultsPage;
-
-  const hideHeader = isAuthPage;
+  // Header va Footer'ni yashirish kerak bo'lgan sahifalar
+  const hideHeader = path.includes('/admin') || path.includes('/quiz') || path.includes('/results') || path.includes('/start-quiz');
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-orange-500/30 selection:text-orange-500">
       {!hideHeader && (
-        <header className="sticky top-0 z-[100] w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl">
+        <header className="fixed top-0 z-[100] w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl">
           <nav className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-4 group">
               <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20 group-hover:scale-110 transition-transform">
@@ -45,20 +38,20 @@ const Layout = ({ children }) => {
         </header>
       )}
 
-      <main className="flex-1 w-full">
-        <div className={hideHeader ? "w-full" : "max-w-7xl mx-auto px-6 py-12"}>
+      <main className="flex-1 w-full min-h-screen">
+        <div className={hideHeader ? "w-full min-h-screen" : "max-w-7xl mx-auto px-6 py-12 pt-36"}>
           {children}
         </div>
       </main>
 
       {!hideHeader && (
-        <footer className="py-12 border-t border-white/5 bg-black/20">
+        <footer className="py-20 border-t border-white/5 bg-black/40">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
                 © {new Date().getFullYear()} Ranch Quiz Pro. All rights reserved.
               </p>
-              <p className="text-white/20 text-[9px] uppercase tracking-widest">Precision and Innovation</p>
+              <p className="text-white/20 text-[9px] uppercase tracking-widest font-black">PREMIUM EDITION</p>
             </div>
           </div>
         </footer>
