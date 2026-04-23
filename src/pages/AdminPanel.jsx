@@ -184,57 +184,62 @@ const AdminPanel = () => {
             <div className="bg-card border border-white/5 p-8 rounded-[32px] flex justify-between items-center gap-6">
               <input className="bg-black/40 border border-white/5 rounded-2xl px-6 py-4 flex-1 text-white focus:border-primary/50" placeholder="Qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
               <div className="flex gap-4">
-                <label className="px-8 py-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-all font-bold text-sm">
-                   WORD <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
-                     const file = e.target.files[0]; if(!file) return;
-                     const arrayBuffer = await file.arrayBuffer();
-                     const res = await mammoth.extractRawText({ arrayBuffer });
-                     const imported = parseWordQuiz(res.value).map(q => ({ 
-                       uid: Math.random().toString(36).substr(2, 9),
-                       text: q.text,
-                       options: q.options,
-                       correctAnswer: String(q.correct)
-                     }));
-                     setQuestions([...questions, ...imported]);
-                     showToast(`${imported.length} ta savol qo'shildi`);
-                   }} />
+                <label className="px-8 py-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-all font-bold text-sm flex items-center gap-2">
+                    <FileUp size={20} /> Word Yuklash
+                    <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
+                      const file = e.target.files[0]; if(!file) return;
+                      const arrayBuffer = await file.arrayBuffer();
+                      const res = await mammoth.convertToHtml({ arrayBuffer });
+                      const imported = parseWordQuiz(res.value).map(q => ({ 
+                        uid: Math.random().toString(36).substr(2, 9),
+                        text: q.text,
+                        options: q.options,
+                        correctAnswer: String(q.correct)
+                      }));
+                      setQuestions([...questions, ...imported]);
+                      showToast(`${imported.length} ta savol qo'shildi`);
+                    }} />
                 </label>
                 <button onClick={() => setQuestions([{ uid: Date.now().toString(), text: 'Yangi savol', options: ['A', 'B', 'C', 'D'], correctAnswer: '0' }, ...questions])} className="px-8 py-4 bg-primary rounded-2xl font-black text-sm shadow-xl shadow-primary/20">+ QO'SHISH</button>
               </div>
             </div>
             <div className="grid gap-6">
               {filteredQuestions.map((q, idx) => (
-                <div key={q.uid} className={`bg-card border p-10 rounded-[40px] space-y-8 transition-all ${!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1' ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-white/5'}`}>
+                <div key={q.uid} className={`bg-card border p-10 rounded-[40px] space-y-8 transition-all ${!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1' ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-white/5 shadow-2xl'}`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                      <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold">SAVOL #{questions.length - idx}</span>
-                      {(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') && (
-                        <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1"><AlertCircle size={12} /> To'g'ri javobni tanlang!</span>
+                      <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest">SAVOL #{questions.length - idx}</span>
+                      {(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') ? (
+                        <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-2 animate-pulse"><AlertCircle size={14} /> To'g'ri javobni tanlang!</span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-green-500 uppercase flex items-center gap-2"><CheckCircle size={14} /> To'g'ri javob tayyor</span>
                       )}
                     </div>
-                    <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="text-white/10 hover:text-red-500"><Trash2 size={24} /></button>
+                    <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="text-white/10 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                   </div>
-                  <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white" rows={2} />
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white leading-tight" rows={2} />
+                  <div className="grid md:grid-cols-2 gap-5">
                     {q.options?.map((opt, oIdx) => (
-                      <div key={oIdx} className={`p-6 rounded-[24px] border-2 transition-all relative flex items-start gap-5 ${String(q.correctAnswer) === String(oIdx) ? 'border-green-500/50 bg-green-500/10 border-l-8 border-l-green-500' : 'border-white/5 bg-black/20 opacity-60'}`}>
+                      <div key={oIdx} className={`p-6 rounded-[32px] border-2 transition-all relative flex items-start gap-6 ${String(q.correctAnswer) === String(oIdx) ? 'border-green-500 bg-green-500/15 border-l-[12px] border-l-green-500 shadow-2xl shadow-green-500/10' : 'border-white/5 bg-black/20 opacity-40'}`}>
                         <button 
                           onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
-                          className={`w-12 h-12 min-w-[48px] rounded-2xl flex items-center justify-center font-black text-lg shrink-0 transition-all ${String(q.correctAnswer) === String(oIdx) ? 'bg-green-500 text-white shadow-xl shadow-green-500/40' : 'bg-white/5 text-white/40 hover:text-white'}`}
+                          className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${String(q.correctAnswer) === String(oIdx) ? 'bg-green-500 text-white shadow-xl shadow-green-500/40 scale-110' : 'bg-white/5 text-white/30 hover:text-white'}`}
                         >
                           {String.fromCharCode(65 + oIdx)}
                         </button>
-                        <textarea 
-                          value={opt} 
-                          onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
-                          className={`bg-transparent border-none flex-1 font-bold text-lg focus:outline-none resize-none leading-relaxed transition-colors ${String(q.correctAnswer) === String(oIdx) ? 'text-white' : 'text-white/20'}`}
-                          rows={Math.max(1, Math.ceil(opt.length / 40))}
-                        />
-                        {String(q.correctAnswer) === String(oIdx) && (
-                          <div className="absolute top-1/2 -translate-y-1/2 right-8 text-green-500">
-                             <CheckCircle size={32} strokeWidth={3} />
-                          </div>
-                        )}
+                        <div className="flex-1 space-y-2 pt-1">
+                           <textarea 
+                            value={opt} 
+                            onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
+                            className={`w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed transition-colors ${String(q.correctAnswer) === String(oIdx) ? 'text-white' : 'text-white/40'}`}
+                            rows={Math.max(1, Math.ceil(opt.length / 40))}
+                          />
+                          {String(q.correctAnswer) === String(oIdx) && (
+                            <div className="flex items-center gap-2 text-green-500 font-black text-[10px] uppercase tracking-[0.2em] animate-in fade-in slide-in-from-left duration-500">
+                              <Check size={14} strokeWidth={4} /> To'g'ri javob
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
