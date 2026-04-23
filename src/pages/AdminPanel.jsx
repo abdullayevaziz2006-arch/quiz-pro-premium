@@ -4,8 +4,8 @@ import { auth } from '../utils/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
-import { 
-  Plus, Trash2, Check, Copy, Share2, LogOut, 
+import {
+  Plus, Trash2, Check, Copy, Share2, LogOut,
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
@@ -62,7 +62,7 @@ const AdminPanel = () => {
         storage.getSettings(adminUid),
         storage.getSubjects(adminUid)
       ]);
-      
+
       const rawQs = Array.isArray(qs) ? qs : [];
       const cleanedQs = rawQs.map(q => {
         let c = q.correctAnswer;
@@ -70,8 +70,8 @@ const AdminPanel = () => {
           if (String(opt).startsWith('+')) c = String(idx);
           return cleanText(opt);
         });
-        return { 
-          ...q, 
+        return {
+          ...q,
           text: cleanText(q.text),
           options: cleanOptions,
           correctAnswer: String(c !== undefined ? c : '0'),
@@ -125,7 +125,7 @@ const AdminPanel = () => {
     if (activeTab === 'subjects' && selectedSubject) {
       return questions.filter(q => q.subjectId === selectedSubject.id);
     }
-    return questions.filter(q => 
+    return questions.filter(q =>
       (q.text || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [questions, selectedSubject, activeTab, searchQuery]);
@@ -168,10 +168,10 @@ const AdminPanel = () => {
   ];
 
   const handleAddQuestion = (subjectId = null) => {
-    const newQ = { 
-      uid: Date.now().toString(), 
-      text: 'Yangi savol', 
-      options: ['A', 'B', 'C', 'D'], 
+    const newQ = {
+      uid: Date.now().toString(),
+      text: 'Yangi savol',
+      options: ['A', 'B', 'C', 'D'],
       correctAnswer: '0',
       subjectId: subjectId
     };
@@ -202,11 +202,10 @@ const AdminPanel = () => {
             <button
               key={item.id}
               onClick={() => { setActiveTab(item.id); setSelectedSubject(null); }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${
-                activeTab === item.id 
-                ? 'bg-white/[0.03] text-orange-500' 
-                : 'text-white/30 hover:text-white/60 hover:bg-white/[0.01]'
-              }`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${activeTab === item.id
+                  ? 'bg-white/[0.03] text-orange-500'
+                  : 'text-white/30 hover:text-white/60 hover:bg-white/[0.01]'
+                }`}
             >
               {activeTab === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-orange-500 rounded-r-full"></div>}
               <item.icon size={20} className={activeTab === item.id ? 'text-orange-500' : 'text-white/10 group-hover:text-white/30'} />
@@ -226,7 +225,7 @@ const AdminPanel = () => {
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-500/[0.02] via-transparent to-transparent">
         <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-          
+
           <header className="flex justify-between items-end">
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/50">Tizim holati: Online</p>
@@ -240,10 +239,10 @@ const AdminPanel = () => {
               </h2>
             </div>
             <div className="flex gap-3">
-               <button onClick={loadData} className="w-12 h-12 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/[0.08] transition-all text-white/30 hover:text-white"><RefreshCw size={20} /></button>
-               {(activeTab === 'questions' || selectedSubject) && (
-                 <button onClick={() => handleAddQuestion(selectedSubject?.id)} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all text-white">+ QO'SHISH</button>
-               )}
+              <button onClick={loadData} className="w-12 h-12 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/[0.08] transition-all text-white/30 hover:text-white"><RefreshCw size={20} /></button>
+              {(activeTab === 'questions' || selectedSubject) && (
+                <button onClick={() => handleAddQuestion(selectedSubject?.id)} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all text-white">+ QO'SHISH</button>
+              )}
             </div>
           </header>
 
@@ -274,14 +273,14 @@ const AdminPanel = () => {
                       <input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Masalan: Matematika" />
                     </div>
                     <button onClick={async () => {
-                        if (!newSubject.trim()) return;
-                        const sub = { id: Date.now().toString(), name: newSubject.trim() };
-                        const updated = [sub, ...subjects];
-                        await storage.saveSubjects(adminUid, updated);
-                        setSubjects(updated);
-                        setNewSubject('');
-                        showToast("Fan qo'shildi!");
-                      }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
+                      if (!newSubject.trim()) return;
+                      const sub = { id: Date.now().toString(), name: newSubject.trim() };
+                      const updated = [sub, ...subjects];
+                      await storage.saveSubjects(adminUid, updated);
+                      setSubjects(updated);
+                      setNewSubject('');
+                      showToast("Fan qo'shildi!");
+                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
                     >FANNI QO'SHISH</button>
                   </div>
                 </div>
@@ -301,16 +300,16 @@ const AdminPanel = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                           <ChevronRight className="text-white/10 group-hover:text-orange-500 transition-all" size={24} />
-                           <button onClick={async (e) => {
-                             e.stopPropagation();
-                             if(window.confirm("Fanni o'chirmoqchimisiz?")) {
-                               const updated = subjects.filter(it => it.id !== s.id);
-                               await storage.saveSubjects(adminUid, updated);
-                               setSubjects(updated);
-                               showToast("Fan o'chirildi");
-                             }
-                           }} className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={18} /></button>
+                          <ChevronRight className="text-white/10 group-hover:text-orange-500 transition-all" size={24} />
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            if (window.confirm("Fanni o'chirmoqchimisiz?")) {
+                              const updated = subjects.filter(it => it.id !== s.id);
+                              await storage.saveSubjects(adminUid, updated);
+                              setSubjects(updated);
+                              showToast("Fan o'chirildi");
+                            }
+                          }} className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={18} /></button>
                         </div>
                       </div>
                     );
@@ -329,10 +328,12 @@ const AdminPanel = () => {
                   <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-16 py-4 text-white text-lg font-bold outline-none focus:border-orange-500/50 transition-all" placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={async () => { if(window.confirm("Ushbu bo'limdagi barcha savollar o'chirilsinmi?")) { 
+                  <button onClick={async () => {
+                    if (window.confirm("Ushbu bo'limdagi barcha savollar o'chirilsinmi?")) {
                       const updated = questions.filter(q => selectedSubject ? q.subjectId !== selectedSubject.id : false);
-                      setQuestions(updated); await storage.saveQuestions(adminUid, updated); showToast("Tozalandi"); 
-                  }}} className="px-6 py-4 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase">Bo'limni Tozalash</button>
+                      setQuestions(updated); await storage.saveQuestions(adminUid, updated); showToast("Tozalandi");
+                    }
+                  }} className="px-6 py-4 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase">Bo'limni Tozalash</button>
                   <label className="px-6 py-4 bg-white/[0.03] hover:bg-white/[0.08] rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all border border-white/5 uppercase">
                     <FileUp size={18} className="text-orange-500" /> Word Yuklash
                     <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
@@ -365,17 +366,17 @@ const AdminPanel = () => {
                         <span className="px-4 py-1.5 bg-white/5 text-white/30 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5">SAVOL #{currentQuestions.length - qIdx}</span>
                         {!selectedSubject && q.subjectId && (
                           <span className="px-4 py-1.5 bg-orange-500/10 text-orange-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-orange-500/10">
-                            {subjects.find(s => s.id === q.subjectId)?.name || 'Noma'lum Fan'}
+                            {subjects.find(s => s.id === q.subjectId)?.name || "Noma'lum Fan"}
                           </span>
                         )}
                       </div>
                       <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="w-10 h-10 rounded-xl flex items-center justify-center text-white/5 hover:bg-red-500/10 hover:text-red-500 transition-all"><Trash2 size={20} /></button>
                     </div>
-                    <textarea 
-                      value={q.text} 
-                      onChange={e => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].text = e.target.value; setQuestions(u); }} 
-                      className="w-full bg-transparent border-none text-2xl font-black focus:outline-none text-white resize-none" 
-                      rows={2} 
+                    <textarea
+                      value={q.text}
+                      onChange={e => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].text = e.target.value; setQuestions(u); }}
+                      className="w-full bg-transparent border-none text-2xl font-black focus:outline-none text-white resize-none"
+                      rows={2}
                     />
                     <div className="grid md:grid-cols-2 gap-4">
                       {q.options?.map((opt, oIdx) => {
@@ -399,9 +400,9 @@ const AdminPanel = () => {
               </div>
 
               <div className="fixed bottom-10 right-10 z-[100]">
-                 <button onClick={() => storage.saveQuestions(adminUid, questions).then(() => showToast("Barcha o'zgarishlar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
-                   <Save size={24} /> SAQLASH
-                 </button>
+                <button onClick={() => storage.saveQuestions(adminUid, questions).then(() => showToast("Barcha o'zgarishlar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
+                  <Save size={24} /> SAQLASH
+                </button>
               </div>
             </div>
           )}
@@ -413,11 +414,11 @@ const AdminPanel = () => {
                   <h3 className="text-2xl font-black">Yangi Havola</h3>
                   <div className="space-y-6">
                     <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Guruh nomi</label><input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionName} onChange={e => setSessionName(e.target.value)} placeholder="Masalan: 401-Guruh" /></div>
-                    
+
                     {/* Fan tanlash (YANGI) */}
                     <div className="space-y-2">
                       <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fanni tanlang</label>
-                      <select 
+                      <select
                         className="w-full bg-[#111] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-black outline-none focus:border-orange-500 transition-all"
                         onChange={(e) => {
                           const subId = e.target.value;
@@ -440,9 +441,9 @@ const AdminPanel = () => {
                       const requestedCount = parseInt(sessionQCount);
                       const finalCount = (isNaN(requestedCount) || requestedCount <= 0) ? 20 : requestedCount;
                       const qIds = [...pool].sort(() => 0.5 - Math.random()).slice(0, Math.min(finalCount, pool.length)).map(q => q.uid);
-                      if(qIds.length === 0) return alert("Savollar mavjud emas!");
+                      if (qIds.length === 0) return alert("Savollar mavjud emas!");
                       await storage.saveQuestions(adminUid, questions);
-                      storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => { if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Yaratildi"); } });
+                      storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => { if (s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Yaratildi"); } });
                     }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">YARATISH</button>
                   </div>
                 </div>
@@ -457,7 +458,7 @@ const AdminPanel = () => {
                         <div><h4 className="font-black text-xl">{s.name}</h4><p className="text-orange-500 text-[10px] font-black mt-1 uppercase tracking-widest">{qCount} SAVOL</p></div>
                         <div className="flex gap-3">
                           <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`); showToast("Nusxalandi"); }} className="w-12 h-12 bg-white/[0.03] rounded-xl hover:bg-orange-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Copy size={20} /></button>
-                          <button onClick={() => { if(window.confirm("O'chirilsinmi?")) { storage.deleteSession(adminUid, s.id).then(() => setSessions(sessions.filter(it => it.id !== s.id))); } }} className="w-12 h-12 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={20} /></button>
+                          <button onClick={() => { if (window.confirm("O'chirilsinmi?")) { storage.deleteSession(adminUid, s.id).then(() => setSessions(sessions.filter(it => it.id !== s.id))); } }} className="w-12 h-12 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={20} /></button>
                         </div>
                       </div>
                     );
@@ -468,32 +469,32 @@ const AdminPanel = () => {
           )}
 
           {activeTab === 'results' && (
-             <div className="bg-[#0a0a0a] border border-white/5 rounded-[40px] overflow-hidden shadow-2xl pb-20">
-               <div className="p-10 flex justify-between items-center border-b border-white/5">
-                  <h3 className="text-2xl font-black">Natijalar</h3>
-                  <button onClick={() => window.print()} className="px-8 py-4 bg-green-600 rounded-xl font-black text-xs text-white transition-all shadow-lg shadow-green-900/10">PRINT (PDF)</button>
-               </div>
-               <div className="overflow-x-auto">
-                 <table className="w-full text-left">
-                    <thead className="bg-white/[0.01] text-white/20 text-[10px] uppercase font-black tracking-widest border-b border-white/5">
-                      <tr><th className="p-10">Talaba</th><th className="p-10 text-center">Ball</th><th className="p-10 text-center">Baho</th><th className="p-10 text-right">Sana</th></tr>
-                    </thead>
-                    <tbody>
-                      {results.map(r => (
-                        <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-all group text-sm">
-                            <td className="p-10 font-bold">
-                              {r.student?.name} {r.student?.surname}
-                              <div className="text-[10px] text-white/20 font-medium mt-1">{r.student?.group} • {r.student?.faculty}</div>
-                            </td>
-                            <td className="p-10 text-center"><span className="font-black text-xl text-orange-500">{r.score}/{r.total}</span></td>
-                            <td className="p-10 text-center font-black text-4xl text-orange-500">{r.grade}</td>
-                            <td className="p-10 text-right text-white/10 text-xs">{new Date(r.date).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                 </table>
-               </div>
-             </div>
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-[40px] overflow-hidden shadow-2xl pb-20">
+              <div className="p-10 flex justify-between items-center border-b border-white/5">
+                <h3 className="text-2xl font-black">Natijalar</h3>
+                <button onClick={() => window.print()} className="px-8 py-4 bg-green-600 rounded-xl font-black text-xs text-white transition-all shadow-lg shadow-green-900/10">PRINT (PDF)</button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-white/[0.01] text-white/20 text-[10px] uppercase font-black tracking-widest border-b border-white/5">
+                    <tr><th className="p-10">Talaba</th><th className="p-10 text-center">Ball</th><th className="p-10 text-center">Baho</th><th className="p-10 text-right">Sana</th></tr>
+                  </thead>
+                  <tbody>
+                    {results.map(r => (
+                      <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-all group text-sm">
+                        <td className="p-10 font-bold">
+                          {r.student?.name} {r.student?.surname}
+                          <div className="text-[10px] text-white/20 font-medium mt-1">{r.student?.group} • {r.student?.faculty}</div>
+                        </td>
+                        <td className="p-10 text-center"><span className="font-black text-xl text-orange-500">{r.score}/{r.total}</span></td>
+                        <td className="p-10 text-center font-black text-4xl text-orange-500">{r.grade}</td>
+                        <td className="p-10 text-right text-white/10 text-xs">{new Date(r.date).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
 
           {activeTab === 'settings' && (
@@ -510,12 +511,12 @@ const AdminPanel = () => {
                 </div>
                 <button onClick={() => storage.saveCriteria(adminUid, criteria).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10">SAQLASH</button>
               </div>
-              
+
               <div className="bg-[#0a0a0a] border border-white/5 p-12 rounded-[40px] space-y-10 shadow-2xl">
                 <div className="space-y-1"><h3 className="text-2xl font-black">Umumiy</h3><p className="text-white/30 text-sm">Vaqt va hajm</p></div>
                 <div className="space-y-8">
-                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Savollar Soni</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.questionsPerTest} onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value)})} /></div>
-                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Vaqt (Sekund / Savol)</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.timePerQuestion} onChange={e => setSettings({...settings, timePerQuestion: parseInt(e.target.value)})} /></div>
+                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Savollar Soni</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.questionsPerTest} onChange={e => setSettings({ ...settings, questionsPerTest: parseInt(e.target.value) })} /></div>
+                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Vaqt (Sekund / Savol)</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.timePerQuestion} onChange={e => setSettings({ ...settings, timePerQuestion: parseInt(e.target.value) })} /></div>
                 </div>
                 <button onClick={() => storage.saveSettings(adminUid, settings).then(() => showToast("Saqlandi"))} className="w-full bg-blue-600 py-6 rounded-2xl font-black text-xl shadow-lg shadow-blue-900/10">SAQLASH</button>
               </div>
