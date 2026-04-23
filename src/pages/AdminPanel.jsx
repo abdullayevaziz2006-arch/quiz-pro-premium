@@ -185,16 +185,27 @@ const AdminPanel = () => {
                   <FileUp size={20} /> Word Yuklash
                   <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
                     const file = e.target.files[0]; if (!file) return;
-                    const arrayBuffer = await file.arrayBuffer();
-                    const res = await mammoth.convertToHtml({ arrayBuffer });
-                    const imported = parseWordQuiz(res.value).map(q => ({
-                      uid: Math.random().toString(36).substr(2, 9),
-                      text: q.text,
-                      options: q.options,
-                      correctAnswer: String(q.correct)
-                    }));
-                    setQuestions([...questions, ...imported]);
-                    showToast(`${imported.length} ta savol qo'shildi`);
+                    try {
+                      const arrayBuffer = await file.arrayBuffer();
+                      const res = await mammoth.convertToHtml({ arrayBuffer });
+                      const parsed = parseWordQuiz(res.value);
+                      
+                      if (parsed.length === 0) {
+                        return alert("Hech qanday savol topilmadi. Word fayl formatini tekshiring.");
+                      }
+
+                      const imported = parsed.map(q => ({
+                        uid: Math.random().toString(36).substr(2, 9),
+                        text: q.text,
+                        options: q.options,
+                        correctAnswer: String(q.correct)
+                      }));
+                      setQuestions([...questions, ...imported]);
+                      showToast(`${imported.length} ta savol qo'shildi`);
+                    } catch (err) {
+                      console.error("Upload error:", err);
+                      alert("Faylni o'qishda xatolik yuz berdi.");
+                    }
                   }} />
                 </label>
                 <button onClick={() => setQuestions([{ uid: Date.now().toString(), text: 'Yangi savol', options: ['+', '=', '=', '='], correctAnswer: '0' }, ...questions])} className="px-10 py-5 bg-orange-500 hover:bg-orange-600 rounded-[20px] font-black text-sm transition-all shadow-xl shadow-orange-900/20">+ QO'SHISH</button>
