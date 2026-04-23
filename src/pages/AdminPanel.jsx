@@ -294,12 +294,19 @@ const AdminPanel = () => {
                     <label className="text-[10px] font-bold uppercase text-white/40 ml-4">Savollar soni</label>
                     <input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 text-white text-xl font-black outline-none" value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} />
                   </div>
-                  <button onClick={() => {
-                    const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, sessionQCount).map(q => q.uid);
-                    storage.saveSession(adminUid, { name: sessionName, questionIds: qIds }).then(s => {
-                      if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Yaratildi!"); }
+                  <button onClick={async () => {
+                    const count = parseInt(sessionQCount) || 20;
+                    const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, count).map(q => q.uid);
+                    if(qIds.length === 0) return alert("Savollar mavjud emas!");
+                    
+                    // AVTOMATIK SAQLASH
+                    await storage.saveQuestions(adminUid, questions);
+                    showToast("Barcha savollar saqlandi va havola yaratilmoqda...");
+
+                    storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
+                      if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Havola yaratildi!"); }
                     });
-                  }} className="w-full bg-orange-500 py-6 rounded-[32px] font-black text-2xl">YARATISH</button>
+                  }} className="w-full bg-orange-500 py-6 rounded-[32px] font-black text-2xl shadow-2xl hover:bg-orange-600 transition-all">HAVOLA YARATISH</button>
                 </div>
               </div>
             </div>

@@ -15,6 +15,7 @@ const QuizPage = () => {
   const [settings, setSettings] = useState({ timePerQuestion: 120 });
   const [student, setStudent] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const timerRef = useRef(null);
   const isSubmittingData = useRef(false);
 
@@ -29,6 +30,7 @@ const QuizPage = () => {
       if (!teacherId) return navigate('/');
 
       try {
+        setLoading(true);
         const [allQuestions, st, sessions] = await Promise.all([
           storage.getQuestions(teacherId),
           storage.getSettings(teacherId),
@@ -50,11 +52,11 @@ const QuizPage = () => {
           selected = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, currentSettings.questionsPerTest || 20);
         }
 
-        if (selected.length === 0) return navigate('/');
         setQuestions(selected);
       } catch (err) {
         console.error("Quiz load error:", err);
-        navigate('/');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -96,18 +98,14 @@ const QuizPage = () => {
       const opts = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
       const selectedIdx = answers[idx];
       
-      // Find correct index: either '+' symbol or saved index
-      const correctIdxBySymbol = opts.findIndex(o => String(o).startsWith('+'));
-      const isCorrect = 
-        (correctIdxBySymbol !== -1 && selectedIdx === correctIdxBySymbol) ||
-        String(selectedIdx) === String(q.correctAnswer);
+      const isCorrect = String(selectedIdx) === String(q.correctAnswer);
 
       if (isCorrect) score++;
       return { 
         question: q.text, 
         isCorrect, 
         options: opts, 
-        correct: correctIdxBySymbol !== -1 ? correctIdxBySymbol : q.correctAnswer, 
+        correct: q.correctAnswer, 
         selected: selectedIdx 
       };
     });
@@ -137,7 +135,24 @@ const QuizPage = () => {
     navigate('/results');
   };
 
-  if (!questions.length) return <div className="min-h-screen flex items-center justify-center bg-surface text-white/40">Yuklanmoqda...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-surface text-white/40 font-black text-2xl animate-pulse">Yuklanmoqda...</div>;
+  
+  if (questions.length === 0) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-surface text-white p-12 text-center space-y-8">
+      <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+        <AlertCircle size={56} />
+      </div>
+      <div className="space-y-4">
+        <h2 className="text-4xl font-black">Savollar Topilmadi!</h2>
+        <p className="text-white/40 max-w-md text-lg leading-relaxed">
+          Ushbu testda hech qanday savol mavjud emas yoki ular hali admin tomonidan saqlanmagan.
+        </p>
+      </div>
+      <button onClick={() => navigate('/')} className="px-12 py-5 bg-primary rounded-2xl font-black text-xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+        BOSH SAHIFAGA QAYTISH
+      </button>
+    </div>
+  );
 
   const currentQuestion = questions[currentIdx];
   const options = typeof currentQuestion.options === 'string' ? JSON.parse(currentQuestion.options) : currentQuestion.options;
@@ -176,7 +191,7 @@ const QuizPage = () => {
 
         <div className="bg-card border border-white/5 p-12 md:p-20 rounded-[48px] space-y-16 shadow-2xl relative overflow-hidden">
           <div className="space-y-8 relative z-10 text-center">
-             <h2 className="text-4xl md:text-5xl font-black leading-tight">{String(currentQuestion.text).replace(/^\?\s*/, '')}</h2>
+             <h2 className="text-4xl md:text-5xl font-black leading-tight">{String(currentQuestion.text)}</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-5 relative z-10">
@@ -184,7 +199,7 @@ const QuizPage = () => {
               <button key={idx} onClick={() => setAnswers({ ...answers, [currentIdx]: idx })} className={`flex items-center gap-6 p-8 rounded-[32px] border-2 transition-all text-left ${answers[currentIdx] === idx ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-white/5 bg-black/20 hover:border-white/10'}`}>
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl ${answers[currentIdx] === idx ? 'bg-primary text-white' : 'bg-white/5 text-white/40'}`}>{String.fromCharCode(65 + idx)}</div>
                 <span className={`text-2xl font-bold ${answers[currentIdx] === idx ? 'text-white' : 'text-white/40'}`}>
-                  {String(opt).replace(/^[+=\s]+/, '')}
+                  {String(opt)}
                 </span>
               </button>
             ))}
