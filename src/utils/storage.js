@@ -165,11 +165,12 @@ export const storage = {
     }
   },
 
-  // Fanlar (Yangi)
+  // Fanlar (Yangi - 404 xatosini oldini olish uchun Settings orqali saqlaymiz)
   async getSubjects(uid) {
     try {
-      const res = await fetch(`${API_URL}/${uid}/subjects`);
-      return await handleResponse(res) || [];
+      const res = await fetch(`${API_URL}/${uid}/settings`);
+      const data = await handleResponse(res);
+      return data?.subjects || [];
     } catch (err) {
       console.error("Error fetching subjects:", err);
       return [];
@@ -177,14 +178,21 @@ export const storage = {
   },
   async saveSubjects(uid, subjects) {
     try {
-      const res = await fetch(`${API_URL}/${uid}/subjects/bulk`, {
+      // Mavjud sozlamalarni olamiz
+      const resGet = await fetch(`${API_URL}/${uid}/settings`);
+      const currentSettings = await handleResponse(resGet) || {};
+      
+      // Fanlarni sozlamalar ichiga joylaymiz
+      const updatedSettings = { ...currentSettings, subjects };
+      
+      const res = await fetch(`${API_URL}/${uid}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: subjects })
+        body: JSON.stringify(updatedSettings)
       });
       return await handleResponse(res);
     } catch (err) {
-      console.error("Error saving subjects:", err);
+      console.error("Error saving subjects via settings:", err);
       throw err;
     }
   }
