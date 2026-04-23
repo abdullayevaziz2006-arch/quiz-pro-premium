@@ -9,7 +9,7 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library
+  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library, ArrowLeft
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -18,8 +18,9 @@ const AdminPanel = () => {
   const [criteria, setCriteria] = useState([]);
   const [results, setResults] = useState([]);
   const [sessions, setSessions] = useState([]);
-  const [subjects, setSubjects] = useState([]); // YANGI: Fanlar state'i
-  const [newSubject, setNewSubject] = useState(''); // YANGI: Yangi fan nomi
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState(null); // YANGI: Tanlangan fan
+  const [newSubject, setNewSubject] = useState('');
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
   const [sessionName, setSessionName] = useState('');
   const [sessionQCount, setSessionQCount] = useState(20);
@@ -59,7 +60,7 @@ const AdminPanel = () => {
         storage.getResults(adminUid),
         storage.getSessions(adminUid),
         storage.getSettings(adminUid),
-        storage.getSubjects?.(adminUid) || [] // Fanlarni yuklash
+        storage.getSubjects(adminUid)
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
@@ -73,7 +74,8 @@ const AdminPanel = () => {
           ...q, 
           text: cleanText(q.text),
           options: cleanOptions,
-          correctAnswer: String(c !== undefined ? c : '0')
+          correctAnswer: String(c !== undefined ? c : '0'),
+          subjectId: q.subjectId || null // SubjectId ni saqlash
         };
       });
 
@@ -118,9 +120,15 @@ const AdminPanel = () => {
     avgGrade: results?.length > 0 ? (results.reduce((acc, curr) => acc + parseInt(curr.grade || 0), 0) / results.length).toFixed(1) : 0
   }), [results, questions]);
 
-  const filteredQuestions = (questions || []).filter(q => 
-    (q.text || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Savollarni tanlangan fanga qarab filtrlash
+  const currentQuestions = useMemo(() => {
+    if (activeTab === 'subjects' && selectedSubject) {
+      return questions.filter(q => q.subjectId === selectedSubject.id);
+    }
+    return questions.filter(q => 
+      (q.text || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [questions, selectedSubject, activeTab, searchQuery]);
 
   if (!isAuthenticated && !loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#050505] p-6 text-white font-sans selection:bg-orange-500/30">
@@ -128,12 +136,10 @@ const AdminPanel = () => {
         <div className="w-20 h-20 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-2xl flex items-center justify-center mx-auto text-white shadow-xl shadow-orange-900/20">
           {isRegisterMode ? <UserPlus size={36} /> : <Lock size={36} />}
         </div>
-        
         <div className="space-y-1">
           <h2 className="text-2xl font-black">{isRegisterMode ? "Ro'yxatdan o'tish" : "Xush Kelibsiz"}</h2>
           <p className="text-white/40 text-xs font-medium tracking-wide">{isRegisterMode ? "Yangi admin hisobini yarating" : "Boshqaruv paneliga kiring"}</p>
         </div>
-
         <form onSubmit={handleAuth} className="space-y-4 relative z-10">
           <div className="space-y-3">
             <input className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:border-orange-500 transition-all text-sm" type="email" name="email" placeholder="Email" required />
@@ -143,7 +149,6 @@ const AdminPanel = () => {
             {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
           </button>
         </form>
-
         <button onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-white/20 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors">
           {isRegisterMode ? "Akkauntingiz bormi? Kirish" : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"}
         </button>
@@ -155,12 +160,23 @@ const AdminPanel = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'subjects', label: 'Fanlar', icon: Library }, // YANGI MENU
-    { id: 'questions', label: 'Savollar', icon: BookOpen },
+    { id: 'subjects', label: 'Fanlar', icon: Library },
+    { id: 'questions', label: 'Barcha Savollar', icon: BookOpen },
     { id: 'sessions', label: 'Havolalar', icon: Link2 },
     { id: 'results', label: 'Natijalar', icon: Award },
     { id: 'settings', label: 'Sozlamalar', icon: Settings }
   ];
+
+  const handleAddQuestion = (subjectId = null) => {
+    const newQ = { 
+      uid: Date.now().toString(), 
+      text: 'Yangi savol', 
+      options: ['A', 'B', 'C', 'D'], 
+      correctAnswer: '0',
+      subjectId: subjectId
+    };
+    setQuestions([newQ, ...questions]);
+  };
 
   return (
     <div className="flex min-h-screen bg-[#050505] text-white font-sans overflow-hidden selection:bg-orange-500/20">
@@ -185,7 +201,7 @@ const AdminPanel = () => {
           {menuItems.map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => { setActiveTab(item.id); setSelectedSubject(null); }}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${
                 activeTab === item.id 
                 ? 'bg-white/[0.03] text-orange-500' 
@@ -214,12 +230,19 @@ const AdminPanel = () => {
           <header className="flex justify-between items-end">
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/50">Tizim holati: Online</p>
-              <h2 className="text-4xl font-black tracking-tight capitalize">{activeTab}</h2>
+              <h2 className="text-4xl font-black tracking-tight capitalize">
+                {selectedSubject ? (
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setSelectedSubject(null)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all"><ArrowLeft size={20} /></button>
+                    <span>{selectedSubject.name} <span className="text-white/20 text-xl font-medium ml-2">/ Savollar</span></span>
+                  </div>
+                ) : activeTab}
+              </h2>
             </div>
             <div className="flex gap-3">
                <button onClick={loadData} className="w-12 h-12 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/[0.08] transition-all text-white/30 hover:text-white"><RefreshCw size={20} /></button>
-               {activeTab === 'questions' && (
-                 <button onClick={() => setQuestions([{ uid: Date.now().toString(), text: 'Yangi savol', options: ['A', 'B', 'C', 'D'], correctAnswer: '0' }, ...questions])} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all">+ QO'SHISH</button>
+               {(activeTab === 'questions' || selectedSubject) && (
+                 <button onClick={() => handleAddQuestion(selectedSubject?.id)} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all text-white">+ QO'SHISH</button>
                )}
             </div>
           </header>
@@ -240,7 +263,7 @@ const AdminPanel = () => {
             </div>
           )}
 
-          {activeTab === 'subjects' && (
+          {activeTab === 'subjects' && !selectedSubject && (
             <div className="grid lg:grid-cols-12 gap-10">
               <div className="lg:col-span-5">
                 <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 shadow-2xl sticky top-10">
@@ -248,69 +271,69 @@ const AdminPanel = () => {
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fan nomi</label>
-                      <input 
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" 
-                        value={newSubject} 
-                        onChange={e => setNewSubject(e.target.value)} 
-                        placeholder="Masalan: Matematika" 
-                      />
+                      <input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Masalan: Matematika" />
                     </div>
-                    <button 
-                      onClick={async () => {
+                    <button onClick={async () => {
                         if (!newSubject.trim()) return;
                         const sub = { id: Date.now().toString(), name: newSubject.trim() };
                         const updated = [sub, ...subjects];
-                        await storage.saveSubjects?.(adminUid, updated);
+                        await storage.saveSubjects(adminUid, updated);
                         setSubjects(updated);
                         setNewSubject('');
                         showToast("Fan qo'shildi!");
-                      }} 
-                      className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
-                    >
-                      FANNI QO'SHISH
-                    </button>
+                      }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
+                    >FANNI QO'SHISH</button>
                   </div>
                 </div>
               </div>
               <div className="lg:col-span-7 space-y-6">
                 <h3 className="text-xl font-black px-4 flex items-center gap-4">Barcha Fanlar <span className="px-3 py-1 bg-white/5 rounded-lg text-[10px] text-white/40">{subjects.length} ta</span></h3>
                 <div className="grid gap-4">
-                  {subjects.map(s => (
-                    <div key={s.id} className="bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-orange-500"><Library size={20} /></div>
-                        <h4 className="font-black text-lg">{s.name}</h4>
+                  {subjects.map(s => {
+                    const qCount = questions.filter(q => q.subjectId === s.id).length;
+                    return (
+                      <div key={s.id} className="bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl cursor-pointer" onClick={() => setSelectedSubject(s)}>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-orange-500"><Library size={20} /></div>
+                          <div>
+                            <h4 className="font-black text-lg group-hover:text-orange-500 transition-colors">{s.name}</h4>
+                            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{qCount} ta savol</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <ChevronRight className="text-white/10 group-hover:text-orange-500 transition-all" size={24} />
+                           <button onClick={async (e) => {
+                             e.stopPropagation();
+                             if(window.confirm("Fanni o'chirmoqchimisiz?")) {
+                               const updated = subjects.filter(it => it.id !== s.id);
+                               await storage.saveSubjects(adminUid, updated);
+                               setSubjects(updated);
+                               showToast("Fan o'chirildi");
+                             }
+                           }} className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={18} /></button>
+                        </div>
                       </div>
-                      <button 
-                        onClick={async () => {
-                          if(window.confirm("Ushbu fanni o'chirmoqchimisiz?")) {
-                            const updated = subjects.filter(it => it.id !== s.id);
-                            await storage.saveSubjects?.(adminUid, updated);
-                            setSubjects(updated);
-                            showToast("Fan o'chirildi");
-                          }
-                        }} 
-                        className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
           )}
 
-          {activeTab === 'questions' && (
-            <div className="space-y-8">
+          {/* Fan ichidagi savollar oynasi */}
+          {(activeTab === 'questions' || selectedSubject) && (
+            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
               <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl flex flex-wrap justify-between items-center gap-6 shadow-xl">
                 <div className="flex-1 min-w-[300px] relative">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-16 py-4 text-white text-lg font-bold outline-none focus:border-orange-500/50 transition-all" placeholder="Qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-16 py-4 text-white text-lg font-bold outline-none focus:border-orange-500/50 transition-all" placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={async () => { if(window.confirm("Barcha savollar o'chirilsinmi?")) { await storage.saveQuestions(adminUid, []); setQuestions([]); showToast("Tozalandi"); } }} className="px-6 py-4 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10">TOZALASH</button>
-                  <label className="px-6 py-4 bg-white/[0.03] hover:bg-white/[0.08] rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all border border-white/5">
+                  <button onClick={async () => { if(window.confirm("Ushbu bo'limdagi barcha savollar o'chirilsinmi?")) { 
+                      const updated = questions.filter(q => selectedSubject ? q.subjectId !== selectedSubject.id : false);
+                      setQuestions(updated); await storage.saveQuestions(adminUid, updated); showToast("Tozalandi"); 
+                  }}} className="px-6 py-4 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase">Bo'limni Tozalash</button>
+                  <label className="px-6 py-4 bg-white/[0.03] hover:bg-white/[0.08] rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all border border-white/5 uppercase">
                     <FileUp size={18} className="text-orange-500" /> Word Yuklash
                     <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
                       const file = e.target.files[0]; if (!file) return;
@@ -323,10 +346,11 @@ const AdminPanel = () => {
                           uid: Math.random().toString(36).substr(2, 9),
                           text: cleanText(q.text),
                           options: (q.options || []).map(o => cleanText(o)),
-                          correctAnswer: String(q.correct)
+                          correctAnswer: String(q.correct),
+                          subjectId: selectedSubject?.id || null
                         }));
                         setQuestions([...questions, ...imported]);
-                        showToast(`${imported.length} ta savol`);
+                        showToast(`${imported.length} ta savol!`);
                       } catch (err) { alert("Xatolik!"); }
                     }} />
                   </label>
@@ -334,10 +358,17 @@ const AdminPanel = () => {
               </div>
 
               <div className="grid gap-6 pb-40">
-                {filteredQuestions.map((q, qIdx) => (
+                {currentQuestions.map((q, qIdx) => (
                   <div key={q.uid} className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 hover:border-white/10 transition-all group shadow-xl">
                     <div className="flex justify-between items-center">
-                      <span className="px-4 py-1.5 bg-white/5 text-white/30 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5">SAVOL #{questions.length - qIdx}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="px-4 py-1.5 bg-white/5 text-white/30 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5">SAVOL #{currentQuestions.length - qIdx}</span>
+                        {!selectedSubject && q.subjectId && (
+                          <span className="px-4 py-1.5 bg-orange-500/10 text-orange-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-orange-500/10">
+                            {subjects.find(s => s.id === q.subjectId)?.name || 'Noma'lum Fan'}
+                          </span>
+                        )}
+                      </div>
                       <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="w-10 h-10 rounded-xl flex items-center justify-center text-white/5 hover:bg-red-500/10 hover:text-red-500 transition-all"><Trash2 size={20} /></button>
                     </div>
                     <textarea 
@@ -359,10 +390,16 @@ const AdminPanel = () => {
                     </div>
                   </div>
                 ))}
+                {currentQuestions.length === 0 && (
+                  <div className="py-40 text-center space-y-6">
+                    <div className="w-24 h-24 bg-white/[0.02] rounded-full flex items-center justify-center mx-auto text-white/10"><BookOpen size={48} /></div>
+                    <p className="text-white/20 font-bold">Hozircha savollar yo'q. Yangi savol qo'shing yoki Word fayl yuklang.</p>
+                  </div>
+                )}
               </div>
 
               <div className="fixed bottom-10 right-10 z-[100]">
-                 <button onClick={() => storage.saveQuestions(adminUid, questions).then(() => showToast("Barcha savollar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
+                 <button onClick={() => storage.saveQuestions(adminUid, questions).then(() => showToast("Barcha o'zgarishlar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
                    <Save size={24} /> SAQLASH
                  </button>
               </div>
@@ -376,12 +413,33 @@ const AdminPanel = () => {
                   <h3 className="text-2xl font-black">Yangi Havola</h3>
                   <div className="space-y-6">
                     <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Guruh nomi</label><input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionName} onChange={e => setSessionName(e.target.value)} placeholder="Masalan: 401-Guruh" /></div>
+                    
+                    {/* Fan tanlash (YANGI) */}
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fanni tanlang</label>
+                      <select 
+                        className="w-full bg-[#111] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-black outline-none focus:border-orange-500 transition-all"
+                        onChange={(e) => {
+                          const subId = e.target.value;
+                          const subQs = subId ? questions.filter(q => q.subjectId === subId) : questions;
+                          setSessionQCount(Math.min(20, subQs.length));
+                        }}
+                        id="session-subject-select"
+                      >
+                        <option value="">Barcha savollardan</option>
+                        {subjects.map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Savollar soni</label><input type="number" className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} /></div>
                     <button onClick={async () => {
-                      const totalQs = questions.length;
+                      const subId = document.getElementById('session-subject-select').value;
+                      const pool = subId ? questions.filter(q => q.subjectId === subId) : questions;
                       const requestedCount = parseInt(sessionQCount);
                       const finalCount = (isNaN(requestedCount) || requestedCount <= 0) ? 20 : requestedCount;
-                      const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, Math.min(finalCount, totalQs)).map(q => q.uid);
+                      const qIds = [...pool].sort(() => 0.5 - Math.random()).slice(0, Math.min(finalCount, pool.length)).map(q => q.uid);
                       if(qIds.length === 0) return alert("Savollar mavjud emas!");
                       await storage.saveQuestions(adminUid, questions);
                       storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => { if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Yaratildi"); } });
