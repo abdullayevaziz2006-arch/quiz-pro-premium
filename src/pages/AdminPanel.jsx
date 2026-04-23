@@ -211,7 +211,7 @@ const AdminPanel = () => {
                         correctAnswer: String(q.correct)
                       }));
                       setQuestions([...questions, ...imported]);
-                      showToast(`${imported.length} ta savol qo'shildi`);
+                      showToast(`${imported.length} ta savol qo'shildi! Ularni saqlash uchun pastdagi 'SAQLASH' tugmasini bosing.`);
                     } catch (err) {
                       console.error("Upload error:", err);
                       alert("Faylni o'qishda xatolik yuz berdi.");
