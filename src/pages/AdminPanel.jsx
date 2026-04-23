@@ -177,7 +177,7 @@ const AdminPanel = () => {
           <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/40"><Zap size={24} className="fill-white" /></div>
           <div>
             <h1 className="text-2xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em] mt-1">Management System</p>
+            <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em] mt-1">Platinum Edition v4.1</p>
           </div>
         </div>
 

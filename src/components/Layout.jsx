@@ -5,8 +5,9 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
   
-  // Header va Footer'ni yashirish kerak bo'lgan sahifalar
-  const hideHeader = path.includes('/admin') || path.includes('/quiz') || path.includes('/results') || path.includes('/start-quiz');
+  // Header va Footer'ni yashirish kerak bo'lgan sahifalar (Aniqroq tekshiruv)
+  const isAuthOrAdmin = path === '/' || path.startsWith('/admin') || path.startsWith('/quiz') || path.startsWith('/results') || path.startsWith('/start-quiz');
+  const hideHeader = isAuthOrAdmin;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-orange-500/30 selection:text-orange-500">
@@ -24,9 +25,6 @@ const Layout = ({ children }) => {
             </Link>
 
             <div className="flex items-center gap-8">
-              <div className="hidden md:flex items-center gap-8">
-                <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Platforma</Link>
-              </div>
               <Link 
                 to="/admin" 
                 className="px-8 py-3 bg-orange-500 hover:bg-orange-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-900/20 transition-all active:scale-95"
@@ -51,7 +49,7 @@ const Layout = ({ children }) => {
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
                 © {new Date().getFullYear()} Ranch Quiz Pro. All rights reserved.
               </p>
-              <p className="text-white/20 text-[9px] uppercase tracking-widest font-black">PREMIUM EDITION</p>
+              <p className="text-white/20 text-[9px] uppercase tracking-widest font-black">PLATINUM EDITION v4.1</p>
             </div>
           </div>
         </footer>
