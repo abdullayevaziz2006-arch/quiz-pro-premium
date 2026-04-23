@@ -50,11 +50,8 @@ app.post('/api/:teacherId/questions/bulk', ensureTeacher, async (req, res) => {
   const { teacherId } = req.params;
 
   try {
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: 'Savollar ro\'yxati bo\'sh. Saqlash rad etildi.' });
-    }
-
-    const data = items.map(q => ({
+    // Bo'sh ro'yxatni ham ruxsat beramiz (o'chirish uchun)
+    const data = (items || []).map(q => ({
       uid: q.uid,
       text: q.text,
       options: JSON.stringify(q.options),
