@@ -206,26 +206,28 @@ const AdminPanel = () => {
                   
                   <div className="grid md:grid-cols-2 gap-5">
                     {q.options?.map((opt, oIdx) => {
-                      const sanitize = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                      const sCorrect = sanitize(q.correctAnswer);
-                      const sOpt = sanitize(opt);
-                      const sLetter = String.fromCharCode(97 + oIdx);
-                      const sIndex = String(oIdx);
-
-                      const isCorrect = sCorrect === sIndex || sCorrect === sLetter || sCorrect === sOpt || (sCorrect.length > 0 && sOpt.startsWith(sCorrect));
+                      const optText = String(opt || '');
+                      const sCorrect = String(q.correctAnswer).trim();
+                      
+                      // SODDA MANTIQ: Agar matn '+' bilan boshlansa Yoki bazada saqlangan bo'lsa
+                      const isCorrect = 
+                        optText.startsWith('+') || 
+                        sCorrect === String(oIdx) ||
+                        sCorrect === String.fromCharCode(97 + oIdx) ||
+                        sCorrect === String.fromCharCode(65 + oIdx);
 
                       return (
                         <div key={oIdx} className={`p-8 rounded-[32px] border-4 transition-all flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/5 border-l-[16px]' : 'border-white/5 bg-black/20'}`}>
                           <button 
                             onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
-                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl ${isCorrect ? 'bg-green-500 text-white' : 'bg-white/5 text-white/30'}`}
+                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl ${isCorrect ? 'bg-green-500 text-white' : 'bg-white/5 text-white/30 hover:text-white'}`}
                           >
                             {isCorrect ? <Check size={32} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
                           </button>
                           <textarea 
                             value={opt || ''} 
                             onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
-                            className="flex-1 bg-transparent border-none font-black text-lg focus:outline-none text-white"
+                            className={`flex-1 bg-transparent border-none font-black text-lg focus:outline-none ${isCorrect ? 'text-white' : 'text-white/30'}`}
                             rows={Math.max(1, Math.ceil((opt || '').length / 40))}
                           />
                         </div>

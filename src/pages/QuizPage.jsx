@@ -93,14 +93,22 @@ const QuizPage = () => {
     let teacherId = testId?.split('_')[0];
     let score = 0;
     const analysis = questions.map((q, idx) => {
-      const isCorrect = String(answers[idx]) === String(q.correctAnswer);
+      const opts = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+      const selectedIdx = answers[idx];
+      
+      // Find correct index: either '+' symbol or saved index
+      const correctIdxBySymbol = opts.findIndex(o => String(o).startsWith('+'));
+      const isCorrect = 
+        (correctIdxBySymbol !== -1 && selectedIdx === correctIdxBySymbol) ||
+        String(selectedIdx) === String(q.correctAnswer);
+
       if (isCorrect) score++;
       return { 
         question: q.text, 
         isCorrect, 
-        options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options, 
-        correct: q.correctAnswer, 
-        selected: answers[idx] 
+        options: opts, 
+        correct: correctIdxBySymbol !== -1 ? correctIdxBySymbol : q.correctAnswer, 
+        selected: selectedIdx 
       };
     });
 
@@ -175,7 +183,9 @@ const QuizPage = () => {
             {options?.map((opt, idx) => (
               <button key={idx} onClick={() => setAnswers({ ...answers, [currentIdx]: idx })} className={`flex items-center gap-6 p-8 rounded-[32px] border-2 transition-all text-left ${answers[currentIdx] === idx ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-white/5 bg-black/20 hover:border-white/10'}`}>
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl ${answers[currentIdx] === idx ? 'bg-primary text-white' : 'bg-white/5 text-white/40'}`}>{String.fromCharCode(65 + idx)}</div>
-                <span className={`text-2xl font-bold ${answers[currentIdx] === idx ? 'text-white' : 'text-white/40'}`}>{opt}</span>
+                <span className={`text-2xl font-bold ${answers[currentIdx] === idx ? 'text-white' : 'text-white/40'}`}>
+                  {String(opt).replace(/^[+=]/, '')}
+                </span>
               </button>
             ))}
           </div>
