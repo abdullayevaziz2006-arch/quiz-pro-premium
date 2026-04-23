@@ -223,9 +223,14 @@ const AdminPanel = () => {
                   <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white leading-tight" rows={2} />
                   <div className="grid md:grid-cols-2 gap-5">
                     {q.options?.map((opt, oIdx) => {
-                      const isCorrect = String(q.correctAnswer) === String(oIdx);
+                      // Ultra-flexible matching: index, letter, or text
+                      const isCorrect = 
+                        String(q.correctAnswer) === String(oIdx) || 
+                        String(q.correctAnswer).toUpperCase() === String.fromCharCode(65 + oIdx) ||
+                        String(q.correctAnswer).trim() === String(opt).trim();
+                        
                       return (
-                        <div key={oIdx} className={`p-6 rounded-[32px] border-2 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/20 border-l-[16px] border-l-green-500 shadow-[0_0_30px_rgba(34,197,94,0.2)]' : 'border-white/5 bg-black/20 opacity-40'}`}>
+                        <div key={oIdx} className={`p-6 rounded-[32px] border-2 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/20 border-l-[16px] border-l-green-500 shadow-[0_0_40px_rgba(34,197,94,0.3)] opacity-100' : 'border-white/5 bg-black/20 opacity-30'}`}>
                           <button 
                             onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
                             className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl shadow-green-500/40 scale-110' : 'bg-white/5 text-white/30 hover:text-white'}`}
@@ -241,7 +246,7 @@ const AdminPanel = () => {
                             />
                             {isCorrect && (
                               <div className="flex items-center gap-2 text-green-400 font-black text-[11px] uppercase tracking-[0.2em] animate-pulse">
-                                <CheckCircle size={14} strokeWidth={3} /> MANA SHU TO'G'RI JAVOB
+                                <CheckCircle size={14} strokeWidth={3} /> TO'G'RI JAVOB
                               </div>
                             )}
                           </div>
