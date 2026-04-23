@@ -385,6 +385,12 @@ const AdminPanel = () => {
                     </div>
                   </div>
                 ))}
+                {currentQuestions.length === 0 && (
+                  <div className="py-40 text-center space-y-6">
+                    <div className="w-24 h-24 bg-white/[0.02] rounded-full flex items-center justify-center mx-auto text-white/10"><BookOpen size={48} /></div>
+                    <p className="text-white/20 font-bold">Hozircha savollar yo'q. Yangi savol qo'shing yoki Word fayl yuklang.</p>
+                  </div>
+                )}
               </div>
 
               <div className="fixed bottom-10 right-10 z-[100]">
