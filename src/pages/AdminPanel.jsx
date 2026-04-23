@@ -295,31 +295,53 @@ const AdminPanel = () => {
                     <input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 text-white text-xl font-black outline-none" value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} />
                   </div>
                   <button onClick={async () => {
-                    const count = parseInt(sessionQCount) || 20;
-                    const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, count).map(q => q.uid);
+                    const totalQs = questions.length;
+                    const requestedCount = parseInt(sessionQCount);
+                    const finalCount = (isNaN(requestedCount) || requestedCount <= 0) ? 20 : requestedCount;
+                    
+                    // Tasodifiy tanlab olish
+                    const qIds = [...questions]
+                      .sort(() => 0.5 - Math.random())
+                      .slice(0, Math.min(finalCount, totalQs))
+                      .map(q => q.uid);
+
                     if(qIds.length === 0) return alert("Savollar mavjud emas!");
                     
-                    // AVTOMATIK SAQLASH
                     await storage.saveQuestions(adminUid, questions);
-                    showToast("Barcha savollar saqlandi va havola yaratilmoqda...");
+                    showToast("Saqlanmoqda...");
 
-                    storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
-                      if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Havola yaratildi!"); }
+                    storage.saveSession(adminUid, { 
+                      name: sessionName || 'Yangi Test', 
+                      questionIds: qIds 
+                    }).then(s => {
+                      if(s) { 
+                        setSessions([s, ...sessions]); 
+                        setSessionName(''); 
+                        showToast(`Muvaffaqiyatli! ${qIds.length} ta savol bilan havola yaratildi.`); 
+                      }
                     });
                   }} className="w-full bg-orange-500 py-6 rounded-[32px] font-black text-2xl shadow-2xl hover:bg-orange-600 transition-all">HAVOLA YARATISH</button>
                 </div>
               </div>
             </div>
             <div className="lg:col-span-2 space-y-8">
-              {sessions.map(s => (
-                <div key={s.id} className="bg-[#141414] border border-white/5 p-8 rounded-[40px] flex justify-between items-center">
-                  <div><h4 className="font-bold text-2xl">{s.name}</h4><p className="text-white/20 text-xs">{s.questionIds?.length} savol</p></div>
-                  <div className="flex gap-4">
-                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`); showToast("Nusxalandi!"); }} className="p-5 bg-white/5 rounded-2xl hover:bg-orange-500 transition-all"><Copy size={28} /></button>
-                    <button onClick={() => { storage.deleteSession(adminUid, s.id); setSessions(sessions.filter(it => it.id !== s.id)); }} className="p-5 bg-white/5 rounded-2xl hover:bg-red-500 transition-all"><Trash2 size={28} /></button>
+              {sessions.map(s => {
+                const qCount = (() => {
+                  try {
+                    const ids = typeof s.questionIds === 'string' ? JSON.parse(s.questionIds) : s.questionIds;
+                    return Array.isArray(ids) ? ids.length : 0;
+                  } catch (e) { return 0; }
+                })();
+                return (
+                  <div key={s.id} className="bg-[#141414] border border-white/5 p-8 rounded-[40px] flex justify-between items-center hover:border-orange-500/30 transition-all">
+                    <div><h4 className="font-bold text-2xl">{s.name}</h4><p className="text-orange-500 text-xs font-black">{qCount} SAVOL</p></div>
+                    <div className="flex gap-4">
+                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`); showToast("Havola nusxalandi!"); }} className="p-5 bg-white/5 rounded-2xl hover:bg-orange-500 transition-all"><Copy size={28} /></button>
+                      <button onClick={() => { if(window.confirm("O'chirilsinmi?")) { storage.deleteSession(adminUid, s.id).then(() => setSessions(sessions.filter(it => it.id !== s.id))); } }} className="p-5 bg-white/5 rounded-2xl hover:bg-red-500 transition-all"><Trash2 size={28} /></button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
