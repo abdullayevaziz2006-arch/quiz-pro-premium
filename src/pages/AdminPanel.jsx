@@ -276,9 +276,17 @@ const AdminPanel = () => {
               <div className="bg-[#141414] border border-white/5 p-10 rounded-[48px] space-y-8 shadow-2xl">
                 <div className="space-y-2"><h3 className="text-3xl font-black">Yangi Havola</h3><p className="text-white/30 text-sm">Talabalar uchun test yaratish</p></div>
                 <div className="space-y-6">
-                  <div className="space-y-2"><label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Guruh yoki Test nomi</label><input className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" placeholder="Masalan: 401-Guruh" value={sessionName} onChange={e => setSessionName(e.target.value)} /></div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Guruh yoki Test nomi</label>
+                    <input className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" placeholder="Masalan: 401-Guruh" value={sessionName} onChange={e => setSessionName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Testdagi savollar soni</label>
+                    <input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" value={settings.questionsPerTest} onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value) || 20})} />
+                  </div>
                   <button onClick={() => {
-                    const qIds = questions.sort(() => 0.5-Math.random()).slice(0, settings.questionsPerTest || 20).map(q => q.uid);
+                    const count = parseInt(settings.questionsPerTest) || 20;
+                    const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, count).map(q => q.uid);
                     if(qIds.length === 0) return alert("Savollar mavjud emas!");
                     storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
                       if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Havola yaratildi!"); }
