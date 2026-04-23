@@ -58,10 +58,23 @@ const AdminPanel = () => {
         storage.getSettings(adminUid)
       ]);
       
-      const normalizedQs = (qs || []).map(q => ({
-        ...q,
-        correctAnswer: String(q.correctAnswer !== undefined ? q.correctAnswer : (q.correct !== undefined ? q.correct : ''))
-      }));
+      const normalizedQs = (qs || []).map(q => {
+        let correctVal = q.correctAnswer !== undefined ? q.correctAnswer : (q.correct !== undefined ? q.correct : '');
+        
+        // SMART AUTO-DETECTOR: If correctVal is missing or messy, look inside options
+        if (!correctVal || correctVal === '' || correctVal === '-1' || isNaN(parseInt(correctVal))) {
+           const foundIdx = (q.options || []).findIndex(opt => {
+              const s = String(opt || '').toLowerCase();
+              return s.includes('(to\'g\'ri)') || s.includes('(correct)') || s.startsWith('+') || s.startsWith('*');
+           });
+           if (foundIdx !== -1) correctVal = String(foundIdx);
+        }
+
+        return {
+          ...q,
+          correctAnswer: String(correctVal)
+        };
+      });
 
       setQuestions(normalizedQs);
       setCriteria(Array.isArray(cr) ? cr : []);
