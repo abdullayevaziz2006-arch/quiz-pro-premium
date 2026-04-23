@@ -4,8 +4,8 @@ import { auth } from '../utils/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { parseWordQuiz } from '../utils/wordParser';
 import mammoth from 'mammoth';
-import {
-  Plus, Trash2, Check, Copy, Share2, LogOut,
+import { 
+  Plus, Trash2, Check, Copy, Share2, LogOut, 
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
@@ -19,7 +19,7 @@ const AdminPanel = () => {
   const [results, setResults] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState(null); // YANGI: Tanlangan fan
+  const [selectedSubject, setSelectedSubject] = useState(null);
   const [newSubject, setNewSubject] = useState('');
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
   const [sessionName, setSessionName] = useState('');
@@ -62,7 +62,7 @@ const AdminPanel = () => {
         storage.getSettings(adminUid),
         storage.getSubjects(adminUid)
       ]);
-
+      
       const rawQs = Array.isArray(qs) ? qs : [];
       const cleanedQs = rawQs.map(q => {
         let c = q.correctAnswer;
@@ -70,12 +70,12 @@ const AdminPanel = () => {
           if (String(opt).startsWith('+')) c = String(idx);
           return cleanText(opt);
         });
-        return {
-          ...q,
+        return { 
+          ...q, 
           text: cleanText(q.text),
           options: cleanOptions,
           correctAnswer: String(c !== undefined ? c : '0'),
-          subjectId: q.subjectId || null // SubjectId ni saqlash
+          subjectId: q.subjectId || null
         };
       });
 
@@ -120,12 +120,11 @@ const AdminPanel = () => {
     avgGrade: results?.length > 0 ? (results.reduce((acc, curr) => acc + parseInt(curr.grade || 0), 0) / results.length).toFixed(1) : 0
   }), [results, questions]);
 
-  // Savollarni tanlangan fanga qarab filtrlash
   const currentQuestions = useMemo(() => {
     if (activeTab === 'subjects' && selectedSubject) {
       return questions.filter(q => q.subjectId === selectedSubject.id);
     }
-    return questions.filter(q =>
+    return questions.filter(q => 
       (q.text || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [questions, selectedSubject, activeTab, searchQuery]);
@@ -168,10 +167,10 @@ const AdminPanel = () => {
   ];
 
   const handleAddQuestion = (subjectId = null) => {
-    const newQ = {
-      uid: Date.now().toString(),
-      text: 'Yangi savol',
-      options: ['A', 'B', 'C', 'D'],
+    const newQ = { 
+      uid: Date.now().toString(), 
+      text: 'Yangi savol', 
+      options: ['A', 'B', 'C', 'D'], 
       correctAnswer: '0',
       subjectId: subjectId
     };
@@ -202,10 +201,7 @@ const AdminPanel = () => {
             <button
               key={item.id}
               onClick={() => { setActiveTab(item.id); setSelectedSubject(null); }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${activeTab === item.id
-                  ? 'bg-white/[0.03] text-orange-500'
-                  : 'text-white/30 hover:text-white/60 hover:bg-white/[0.01]'
-                }`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${activeTab === item.id ? 'bg-white/[0.03] text-orange-500' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.01]'}`}
             >
               {activeTab === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-orange-500 rounded-r-full"></div>}
               <item.icon size={20} className={activeTab === item.id ? 'text-orange-500' : 'text-white/10 group-hover:text-white/30'} />
@@ -225,7 +221,7 @@ const AdminPanel = () => {
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-500/[0.02] via-transparent to-transparent">
         <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-
+          
           <header className="flex justify-between items-end">
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/50">Tizim holati: Online</p>
@@ -280,8 +276,7 @@ const AdminPanel = () => {
                       setSubjects(updated);
                       setNewSubject('');
                       showToast("Fan qo'shildi!");
-                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
-                    >FANNI QO'SHISH</button>
+                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">FANNI QO'SHISH</button>
                   </div>
                 </div>
               </div>
@@ -319,7 +314,6 @@ const AdminPanel = () => {
             </div>
           )}
 
-          {/* Fan ichidagi savollar oynasi */}
           {(activeTab === 'questions' || selectedSubject) && (
             <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
               <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl flex flex-wrap justify-between items-center gap-6 shadow-xl">
@@ -391,12 +385,6 @@ const AdminPanel = () => {
                     </div>
                   </div>
                 ))}
-                {currentQuestions.length === 0 && (
-                  <div className="py-40 text-center space-y-6">
-                    <div className="w-24 h-24 bg-white/[0.02] rounded-full flex items-center justify-center mx-auto text-white/10"><BookOpen size={48} /></div>
-                    <p className="text-white/20 font-bold">Hozircha savollar yo'q. Yangi savol qo'shing yoki Word fayl yuklang.</p>
-                  </div>
-                )}
               </div>
 
               <div className="fixed bottom-10 right-10 z-[100]">
@@ -414,11 +402,9 @@ const AdminPanel = () => {
                   <h3 className="text-2xl font-black">Yangi Havola</h3>
                   <div className="space-y-6">
                     <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Guruh nomi</label><input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionName} onChange={e => setSessionName(e.target.value)} placeholder="Masalan: 401-Guruh" /></div>
-
-                    {/* Fan tanlash (YANGI) */}
                     <div className="space-y-2">
                       <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fanni tanlang</label>
-                      <select
+                      <select 
                         className="w-full bg-[#111] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-black outline-none focus:border-orange-500 transition-all"
                         onChange={(e) => {
                           const subId = e.target.value;
@@ -428,12 +414,9 @@ const AdminPanel = () => {
                         id="session-subject-select"
                       >
                         <option value="">Barcha savollardan</option>
-                        {subjects.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
+                        {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
                     </div>
-
                     <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Savollar soni</label><input type="number" className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} /></div>
                     <button onClick={async () => {
                       const subId = document.getElementById('session-subject-select').value;
@@ -511,7 +494,6 @@ const AdminPanel = () => {
                 </div>
                 <button onClick={() => storage.saveCriteria(adminUid, criteria).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10">SAQLASH</button>
               </div>
-
               <div className="bg-[#0a0a0a] border border-white/5 p-12 rounded-[40px] space-y-10 shadow-2xl">
                 <div className="space-y-1"><h3 className="text-2xl font-black">Umumiy</h3><p className="text-white/30 text-sm">Vaqt va hajm</p></div>
                 <div className="space-y-8">
