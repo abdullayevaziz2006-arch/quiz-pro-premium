@@ -210,35 +210,37 @@ const AdminPanel = () => {
 
                   <div className="grid md:grid-cols-2 gap-5">
                     {q.options?.map((opt, oIdx) => {
-                      // ==========================================
-                      // TO'G'RI JAVOBNI ANIQLASH MANTIQI (DIQQAT!)
-                      // ==========================================
-                      const cleanCorrect = String(q.correctAnswer).trim().toLowerCase();
-                      const cleanOpt = String(opt || '').trim().toLowerCase();
-                      const letter = String.fromCharCode(65 + oIdx).toLowerCase();
+                      // ULTRA-ROBUST SANITIZER
+                      const sanitize = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                      
+                      const sCorrect = sanitize(q.correctAnswer);
+                      const sOpt = sanitize(opt);
+                      const sLetter = String.fromCharCode(97 + oIdx); // a, b, c, d
+                      const sIndex = String(oIdx);
 
-                      const isCorrect =
-                        cleanCorrect === String(oIdx) ||
-                        cleanCorrect === letter ||
-                        cleanCorrect === cleanOpt ||
-                        cleanCorrect.startsWith(letter + ')') ||
-                        cleanCorrect.startsWith(letter + '.');
+                      const isCorrect = 
+                        sCorrect === sIndex || 
+                        sCorrect === sLetter || 
+                        sCorrect === sOpt ||
+                        (sCorrect.length > 0 && sOpt.startsWith(sCorrect)) ||
+                        (sOpt.length > 0 && sCorrect.startsWith(sOpt));
 
                       return (
-                        <div key={oIdx} className={`p-8 rounded-[32px] border-4 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/5 border-l-[16px]' : 'border-white/5 bg-black/20'}`}>
-                          <button
-                            onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }}
-                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl' : 'bg-white/5 text-white/30 hover:text-white'}`}
+                        <div key={oIdx} className={`p-8 rounded-[32px] border-4 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/5 border-l-[16px] shadow-[0_0_40px_rgba(34,197,94,0.1)]' : 'border-white/5 bg-black/20'}`}>
+                          <button 
+                            onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
+                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl shadow-green-500/40 scale-105' : 'bg-white/5 text-white/30 hover:text-white'}`}
                           >
                             {isCorrect ? <Check size={32} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
                           </button>
                           <div className="flex-1 pt-1">
-                            <textarea
-                              value={opt || ''}
-                              onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }}
-                              className="w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed text-white"
+                             <textarea 
+                              value={opt || ''} 
+                              onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
+                              className={`w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed transition-colors ${isCorrect ? 'text-white' : 'text-white/30'}`}
                               rows={Math.max(1, Math.ceil((opt || '').length / 40))}
                             />
+                            {debugMode && <div className="text-[9px] font-mono text-white/10 mt-2">Sanitized: "{sOpt}"</div>}
                           </div>
                         </div>
                       );
