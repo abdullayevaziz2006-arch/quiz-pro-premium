@@ -1,57 +1,34 @@
 export const parseWordQuiz = (html) => {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const text = container.innerText || container.textContent;
   
-  // Savollarni ajratib olish (savollar odatda yangi qatordan boshlanadi va ? bilan tugaydi yoki boshlanadi)
-  // Biz har bir <p> ni tekshiramiz
-  const pTags = Array.from(doc.querySelectorAll('p, li'));
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   const questions = [];
-  let currentQuestion = null;
+  let currentQ = null;
 
-  pTags.forEach(p => {
-    const text = p.innerText.trim();
-    if (!text) return;
-
-    // Agar matn ? bilan tugasa yoki segment boshida ? bo'lsa - bu SAVOL
-    if (text.includes('?') || text.length > 50 && !currentQuestion) {
-      if (currentQuestion && currentQuestion.options.length >= 2) {
-        questions.push(currentQuestion);
-      }
-      currentQuestion = {
-        text: text.replace(/^\d+[\s.)]*/, '').trim(), // Raqamlarni tozalash (1. Savol...)
+  lines.forEach(line => {
+    // Savol aniqlash: ? bilan boshlansa yoki raqam bilan
+    if (line.startsWith('?') || /^\d+[\.\)]/.test(line)) {
+      if (currentQ) questions.push(currentQ);
+      currentQ = {
+        text: line.replace(/^\?|^\d+[\.\)]\s*/, '').trim(),
         options: [],
         correct: -1
       };
-    } else if (currentQuestion) {
-      // Bu VARIANT bo'lishi mumkin
-      // TO'G'RI JAVOBNI ANIQLASH (HAR XIL USULLAR):
-      const isBold = p.querySelector('strong, b, span[style*="bold"]') !== null;
-      const isUnderlined = p.querySelector('u, span[style*="underline"]') !== null;
-      const hasCorrectText = /\(to['`]?g['`]?ri\)/i.test(text) || /\(correct\)/i.test(text) || /\(t\)/i.test(text);
-      const hasMarker = text.startsWith('+') || text.startsWith('*');
-
-      let cleanOpt = text
-        .replace(/^\([a-z]\)/i, '') // (a) (b) larni tozalash
-        .replace(/^[a-z][\s.)]*/i, '') // a) b. larni tozalash
-        .replace(/\(to['`]?g['`]?ri\)/i, '')
-        .replace(/\(correct\)/i, '')
-        .replace(/\(t\)/i, '')
-        .replace(/^[+*]/, '')
-        .trim();
-
-      if (cleanOpt) {
-        if (isBold || isUnderlined || hasCorrectText || hasMarker) {
-          currentQuestion.correct = currentQuestion.options.length;
-        }
-        currentQuestion.options.push(cleanOpt);
+    } else if (currentQ) {
+      // Variant aniqlash: +, =, A), B) va h.k.
+      const isCorrect = line.startsWith('+');
+      // Matnni tozalash: faqat boshidagi + yoki = ni olib tashlamaymiz, 
+      // Admin panelda ko'rinishi uchun + ni qoldiramiz agar kerak bo'lsa
+      
+      currentQ.options.push(line);
+      if (isCorrect) {
+        currentQ.correct = currentQ.options.length - 1;
       }
     }
   });
 
-  // Oxirgi savolni qo'shish
-  if (currentQuestion && currentQuestion.options.length >= 2) {
-    questions.push(currentQuestion);
-  }
-
+  if (currentQ) questions.push(currentQ);
   return questions;
 };

@@ -57,7 +57,17 @@ const AdminPanel = () => {
         storage.getSettings(adminUid)
       ]);
       
-      setQuestions(Array.isArray(qs) ? qs : []);
+      const rawQs = Array.isArray(qs) ? qs : [];
+      const repairedQs = rawQs.map(q => {
+        let c = q.correctAnswer;
+        if (c === undefined || c === null || c === '' || c === 'undefined') {
+          const idx = (q.options || []).findIndex(opt => String(opt || '').startsWith('+'));
+          if (idx !== -1) c = String(idx);
+        }
+        return { ...q, correctAnswer: c !== undefined ? String(c) : '' };
+      });
+
+      setQuestions(repairedQs);
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
