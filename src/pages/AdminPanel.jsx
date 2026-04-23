@@ -54,13 +54,13 @@ const AdminPanel = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [qs, cr, rs, ss, st, sb] = await Promise.all([
+      // Birlashtirilgan yuklash: settings va subjects bitta endpointdan keladi
+      const [qs, cr, rs, ss, st] = await Promise.all([
         storage.getQuestions(adminUid),
         storage.getCriteria(adminUid),
         storage.getResults(adminUid),
         storage.getSessions(adminUid),
-        storage.getSettings(adminUid),
-        storage.getSubjects(adminUid)
+        storage.getSettings(adminUid)
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
@@ -83,8 +83,12 @@ const AdminPanel = () => {
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
-      setSubjects(Array.isArray(sb) ? sb : []);
-      if (st) setSettings(st);
+      
+      // Sozlamalar va Fanlarni bitta obyektdan ajratib olamiz
+      if (st) {
+        setSettings(st);
+        setSubjects(Array.isArray(st.subjects) ? st.subjects : []);
+      }
     } catch (err) {
       console.error("Load error:", err);
     } finally {
@@ -192,7 +196,7 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.1</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.2</p>
           </div>
         </div>
 
