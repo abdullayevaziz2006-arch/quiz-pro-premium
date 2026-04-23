@@ -58,7 +58,6 @@ const AdminPanel = () => {
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
-      // AUTO-REPAIR on load
       const repairedQs = rawQs.map(q => {
         let c = q.correctAnswer;
         if (c === undefined || c === null || c === '' || c === 'undefined') {
@@ -263,9 +262,14 @@ const AdminPanel = () => {
                           </button>
                           <textarea 
                             value={cleanText(opt) || ''} 
-                            onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
+                            onChange={e => { 
+                              const u = [...questions]; 
+                              const qIdxInAll = questions.findIndex(it => it.uid === q.uid);
+                              u[qIdxInAll].options[oIdx] = e.target.value; 
+                              setQuestions(u); 
+                            }} 
                             className={`flex-1 bg-transparent border-none font-black text-lg focus:outline-none resize-none ${isCorrect ? 'text-white' : 'text-white/40'}`}
-                            rows={Math.max(1, Math.ceil(optText.length / 40))}
+                            rows={1}
                           />
                         </div>
                       );
