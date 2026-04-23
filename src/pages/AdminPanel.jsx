@@ -20,6 +20,7 @@ const AdminPanel = () => {
   const [sessions, setSessions] = useState([]);
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
   const [sessionName, setSessionName] = useState('');
+  const [sessionQCount, setSessionQCount] = useState(20);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminUid, setAdminUid] = useState(null);
@@ -282,10 +283,10 @@ const AdminPanel = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Testdagi savollar soni</label>
-                    <input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" value={settings.questionsPerTest} onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value) || 20})} />
+                    <input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" value={sessionQCount} onChange={e => setSessionQCount(parseInt(e.target.value) || 20)} />
                   </div>
                   <button onClick={() => {
-                    const count = parseInt(settings.questionsPerTest) || 20;
+                    const count = parseInt(sessionQCount) || 20;
                     const qIds = [...questions].sort(() => 0.5 - Math.random()).slice(0, count).map(q => q.uid);
                     if(qIds.length === 0) return alert("Savollar mavjud emas!");
                     storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
