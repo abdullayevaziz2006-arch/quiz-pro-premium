@@ -1,11 +1,11 @@
 export const parseWordQuiz = (html) => {
   const container = document.createElement('div');
   container.innerHTML = html;
+  
+  // Matnni HTML'dan toza holatda olamiz (lekin belgilarni saqlab qolamiz)
   const rawText = (container.innerText || container.textContent || '').trim();
   
-  // OLTYIN STANDART: Regex orqali belgilarni va ulardan keyingi matnni qidiramiz
-  // (\?|\+|\=) -> Belgini ushlaydi
-  // ([^\?\+\=]*) -> Keyingi belgiga qadar barcha matnni ushlaydi
+  // REGEX: Belgini va undan keyin kelgan matnni ushlaydi
   const regex = /(\?|\+|\=)([^\?\+\=]*)/g;
   const matches = [...rawText.matchAll(regex)];
   
@@ -13,21 +13,20 @@ export const parseWordQuiz = (html) => {
   let currentQ = null;
 
   matches.forEach(match => {
-    const symbol = match[1]; // ?, +, yoki =
-    const content = match[2].trim(); // Matn
+    const symbol = match[1]; 
+    const content = match[2].trim(); 
     
-    if (!content && symbol !== '?') return;
-
     if (symbol === '?') {
+      // Yangi savol boshlandi
       if (currentQ && currentQ.options.length > 0) questions.push(currentQ);
       currentQ = {
-        text: content,
+        text: content, // Savol matni (belgisiz)
         options: [],
         correct: -1
       };
     } else if (currentQ) {
-      const optText = symbol + " " + content;
-      currentQ.options.push(optText);
+      // Variant (belgisiz saqlaymiz)
+      currentQ.options.push(content);
       if (symbol === '+') {
         currentQ.correct = currentQ.options.length - 1;
       }
@@ -36,6 +35,6 @@ export const parseWordQuiz = (html) => {
 
   if (currentQ && currentQ.options.length > 0) questions.push(currentQ);
   
-  console.log("Regex-Matched Questions:", questions);
+  console.log("Clean Parsed Questions:", questions);
   return questions;
 };

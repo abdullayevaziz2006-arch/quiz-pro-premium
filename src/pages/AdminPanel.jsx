@@ -92,7 +92,8 @@ const AdminPanel = () => {
     avgGrade: results?.length > 0 ? (results.reduce((acc, curr) => acc + parseInt(curr.grade || 0), 0) / results.length).toFixed(1) : 0
   }), [results, questions]);
 
-  const filteredQuestions = (questions || []).filter(q => q.text?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const cleanText = (t) => t ? String(t).replace(/^[\?\+\=\s]+/, '').trim() : '';
+  const filteredQuestions = (questions || []).filter(q => cleanText(q.text).toLowerCase().includes(searchQuery.toLowerCase()));
 
   if (!isAuthenticated && !loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-6 text-white font-sans">
@@ -233,7 +234,18 @@ const AdminPanel = () => {
                     </div>
                     <button onClick={() => { if(window.confirm("O'chirilsinmi?")) setQuestions(questions.filter(it => it.uid !== q.uid)) }} className="w-12 h-12 flex items-center justify-center text-white/10 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                   </div>
-                  <textarea value={q.text || ''} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none text-white resize-none" rows={2} />
+                  <textarea 
+                    value={cleanText(q.text) || ''} 
+                    onChange={e => { 
+                      const u = [...questions]; 
+                      const qIdxInAll = questions.findIndex(it => it.uid === q.uid);
+                      u[qIdxInAll].text = e.target.value; 
+                      setQuestions(u); 
+                    }} 
+                    className="w-full bg-transparent border-none text-2xl font-black focus:outline-none text-white resize-none min-h-[60px]" 
+                    rows={2} 
+                    placeholder="Savol matni yo'q..."
+                  />
                   
                   <div className="grid md:grid-cols-2 gap-6">
                     {q.options?.map((opt, oIdx) => {
@@ -250,7 +262,7 @@ const AdminPanel = () => {
                             {isCorrect ? <Check size={32} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
                           </button>
                           <textarea 
-                            value={opt || ''} 
+                            value={cleanText(opt) || ''} 
                             onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
                             className={`flex-1 bg-transparent border-none font-black text-lg focus:outline-none resize-none ${isCorrect ? 'text-white' : 'text-white/40'}`}
                             rows={Math.max(1, Math.ceil(optText.length / 40))}

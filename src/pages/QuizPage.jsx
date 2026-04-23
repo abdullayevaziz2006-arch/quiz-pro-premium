@@ -176,7 +176,7 @@ const QuizPage = () => {
 
         <div className="bg-card border border-white/5 p-12 md:p-20 rounded-[48px] space-y-16 shadow-2xl relative overflow-hidden">
           <div className="space-y-8 relative z-10 text-center">
-             <h2 className="text-4xl md:text-5xl font-black leading-tight">{currentQuestion.text}</h2>
+             <h2 className="text-4xl md:text-5xl font-black leading-tight">{String(currentQuestion.text).replace(/^\?\s*/, '')}</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-5 relative z-10">
@@ -184,7 +184,7 @@ const QuizPage = () => {
               <button key={idx} onClick={() => setAnswers({ ...answers, [currentIdx]: idx })} className={`flex items-center gap-6 p-8 rounded-[32px] border-2 transition-all text-left ${answers[currentIdx] === idx ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-white/5 bg-black/20 hover:border-white/10'}`}>
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl ${answers[currentIdx] === idx ? 'bg-primary text-white' : 'bg-white/5 text-white/40'}`}>{String.fromCharCode(65 + idx)}</div>
                 <span className={`text-2xl font-bold ${answers[currentIdx] === idx ? 'text-white' : 'text-white/40'}`}>
-                  {String(opt).replace(/^[+=]/, '')}
+                  {String(opt).replace(/^[+=\s]+/, '')}
                 </span>
               </button>
             ))}
