@@ -178,7 +178,17 @@ const AdminPanel = () => {
                 <input className="w-full bg-black/40 border border-white/5 rounded-2xl px-16 py-5 text-white outline-none focus:border-orange-500 transition-all" placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
               </div>
               <div className="flex gap-4">
-                <button onClick={() => { if(window.confirm("Barcha savollar o'chirilsinmi?")) { setQuestions([]); storage.saveQuestions(adminUid, []); showToast("Hammasi o'chirildi"); } }} className="px-6 py-5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-[20px] font-bold text-sm transition-all border border-red-500/20 flex items-center gap-2">
+                <button onClick={async () => { 
+                  if(window.confirm("Barcha savollar o'chirilsinmi? BU AMALNI ORQAGA QAYTARIB BO'LMAYDI!")) { 
+                    try {
+                      await storage.saveQuestions(adminUid, []); 
+                      setQuestions([]); 
+                      showToast("Baza to'liq tozalandi!"); 
+                    } catch (err) {
+                      alert("O'chirishda xatolik: " + err.message);
+                    }
+                  } 
+                }} className="px-6 py-5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-[20px] font-bold text-sm transition-all border border-red-500/20 flex items-center gap-2">
                   <Trash size={20} /> TOZALASH
                 </button>
                 <label className="px-10 py-5 bg-white/5 hover:bg-white/10 rounded-[20px] cursor-pointer font-bold text-sm flex items-center gap-2 transition-all border border-white/5">
