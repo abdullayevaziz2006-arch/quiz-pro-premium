@@ -163,5 +163,29 @@ export const storage = {
       console.error("Error saving settings:", err);
       throw err;
     }
+  },
+
+  // Fanlar (Yangi)
+  async getSubjects(uid) {
+    try {
+      const res = await fetch(`${API_URL}/${uid}/subjects`);
+      return await handleResponse(res) || [];
+    } catch (err) {
+      console.error("Error fetching subjects:", err);
+      return [];
+    }
+  },
+  async saveSubjects(uid, subjects) {
+    try {
+      const res = await fetch(`${API_URL}/${uid}/subjects/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: subjects })
+      });
+      return await handleResponse(res);
+    } catch (err) {
+      console.error("Error saving subjects:", err);
+      throw err;
+    }
   }
 };

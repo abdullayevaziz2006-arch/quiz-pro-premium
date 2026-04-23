@@ -9,7 +9,7 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus
+  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -18,6 +18,8 @@ const AdminPanel = () => {
   const [criteria, setCriteria] = useState([]);
   const [results, setResults] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [subjects, setSubjects] = useState([]); // YANGI: Fanlar state'i
+  const [newSubject, setNewSubject] = useState(''); // YANGI: Yangi fan nomi
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
   const [sessionName, setSessionName] = useState('');
   const [sessionQCount, setSessionQCount] = useState(20);
@@ -51,12 +53,13 @@ const AdminPanel = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [qs, cr, rs, ss, st] = await Promise.all([
+      const [qs, cr, rs, ss, st, sb] = await Promise.all([
         storage.getQuestions(adminUid),
         storage.getCriteria(adminUid),
         storage.getResults(adminUid),
         storage.getSessions(adminUid),
-        storage.getSettings(adminUid)
+        storage.getSettings(adminUid),
+        storage.getSubjects?.(adminUid) || [] // Fanlarni yuklash
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
@@ -78,6 +81,7 @@ const AdminPanel = () => {
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
+      setSubjects(Array.isArray(sb) ? sb : []);
       if (st) setSettings(st);
     } catch (err) {
       console.error("Load error:", err);
@@ -151,6 +155,7 @@ const AdminPanel = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'subjects', label: 'Fanlar', icon: Library }, // YANGI MENU
     { id: 'questions', label: 'Savollar', icon: BookOpen },
     { id: 'sessions', label: 'Havolalar', icon: Link2 },
     { id: 'results', label: 'Natijalar', icon: Award },
@@ -224,14 +229,75 @@ const AdminPanel = () => {
               {[
                 { label: 'TALABALAR', val: stats.totalStudents, icon: Users, color: 'text-blue-500' },
                 { label: 'SAVOLLAR', val: stats.totalQuestions, icon: BookOpen, color: 'text-purple-500' },
-                { label: 'O\'RTACHA BALL', val: stats.avgScore, icon: BarChart3, color: 'text-orange-500' },
-                { label: 'O\'RTACHA BAHO', val: stats.avgGrade, icon: Award, color: 'text-green-500' },
+                { label: 'FANLAR', val: subjects.length, icon: Library, color: 'text-orange-500' },
+                { label: 'NATIJALAR', val: results.length, icon: Award, color: 'text-green-500' },
               ].map((s, i) => (
                 <div key={i} className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl space-y-6 hover:border-white/10 transition-all relative overflow-hidden group shadow-xl">
                   <div className={`w-12 h-12 rounded-xl bg-white/[0.03] flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform duration-500`}><s.icon size={24} /></div>
                   <div className="space-y-1"><p className="text-[9px] font-black text-white/20 uppercase tracking-widest">{s.label}</p><h3 className="text-3xl font-black">{s.val}</h3></div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'subjects' && (
+            <div className="grid lg:grid-cols-12 gap-10">
+              <div className="lg:col-span-5">
+                <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 shadow-2xl sticky top-10">
+                  <h3 className="text-2xl font-black">Yangi Fan</h3>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fan nomi</label>
+                      <input 
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" 
+                        value={newSubject} 
+                        onChange={e => setNewSubject(e.target.value)} 
+                        placeholder="Masalan: Matematika" 
+                      />
+                    </div>
+                    <button 
+                      onClick={async () => {
+                        if (!newSubject.trim()) return;
+                        const sub = { id: Date.now().toString(), name: newSubject.trim() };
+                        const updated = [sub, ...subjects];
+                        await storage.saveSubjects?.(adminUid, updated);
+                        setSubjects(updated);
+                        setNewSubject('');
+                        showToast("Fan qo'shildi!");
+                      }} 
+                      className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
+                    >
+                      FANNI QO'SHISH
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-7 space-y-6">
+                <h3 className="text-xl font-black px-4 flex items-center gap-4">Barcha Fanlar <span className="px-3 py-1 bg-white/5 rounded-lg text-[10px] text-white/40">{subjects.length} ta</span></h3>
+                <div className="grid gap-4">
+                  {subjects.map(s => (
+                    <div key={s.id} className="bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-orange-500"><Library size={20} /></div>
+                        <h4 className="font-black text-lg">{s.name}</h4>
+                      </div>
+                      <button 
+                        onClick={async () => {
+                          if(window.confirm("Ushbu fanni o'chirmoqchimisiz?")) {
+                            const updated = subjects.filter(it => it.id !== s.id);
+                            await storage.saveSubjects?.(adminUid, updated);
+                            setSubjects(updated);
+                            showToast("Fan o'chirildi");
+                          }
+                        }} 
+                        className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
