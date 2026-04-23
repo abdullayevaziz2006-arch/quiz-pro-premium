@@ -9,7 +9,7 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash, Zap, Bug
+  Filter, Trash, Zap, Bug, RefreshCw
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -19,14 +19,13 @@ const AdminPanel = () => {
   const [results, setResults] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
-  const [genMode, setGenMode] = useState('random');
-  const [selectedQIds, setSelectedQIds] = useState([]);
   const [sessionName, setSessionName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminUid, setAdminUid] = useState(null);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [debugMode, setDebugMode] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -58,10 +57,11 @@ const AdminPanel = () => {
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
+      // AUTO-REPAIR on load
       const repairedQs = rawQs.map(q => {
         let c = q.correctAnswer;
         if (c === undefined || c === null || c === '' || c === 'undefined') {
-          const idx = (q.options || []).findIndex(opt => String(opt || '').startsWith('+'));
+          const idx = (q.options || []).findIndex(opt => String(opt || '').trim().startsWith('+'));
           if (idx !== -1) c = String(idx);
         }
         return { ...q, correctAnswer: c !== undefined ? String(c) : '' };
@@ -111,8 +111,8 @@ const AdminPanel = () => {
             alert("Login yoki parol xato");
           }
         }} className="space-y-4">
-          <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-orange-500 outline-none transition-all" type="email" name="email" placeholder="Email" required />
-          <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-orange-500 outline-none transition-all" type="password" name="password" placeholder="Parol" required />
+          <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-orange-500 transition-all" type="email" name="email" placeholder="Email" required />
+          <input className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-orange-500 transition-all" type="password" name="password" placeholder="Parol" required />
           <button type="submit" className="w-full bg-orange-500 py-4 rounded-2xl font-black text-xl hover:bg-orange-600 transition-all shadow-xl shadow-orange-900/20">KIRISH</button>
         </form>
       </div>
@@ -130,7 +130,10 @@ const AdminPanel = () => {
       )}
 
       <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <h1 className="text-4xl font-black">Admin <span className="text-orange-500">Panel</span></h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-4xl font-black">Admin <span className="text-orange-500">Panel</span></h1>
+          <button onClick={loadData} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-white/40 hover:text-white"><RefreshCw size={20} /></button>
+        </div>
         <button onClick={() => auth.signOut()} className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-xl hover:bg-red-500 transition-all font-bold">
           <LogOut size={18} /> Chiqish
         </button>
@@ -175,6 +178,9 @@ const AdminPanel = () => {
                 <input className="w-full bg-black/40 border border-white/5 rounded-2xl px-16 py-5 text-white outline-none focus:border-orange-500 transition-all" placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
               </div>
               <div className="flex gap-4">
+                <button onClick={() => { if(window.confirm("Barcha savollar o'chirilsinmi?")) { setQuestions([]); storage.saveQuestions(adminUid, []); showToast("Hammasi o'chirildi"); } }} className="px-6 py-5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-[20px] font-bold text-sm transition-all border border-red-500/20 flex items-center gap-2">
+                  <Trash size={20} /> TOZALASH
+                </button>
                 <label className="px-10 py-5 bg-white/5 hover:bg-white/10 rounded-[20px] cursor-pointer font-bold text-sm flex items-center gap-2 transition-all border border-white/5">
                   <FileUp size={20} /> Word Yuklash
                   <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
@@ -199,7 +205,10 @@ const AdminPanel = () => {
               {filteredQuestions.map((q, qIdx) => (
                 <div key={q.uid} className="bg-[#141414] border border-white/5 p-10 rounded-[56px] space-y-8 hover:border-white/10 transition-all relative overflow-hidden">
                   <div className="flex justify-between items-center">
-                    <span className="px-5 py-2 bg-white/5 text-white/40 rounded-xl text-[10px] font-black uppercase tracking-widest">SAVOL #{questions.length - qIdx}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="px-5 py-2 bg-white/5 text-white/40 rounded-xl text-[10px] font-black uppercase tracking-widest">SAVOL #{questions.length - qIdx}</span>
+                      {debugMode && <span className="text-[10px] text-orange-500 font-mono">ID: {q.correctAnswer}</span>}
+                    </div>
                     <button onClick={() => { if(window.confirm("O'chirilsinmi?")) setQuestions(questions.filter(it => it.uid !== q.uid)) }} className="w-12 h-12 flex items-center justify-center text-white/10 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                   </div>
                   <textarea value={q.text || ''} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none text-white resize-none" rows={2} />
@@ -208,7 +217,7 @@ const AdminPanel = () => {
                     {q.options?.map((opt, oIdx) => {
                       const optText = String(opt || '');
                       const sCorrect = String(q.correctAnswer).trim();
-                      const isCorrect = optText.startsWith('+') || sCorrect === String(oIdx);
+                      const isCorrect = optText.trim().startsWith('+') || sCorrect === String(oIdx);
 
                       return (
                         <div key={oIdx} className={`p-8 rounded-[40px] border-4 transition-all flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/5 border-l-[24px]' : 'border-white/5 bg-black/40'}`}>
@@ -247,16 +256,9 @@ const AdminPanel = () => {
                 <div className="space-y-2"><h3 className="text-3xl font-black">Yangi Havola</h3><p className="text-white/30 text-sm">Talabalar uchun test yaratish</p></div>
                 <div className="space-y-6">
                   <div className="space-y-2"><label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Guruh yoki Test nomi</label><input className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none transition-all" placeholder="Masalan: 401-Guruh" value={sessionName} onChange={e => setSessionName(e.target.value)} /></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={() => setGenMode('random')} className={`py-5 rounded-[24px] font-black uppercase text-xs border transition-all ${genMode === 'random' ? 'bg-orange-500 border-orange-500 text-white shadow-xl shadow-orange-900/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>Tasodifiy</button>
-                    <button onClick={() => setGenMode('manual')} className={`py-5 rounded-[24px] font-black uppercase text-xs border transition-all ${genMode === 'manual' ? 'bg-orange-500 border-orange-500 text-white shadow-xl shadow-orange-900/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}>Tanlangan</button>
-                  </div>
-                  {genMode === 'random' && (
-                    <div className="space-y-2"><label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-4">Savollar soni</label><input type="number" className="w-full bg-black/40 border border-white/10 rounded-3xl px-8 py-5 focus:border-orange-500 text-white text-xl font-black outline-none" value={settings.questionsPerTest} onChange={e => setSettings({...settings, questionsPerTest: parseInt(e.target.value)})} /></div>
-                  )}
                   <button onClick={() => {
-                    const qIds = genMode === 'random' ? [...questions].sort(() => 0.5-Math.random()).slice(0, settings.questionsPerTest || 20).map(q => q.uid) : selectedQIds;
-                    if(qIds.length === 0) return alert("Savollarni tanlang!");
+                    const qIds = questions.sort(() => 0.5-Math.random()).slice(0, settings.questionsPerTest || 20).map(q => q.uid);
+                    if(qIds.length === 0) return alert("Savollar mavjud emas!");
                     storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => {
                       if(s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Havola yaratildi!"); }
                     });
