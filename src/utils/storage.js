@@ -165,34 +165,32 @@ export const storage = {
     }
   },
 
-  // Fanlar (Yangi - 404 xatosini oldini olish uchun Settings orqali saqlaymiz)
+  // Fanlar (404 xatosini aylanib o'tish: Settings orqali tunneling)
   async getSubjects(uid) {
     try {
+      console.log("Fetching subjects via settings tunnel...");
       const res = await fetch(`${API_URL}/${uid}/settings`);
       const data = await handleResponse(res);
       return data?.subjects || [];
     } catch (err) {
-      console.error("Error fetching subjects:", err);
+      console.error("Subject fetch failed:", err);
       return [];
     }
   },
   async saveSubjects(uid, subjects) {
     try {
-      // Mavjud sozlamalarni olamiz
       const resGet = await fetch(`${API_URL}/${uid}/settings`);
-      const currentSettings = await handleResponse(resGet) || {};
-      
-      // Fanlarni sozlamalar ichiga joylaymiz
-      const updatedSettings = { ...currentSettings, subjects };
+      const current = await handleResponse(resGet) || {};
+      const updated = { ...current, subjects };
       
       const res = await fetch(`${API_URL}/${uid}/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedSettings)
+        body: JSON.stringify(updated)
       });
       return await handleResponse(res);
     } catch (err) {
-      console.error("Error saving subjects via settings:", err);
+      console.error("Subject save failed:", err);
       throw err;
     }
   }
