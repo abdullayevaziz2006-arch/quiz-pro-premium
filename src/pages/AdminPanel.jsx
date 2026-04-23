@@ -56,11 +56,14 @@ const AdminPanel = () => {
         storage.getSessions(adminUid),
         storage.getSettings(adminUid)
       ]);
-      // Normalize questions to use correctAnswer
-      const normalizedQs = (qs || []).map(q => ({
-        ...q,
-        correctAnswer: String(q.correctAnswer !== undefined ? q.correctAnswer : (q.correct !== undefined ? q.correct : ''))
-      }));
+      // Normalize questions: ensure correctAnswer is a string representation of index
+      const normalizedQs = (qs || []).map(q => {
+        let correctVal = q.correctAnswer !== undefined ? q.correctAnswer : q.correct;
+        return {
+          ...q,
+          correctAnswer: String(correctVal !== null && correctVal !== undefined ? correctVal : '')
+        };
+      });
       setQuestions(normalizedQs);
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
@@ -204,11 +207,11 @@ const AdminPanel = () => {
               </div>
             </div>
             <div className="grid gap-6">
-              {filteredQuestions.map((q, idx) => (
-                <div key={q.uid} className={`bg-card border p-10 rounded-[40px] space-y-8 transition-all ${!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1' ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-white/5 shadow-2xl'}`}>
+              {filteredQuestions.map((q, qIdx) => (
+                <div key={q.uid} className={`bg-card border p-10 rounded-[40px] space-y-8 transition-all ${(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-white/5 shadow-2xl'}`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                      <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest">SAVOL #{questions.length - idx}</span>
+                      <span className="px-4 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest">SAVOL #{questions.length - qIdx}</span>
                       {(!q.correctAnswer || q.correctAnswer === '' || q.correctAnswer === '-1') ? (
                         <span className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-2 animate-pulse"><AlertCircle size={14} /> To'g'ri javobni tanlang!</span>
                       ) : (
@@ -218,34 +221,34 @@ const AdminPanel = () => {
                     <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="text-white/10 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                   </div>
                   <textarea value={q.text} onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].text = e.target.value; setQuestions(u); }} className="w-full bg-transparent border-none text-2xl font-bold focus:outline-none resize-none text-white leading-tight" rows={2} />
-                    <div className="grid md:grid-cols-2 gap-5">
-                      {q.options?.map((opt, oIdx) => {
-                        const isCorrect = String(q.correctAnswer) === String(oIdx);
-                        return (
-                          <div key={oIdx} className={`p-6 rounded-[32px] border-2 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/20 border-l-[16px] border-l-green-500 shadow-[0_0_30px_rgba(34,197,94,0.2)]' : 'border-white/5 bg-black/20 opacity-40'}`}>
-                            <button 
-                              onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
-                              className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl shadow-green-500/40 scale-110' : 'bg-white/5 text-white/30 hover:text-white'}`}
-                            >
-                              {isCorrect ? <Check size={28} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
-                            </button>
-                            <div className="flex-1 space-y-2 pt-1">
-                               <textarea 
-                                value={opt} 
-                                onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
-                                className={`w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed transition-colors ${isCorrect ? 'text-white' : 'text-white/40'}`}
-                                rows={Math.max(1, Math.ceil(opt.length / 40))}
-                              />
-                              {isCorrect && (
-                                <div className="flex items-center gap-2 text-green-400 font-black text-[11px] uppercase tracking-[0.2em] animate-pulse">
-                                  <CheckCircle size={14} strokeWidth={3} /> MANA SHU TO'G'RI JAVOB
-                                </div>
-                              )}
-                            </div>
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {q.options?.map((opt, oIdx) => {
+                      const isCorrect = String(q.correctAnswer) === String(oIdx);
+                      return (
+                        <div key={oIdx} className={`p-6 rounded-[32px] border-2 transition-all relative flex items-start gap-6 ${isCorrect ? 'border-green-500 bg-green-500/20 border-l-[16px] border-l-green-500 shadow-[0_0_30px_rgba(34,197,94,0.2)]' : 'border-white/5 bg-black/20 opacity-40'}`}>
+                          <button 
+                            onClick={() => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].correctAnswer = String(oIdx); setQuestions(u); }} 
+                            className={`w-14 h-14 min-w-[56px] rounded-2xl flex items-center justify-center font-black text-xl shrink-0 transition-all ${isCorrect ? 'bg-green-500 text-white shadow-xl shadow-green-500/40 scale-110' : 'bg-white/5 text-white/30 hover:text-white'}`}
+                          >
+                            {isCorrect ? <Check size={28} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}
+                          </button>
+                          <div className="flex-1 space-y-2 pt-1">
+                             <textarea 
+                              value={opt} 
+                              onChange={e => { const u = [...questions]; u[questions.findIndex(it => it.uid === q.uid)].options[oIdx] = e.target.value; setQuestions(u); }} 
+                              className={`w-full bg-transparent border-none font-black text-lg focus:outline-none resize-none leading-relaxed transition-colors ${isCorrect ? 'text-white' : 'text-white/40'}`}
+                              rows={Math.max(1, Math.ceil(opt.length / 40))}
+                            />
+                            {isCorrect && (
+                              <div className="flex items-center gap-2 text-green-400 font-black text-[11px] uppercase tracking-[0.2em] animate-pulse">
+                                <CheckCircle size={14} strokeWidth={3} /> MANA SHU TO'G'RI JAVOB
+                              </div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
