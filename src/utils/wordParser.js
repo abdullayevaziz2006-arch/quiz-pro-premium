@@ -3,44 +3,46 @@ export const parseWordQuiz = (html) => {
   container.innerHTML = html;
   const rawText = (container.innerText || container.textContent || '').trim();
   
-  // Savollarni aniqlash: faqat matn boshidagi yoki variantlardan oldingi ? belgisini olamiz
-  // Biz ? belgisi bilan boshlanib, + yoki = belgisigacha bo'lgan bloklarni ajratamiz
   const questions = [];
+  // Regex: belgi (? yoki + yoki =) va undan keyin keladigan barcha matn (keyingi belgiga qadar)
+  const regex = /(\?|\+|\=)([^\?\+\=]*)/g;
   
-  // Matnni ? belgilariga qarab bo'lamiz, lekin bo'shlarini olib tashlaymiz
-  const blocks = rawText.split(/\n\s*\?|^\s*\?/).filter(b => b.trim().length > 0);
+  let currentQ = null;
+  let match;
 
-  blocks.forEach(block => {
-    // Har bir blok savol va uning variantlaridan iborat
-    // Variantlarni + yoki = belgisiga qarab kesamiz
-    const parts = block.split(/([\+\=])/);
-    if (parts.length < 2) return;
+  while ((match = regex.exec(rawText)) !== null) {
+    const symbol = match[1];
+    const content = match[2].trim();
 
-    const qText = parts[0].trim();
-    const options = [];
-    let correctIdx = -1;
+    // Agar matn bo'sh bo'lsa va bu ? bo'lsa, uni o'tkazib yuboramiz (gap oxiridagi so'roq bo'lishi mumkin)
+    if (symbol === '?' && content.length === 0) continue;
 
-    for (let i = 1; i < parts.length; i += 2) {
-      const symbol = parts[i]; 
-      const text = parts[i+1]?.trim() || '';
-      
-      if (text) {
-        options.push(text);
+    if (symbol === '?') {
+      // Yangi savol boshlandi
+      if (currentQ && currentQ.options.length > 0) {
+        questions.push(currentQ);
+      }
+      currentQ = {
+        text: content,
+        options: [],
+        correct: -1
+      };
+    } else if (currentQ) {
+      // Variant qo'shish (+ yoki =)
+      if (content.length > 0) {
+        currentQ.options.push(content);
         if (symbol === '+') {
-          correctIdx = options.length - 1;
+          currentQ.correct = currentQ.options.length - 1;
         }
       }
     }
+  }
 
-    if (options.length > 0) {
-      questions.push({
-        text: qText,
-        options: options,
-        correct: correctIdx
-      });
-    }
-  });
+  // Oxirgi savolni qo'shish
+  if (currentQ && currentQ.options.length > 0) {
+    questions.push(currentQ);
+  }
 
-  console.log("Smart Parsed Questions:", questions);
+  console.log("Ultra Smart Parsed Questions:", questions);
   return questions;
 };
