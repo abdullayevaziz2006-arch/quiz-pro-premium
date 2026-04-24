@@ -32,8 +32,6 @@ const AdminPanel = () => {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [showHemisModal, setShowHemisModal] = useState(false);
-  const [hemisForm, setHemisForm] = useState({ domain: '', login: '', password: '' });
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('ranch_theme');
     return saved ? saved === 'dark' : true;
@@ -46,17 +44,7 @@ const AdminPanel = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  const universities = [
-    { name: "Urganch Ranch Texnologiyalar Universiteti", domain: "hemis.ranch.uz" },
-    { name: "TATU (Toshkent)", domain: "hemis.tuit.uz" },
-    { name: "Milliy Universitet (O'zMU)", domain: "hemis.nuu.uz" },
-    { name: "SamDU (Samarqand)", domain: "hemis.samdu.uz" },
-    { name: "TDPU (Nizomiy)", domain: "hemis.tspu.uz" },
-    { name: "TTA (Akademiya)", domain: "hemis.tma.uz" },
-    { name: "UrDU (Urganch)", domain: "hemis.urdu.uz" },
-    { name: "FarDU (Farg'ona)", domain: "hemis.fardu.uz" },
-    { name: "ADU (Andijon)", domain: "hemis.adu.uz" }
-  ];
+
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -634,23 +622,6 @@ const AdminPanel = () => {
                       className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
                     >
                       GURUHNI QO'SHISH
-                    </button>
-
-                    {/* HEMIS INTEGRATSIYASI TUGMASI */}
-                    <button 
-                      onClick={() => {
-                        const domain = prompt("Universitet HEMIS manzilini kiriting (masalan: hemis.tuit.uz):", settings.hemisDomain || '');
-                        const token = prompt("API Tokenni kiriting:", settings.hemisToken || '');
-                        if (domain && token) {
-                          const updated = { ...settings, hemisDomain: domain, hemisToken: token };
-                          setSettings(updated);
-                          storage.saveSettings(adminUid, updated);
-                          showToast("HEMIS ma'lumotlari saqlandi!");
-                        }
-                      }}
-                      className="w-full py-4 bg-blue-600/10 border border-blue-600/20 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-                    >
-                      <RefreshCw size={16} /> HEMIS BILAN ULASH
                     </button>
                   </div>
                 </div>
