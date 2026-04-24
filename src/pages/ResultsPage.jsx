@@ -35,7 +35,7 @@ const ResultsPage = () => {
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
   return (
-    <div className={`min-h-screen pb-20 font-sans print:bg-white print:text-black ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-700`}>
+    <div className={`min-h-screen pb-10 font-sans print:bg-white print:text-black ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-700`}>
       <div className="max-w-5xl mx-auto space-y-12 px-6 pt-12">
         
         {/* Result Card */}

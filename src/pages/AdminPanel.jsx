@@ -468,7 +468,7 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              <div className="grid gap-6 pb-40">
+              <div className="grid gap-6 pb-10">
                 {currentQuestions.map((q, qIdx) => (
                   <div key={q.uid} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 hover:border-orange-500/10 transition-all group shadow-xl`}>
                     <div className="flex justify-between items-center">
@@ -803,7 +803,7 @@ const AdminPanel = () => {
 
 
           {activeTab === 'sessions' && (
-            <div className="grid lg:grid-cols-12 gap-10 pb-20">
+            <div className="grid lg:grid-cols-12 gap-10 pb-10">
               <div className="lg:col-span-5">
                 <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 sticky top-10`}>
                   <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Havola</h3>
