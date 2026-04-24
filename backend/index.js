@@ -56,6 +56,7 @@ app.post('/api/:teacherId/questions/bulk', ensureTeacher, async (req, res) => {
       text: q.text,
       options: JSON.stringify(q.options),
       correctAnswer: String(q.correctAnswer),
+      subjectId: q.subjectId ? String(q.subjectId) : null,
       subject: q.subject || '',
       level: q.level || '',
       teacherId
@@ -177,18 +178,36 @@ app.get('/api/:teacherId/settings', ensureTeacher, async (req, res) => {
   const settings = await prisma.settings.findUnique({
     where: { teacherId: req.params.teacherId }
   });
-  res.json(settings || { questionsPerTest: 20 });
+  if (!settings) return res.json({ questionsPerTest: 20, timePerQuestion: 120, teacherName: '', groups: [] });
+  res.json({
+    ...settings,
+    groups: JSON.parse(settings.groups || '[]')
+  });
 });
 
 app.post('/api/:teacherId/settings', ensureTeacher, async (req, res) => {
-  const { questionsPerTest } = req.body;
+  const { questionsPerTest, timePerQuestion, teacherName, groups } = req.body;
   const { teacherId } = req.params;
   const updated = await prisma.settings.upsert({
     where: { teacherId },
-    update: { questionsPerTest: Number(questionsPerTest) },
-    create: { teacherId, questionsPerTest: Number(questionsPerTest) }
+    update: { 
+      questionsPerTest: Number(questionsPerTest) || 20,
+      timePerQuestion: Number(timePerQuestion) || 120,
+      teacherName: teacherName || '',
+      groups: JSON.stringify(groups || [])
+    },
+    create: { 
+      teacherId, 
+      questionsPerTest: Number(questionsPerTest) || 20,
+      timePerQuestion: Number(timePerQuestion) || 120,
+      teacherName: teacherName || '',
+      groups: JSON.stringify(groups || [])
+    }
   });
-  res.json(updated);
+  res.json({
+    ...updated,
+    groups: JSON.parse(updated.groups || '[]')
+  });
 });
 
 app.listen(PORT, () => {

@@ -26,6 +26,7 @@ model Question {
   text          String
   options       String   // JSON stringified array
   correctAnswer String
+  subjectId     String?  // Fan ID si
   subject       String?
   level         String?
   createdAt     DateTime @default(now())
@@ -37,7 +38,7 @@ model Session {
   teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   name        String
   isActive    Boolean  @default(true)
-  questionIds String   @default("[]") // QO'SHILDI
+  questionIds String   @default("[]")
   createdAt   DateTime @default(now())
   results     Result[]
 }
@@ -68,5 +69,7 @@ model Settings {
   teacherId        String  @unique
   teacher          Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   questionsPerTest Int     @default(20)
-  timePerQuestion  Int     @default(120) // QO'SHILDI
+  timePerQuestion  Int     @default(120)
+  teacherName      String  @default("")
+  groups           String  @default("[]") // JSON stringified groups array
 }
