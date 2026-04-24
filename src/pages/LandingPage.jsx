@@ -83,12 +83,22 @@ const LandingPage = () => {
           <div className="relative">
             <div className="absolute -inset-2 bg-gradient-to-r from-orange-500/50 to-blue-500/50 rounded-[40px] blur-2xl opacity-10 transition duration-1000"></div>
             <div className={`relative ${isDarkMode ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)]'} border rounded-[48px] p-10 md:p-16`}>
-              <div className="text-center space-y-4 mb-12">
-                <div className={`w-20 h-20 mx-auto rounded-[28px] ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'} flex items-center justify-center text-orange-500 mb-6 shadow-xl shadow-orange-900/10`}>
-                  <Award size={40} />
+              
+              <div className="flex flex-col items-center mb-12 text-center group">
+                <div className="relative mb-8">
+                  <div className="absolute -inset-6 bg-orange-500/20 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transform group-hover:scale-110 transition-transform duration-700">
+                    <path d="M30 35L45 25V75L30 65V35Z" fill="#F97316" fillOpacity="0.4" />
+                    <path d="M45 25L65 15V85L45 75V25Z" fill="#F97316" fillOpacity="0.7" />
+                    <path d="M65 15L85 5V95L65 85V15Z" fill="#F97316" />
+                  </svg>
                 </div>
-                <h2 className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Testga Kirish</h2>
-                <p className={`${isDarkMode ? 'text-white/40' : 'text-slate-500'} text-sm font-medium`}>Davom etish uchun test kodini kiriting</p>
+                <h2 className={`text-3xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase mb-2`}>
+                  RANCH <span className="text-orange-500">PRO</span>
+                </h2>
+                <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} text-[10px] font-black uppercase tracking-[0.4em]`}>
+                  Testga Kirish
+                </p>
               </div>
 
               <form onSubmit={handleNextStep} className="space-y-8">
@@ -96,7 +106,7 @@ const LandingPage = () => {
                   <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4`}>Test Kodi (ID)</label>
                   <input 
                     className={`w-full ${isDarkMode ? 'bg-white/[0.03] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-8 py-6 text-2xl font-black focus:outline-none focus:border-orange-500 transition-all placeholder:text-slate-200/5`} 
-                    placeholder="Uid_SessionId" 
+                    placeholder="ID kiriting..." 
                     required 
                     autoFocus
                     value={testId}
@@ -110,8 +120,8 @@ const LandingPage = () => {
               </form>
 
               <div className={`mt-16 pt-10 border-t ${isDarkMode ? 'border-white/5' : 'border-slate-100'} text-center`}>
-                <button onClick={() => navigate('/admin')} className={`${isDarkMode ? 'text-white/20 hover:text-white' : 'text-slate-400 hover:text-slate-900'} transition-all text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 mx-auto`}>
-                  <LayoutGrid size={18} /> Admin Boshqaruv Paneli
+                <button onClick={() => navigate('/admin')} className={`${isDarkMode ? 'text-white/20 hover:text-white' : 'text-slate-400 hover:text-slate-900'} transition-all text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 mx-auto`}>
+                  <LayoutGrid size={18} /> ADMIN PANEL
                 </button>
               </div>
             </div>

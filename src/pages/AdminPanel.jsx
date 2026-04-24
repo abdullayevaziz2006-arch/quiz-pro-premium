@@ -334,11 +334,18 @@ const AdminPanel = () => {
 
       {/* Sidebar Menu */}
       <aside className={`w-72 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 sticky top-0 h-screen shrink-0 relative z-50 transition-all duration-700`}>
-        <div className="mb-12 flex items-center gap-3 px-1 text-white">
-          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white text-white" /></div>
+        <div className="mb-12 flex items-center gap-4 px-1 text-white">
+          <div className="relative group">
+            <div className="absolute -inset-2 bg-orange-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transform group-hover:scale-110 transition-transform duration-500">
+              <path d="M30 35L45 25V75L30 65V35Z" fill="#F97316" fillOpacity="0.4" />
+              <path d="M45 25L65 15V85L45 75V25Z" fill="#F97316" fillOpacity="0.7" />
+              <path d="M65 15L85 5V95L65 85V15Z" fill="#F97316" />
+            </svg>
+          </div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none uppercase">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v6.0</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1 text-center">Platinum v6.0</p>
           </div>
         </div>
 
