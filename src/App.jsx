@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
@@ -9,6 +9,16 @@ import ResultsPage from './pages/ResultsPage';
 import './App.css';
 
 function App() {
+  useEffect(() => {
+    const productionUrl = 'quiz-pro-premium.vercel.app';
+    const currentHost = window.location.hostname;
+    
+    // Eski linklarni asosiy saytga yo'naltirish
+    if (currentHost.includes('vercel.app') && currentHost !== productionUrl && !currentHost.includes('localhost')) {
+      window.location.href = `https://${productionUrl}${window.location.pathname}${window.location.search}`;
+    }
+  }, []);
+
   return (
     <Router>
       <Layout>
