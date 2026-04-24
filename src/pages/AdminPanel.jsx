@@ -560,7 +560,124 @@ const AdminPanel = () => {
                   <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Savollar Soni</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.questionsPerTest} onChange={e => setSettings({ ...settings, questionsPerTest: parseInt(e.target.value) })} /></div>
                   <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Vaqt (Sekund / Savol)</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.timePerQuestion} onChange={e => setSettings({ ...settings, timePerQuestion: parseInt(e.target.value) })} /></div>
                 </div>
-                <button onClick={() => storage.saveSettings(adminUid, settings).then(() => showToast("Saqlandi"))} className="w-full bg-blue-600 py-6 rounded-2xl font-black text-xl shadow-lg shadow-blue-900/10">SAQLASH</button>
+                <button onClick={() => storage.saveSettings(adminUid, settings).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10">SAQLASH</button>
+              </div>
+            </div>
+          )}
+
+          {/* PROFIL BO'LIMI */}
+          {activeTab === 'profile' && (
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-32">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* USTOZ KARTASI */}
+                <div className="lg:col-span-1">
+                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 text-center space-y-6 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    <div className="w-32 h-32 bg-orange-500/10 rounded-[40px] flex items-center justify-center border-2 border-orange-500/20 mx-auto relative z-10 group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-orange-900/20">
+                      <User size={64} className="text-orange-500" />
+                    </div>
+                    <div className="relative z-10">
+                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{settings.teacherName || 'Ustoz'}</h3>
+                      <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.4em] mt-4">{auth.currentUser?.email}</p>
+                    </div>
+                    <div className="pt-8 grid grid-cols-2 gap-4 relative z-10">
+                      <div className="p-6 bg-white/[0.02] rounded-[32px] border border-white/5">
+                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Savollar</p>
+                        <p className="text-3xl font-black text-orange-500">{questions.length}</p>
+                      </div>
+                      <div className="p-6 bg-white/[0.02] rounded-[32px] border border-white/5">
+                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Natijalar</p>
+                        <p className="text-3xl font-black text-orange-500">{results.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* GURUHLAR VA STATISTIKA */}
+                <div className="lg:col-span-2 space-y-10">
+                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 space-y-8 shadow-2xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
+                          <Users className="text-orange-500" size={24} />
+                        </div>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight">Guruhlar Ro'yhati</h3>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const name = prompt("Guruh nomini kiriting:");
+                          if (name) {
+                            const newGroups = [...(settings.groups || []), { id: Date.now(), name }];
+                            const updated = { ...settings, groups: newGroups };
+                            setSettings(updated);
+                            storage.saveSettings(adminUid, updated);
+                            storage.saveSubjects(adminUid, subjects);
+                          }
+                        }}
+                        className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-orange-900/20 flex items-center gap-2 group"
+                      >
+                        <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Guruh Qo'shish
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {(!settings.groups || settings.groups.length === 0) ? (
+                        <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[40px] bg-white/[0.01]">
+                          <Sparkles className="mx-auto text-white/5 mb-4" size={48} />
+                          <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">Hali guruhlar qo'shilmagan</p>
+                        </div>
+                      ) : (
+                        settings.groups.map(group => (
+                          <div key={group.id} className="flex items-center justify-between p-6 bg-white/[0.02] rounded-[32px] border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 font-black text-xs border border-orange-500/10 group-hover:bg-orange-500 group-hover:text-white transition-all duration-500">
+                                {group.name.substring(0, 2).toUpperCase()}
+                              </div>
+                              <span className="text-lg font-black text-white uppercase tracking-tight">{group.name}</span>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                if (confirm("Guruhni o'chirmoqchimisiz?")) {
+                                  const newGroups = settings.groups.filter(g => g.id !== group.id);
+                                  const updated = { ...settings, groups: newGroups };
+                                  setSettings(updated);
+                                  storage.saveSettings(adminUid, updated);
+                                  storage.saveSubjects(adminUid, subjects);
+                                }
+                              }}
+                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white/10 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 space-y-10 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32"></div>
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
+                        <BarChart3 className="text-orange-500" size={24} />
+                      </div>
+                      <h3 className="text-xl font-black text-white uppercase tracking-tight">Umumiy Ko'rsatkichlar</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
+                      {[
+                        { label: "O'rtacha Ball", value: `${stats.avgScore}%`, color: "text-white" },
+                        { label: "O'rtacha Baho", value: stats.avgGrade, color: "text-orange-500" },
+                        { label: "Top Natija", value: `${results.length > 0 ? Math.max(...results.map(r => r.score || 0)) : 0}%`, color: "text-green-500" }
+                      ].map((item, i) => (
+                        <div key={i} className="p-8 bg-white/[0.02] rounded-[40px] border border-white/5 space-y-2 hover:bg-white/[0.04] transition-all duration-500">
+                          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
+                          <p className={`text-3xl font-black ${item.color} tracking-tighter`}>{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
