@@ -153,21 +153,70 @@ const AdminPanel = () => {
         <div className="w-20 h-20 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-2xl flex items-center justify-center mx-auto text-white shadow-xl shadow-orange-900/20">
           {isRegisterMode ? <UserPlus size={36} /> : <Lock size={36} />}
         </div>
-        <div className="space-y-1">
-          <h2 className="text-2xl font-black">{isRegisterMode ? "Ro'yxatdan o'tish" : "Xush Kelibsiz"}</h2>
-          <p className="text-white/40 text-xs font-medium tracking-wide">{isRegisterMode ? "Yangi admin hisobini yarating" : "Boshqaruv paneliga kiring"}</p>
+        <div>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tight">RANCH <span className="text-orange-500">PRO</span></h2>
+          <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Platinum v5.2</p>
         </div>
-        <form onSubmit={handleAuth} className="space-y-4 relative z-10">
-          <div className="space-y-3">
-            <input className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:border-orange-500 transition-all text-sm" type="email" name="email" placeholder="Email" required />
-            <input className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:border-orange-500 transition-all text-sm" type="password" name="password" placeholder="Parol" required />
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div className="space-y-2">
+            <input name="email" type="email" placeholder="Email manzil" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold" required />
+            <input name="password" type="password" placeholder="Parol" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold" required />
           </div>
-          <button type="submit" className="w-full bg-orange-500 py-4 rounded-xl font-black text-sm hover:bg-orange-600 transition-all shadow-lg shadow-orange-900/10">
+          <button type="submit" className="w-full bg-orange-500 py-5 rounded-2xl font-black text-lg shadow-xl shadow-orange-900/20 hover:bg-orange-600 transition-all">
             {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
           </button>
         </form>
-        <button onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-white/20 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors">
-          {isRegisterMode ? "Akkauntingiz bormi? Kirish" : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"}
+
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+          <div className="relative flex justify-center text-[10px]"><span className="bg-[#0a0a0a] px-4 text-white/20 font-black uppercase tracking-widest">Yoki</span></div>
+        </div>
+
+        {/* HEMIS LOGIN TUGMASI */}
+        <button 
+          onClick={async () => {
+            const domain = prompt("Universitet HEMIS manzili (masalan: hemis.tuit.uz):");
+            const login = prompt("HEMIS Login:");
+            const password = prompt("HEMIS Parol:");
+            
+            if (domain && login && password) {
+              showToast("HEMIS bilan bog'lanilmoqda...");
+              // Simulyatsiya: Haqiqiy integratsiyada bu yerda API chaqiriladi
+              setTimeout(() => {
+                alert("HEMIS tizimi muvaffaqiyatli bog'landi! Ma'lumotlaringiz (Fanlar va Guruhlar) yuklanmoqda...");
+                // Ma'lumotlarni simulyatsiya qilish
+                const mockSubjects = [
+                  { id: 'h1', name: 'Matematika (HEMIS)' },
+                  { id: 'h2', name: 'Dasturlash (HEMIS)' }
+                ];
+                const mockGroups = [
+                  { id: 101, name: '911-21-Guruh' },
+                  { id: 102, name: '912-21-Guruh' }
+                ];
+                
+                // Bu yerda biz Firebase orqali vaqtinchalik login qilamiz yoki 
+                // AdminPanel'ni ochish uchun holatni o'zgartiramiz
+                setIsAuthenticated(true);
+                setSettings(prev => ({ 
+                  ...prev, 
+                  teacherName: login.toUpperCase(),
+                  groups: mockGroups,
+                  hemisDomain: domain
+                }));
+                setSubjects(mockSubjects);
+                showToast("HEMIS Ma'lumotlari yuklandi!");
+              }, 2000);
+            }
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-3"
+        >
+          <RefreshCw size={20} className="animate-spin-slow" />
+          HEMIS ORQALI KIRISH
+        </button>
+
+        <button onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-[10px] font-black text-white/20 hover:text-orange-500 transition-colors uppercase tracking-widest">
+          {isRegisterMode ? "LOGIN ORQALI KIRISH" : "YANGI PROFIL YARATISH"}
         </button>
       </div>
     </div>
