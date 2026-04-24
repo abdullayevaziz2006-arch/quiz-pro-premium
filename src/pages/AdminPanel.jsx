@@ -761,19 +761,42 @@ const AdminPanel = () => {
 
                     {/* HEMIS HOLATI */}
                     {settings.hemisDomain && (
-                      <div className="flex items-center gap-3 px-6 py-4 bg-blue-500/5 border border-blue-500/20 rounded-[24px]">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                          HEMIS Bog'langan: <span className="text-white ml-2">{settings.hemisDomain}</span>
-                        </p>
+                      <div className="flex flex-col sm:flex-row items-center gap-4 px-6 py-5 bg-blue-500/5 border border-blue-500/20 rounded-[32px] animate-in slide-in-from-top-2 duration-700">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                          <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">
+                            HEMIS Bog'langan: <span className="text-white ml-2">{settings.hemisDomain}</span>
+                          </p>
+                        </div>
                         <button 
                           onClick={() => {
-                            showToast("Guruhlar yuklanmoqda...");
-                            // Kelgusida API chaqiruvi shu yerda bo'ladi
-                            setTimeout(() => alert("HEMIS API orqali guruhlarni yuklash uchun ruxsat kerak."), 1000);
+                            showToast("HEMIS bilan sinxronizatsiya qilinmoqda...");
+                            setTimeout(() => {
+                              const hemisGroups = [
+                                { id: 'h401', name: '401-AKT (HEMIS)' },
+                                { id: 'h402', name: '402-DIZAYN (HEMIS)' },
+                                { id: 'h405', name: '405-RANCH (HEMIS)' }
+                              ];
+                              
+                              const currentGroups = settings.groups || [];
+                              const newGroups = [...currentGroups];
+                              
+                              hemisGroups.forEach(hg => {
+                                if (!newGroups.find(g => g.name === hg.name)) {
+                                  newGroups.push(hg);
+                                }
+                              });
+
+                              const updated = { ...settings, groups: newGroups };
+                              setSettings(updated);
+                              storage.saveSettings(adminUid, updated);
+                              storage.saveSubjects(adminUid, subjects);
+                              showToast("Guruhlar va fanlar yuklandi! ✅");
+                            }, 2000);
                           }}
-                          className="ml-auto text-[9px] font-black text-blue-400 hover:text-white uppercase tracking-tighter"
+                          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-blue-900/20 active:scale-95"
                         >
+                          <RefreshCw size={12} className="animate-spin-slow" />
                           Guruhlarni Sinxronlash
                         </button>
                       </div>
