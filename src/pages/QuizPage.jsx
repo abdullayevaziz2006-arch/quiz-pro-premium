@@ -41,15 +41,20 @@ const QuizPage = () => {
         setSettings(currentSettings);
         setTimeLeft(currentSettings.timePerQuestion || 120);
 
+        // Tizim ma'lumotlarini savollardan filtrab tashlaymiz
+        const realQuestions = allQuestions.filter(q => 
+          q.uid !== 'subjects_storage_data' && q.text !== '___SYSTEM_DATA___'
+        );
+
         let selected = [];
         if (sessionId && sessionId !== 'random') {
           const session = sessions.find(s => s.id === sessionId);
           if (session) {
             const qIds = typeof session.questionIds === 'string' ? JSON.parse(session.questionIds) : session.questionIds;
-            selected = allQuestions.filter(q => qIds?.includes(q.uid));
+            selected = realQuestions.filter(q => qIds?.includes(q.uid));
           }
         } else {
-          selected = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, currentSettings.questionsPerTest || 20);
+          selected = [...realQuestions].sort(() => 0.5 - Math.random()).slice(0, currentSettings.questionsPerTest || 20);
         }
 
         setQuestions(selected);
