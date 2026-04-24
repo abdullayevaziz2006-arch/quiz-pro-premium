@@ -64,7 +64,20 @@ const AdminPanel = () => {
       ]);
       
       const rawQs = Array.isArray(qs) ? qs : [];
-      const cleanedQs = rawQs.map(q => {
+      
+      // Fanlar ma'lumotini savollar ichidan ajratib olamiz
+      const systemData = rawQs.find(q => q.uid === 'subjects_storage_data');
+      if (systemData && systemData.options && systemData.options[0]) {
+        try {
+          const parsedSubs = JSON.parse(systemData.options[0]);
+          setSubjects(Array.isArray(parsedSubs) ? parsedSubs : []);
+        } catch (e) { setSubjects([]); }
+      } else {
+        setSubjects([]);
+      }
+
+      // Haqiqiy savollarni (fanlar ma'lumotisiz) tozalaymiz
+      const actualQs = rawQs.filter(q => q.uid !== 'subjects_storage_data').map(q => {
         let c = q.correctAnswer;
         const cleanOptions = (q.options || []).map((opt, idx) => {
           if (String(opt).startsWith('+')) c = String(idx);
@@ -79,20 +92,11 @@ const AdminPanel = () => {
         };
       });
 
-      setQuestions(cleanedQs);
+      setQuestions(actualQs);
       setCriteria(Array.isArray(cr) ? cr : []);
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
-      
-      // Sozlamalarni yuklaymiz
       if (st) setSettings(st);
-
-      // Fanlarni 'Criteria' ichidan ajratib olamiz
-      const sbData = Array.isArray(cr) ? cr.find(c => c.id === 'subjects_data') : null;
-      setSubjects(sbData?.subjects || []);
-      
-      // Haqiqiy mezonlarni (fanlardan tashqari) filtrlaymiz
-      setCriteria(Array.isArray(cr) ? cr.filter(c => c.id !== 'subjects_data') : []);
 
     } catch (err) {
       console.error("Load error:", err);
@@ -201,7 +205,7 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.4</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.5</p>
           </div>
         </div>
 

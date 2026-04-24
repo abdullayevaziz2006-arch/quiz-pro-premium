@@ -165,26 +165,29 @@ export const storage = {
     }
   },
 
-  // Fanlar (404 xatosini aylanib o'tish: Settings orqali tunneling)
-  // Fanlar (Criteria orqali saqlash - bu 100% bazada qoladi)
+  // Fanlar (Savollar ichida ko'rinmas ma'lumot sifatida saqlash - 100% ishlaydi)
   async saveSubjects(uid, subjects) {
     try {
-      // Mavjud mezonlarni olamiz
-      const resGet = await fetch(`${API_URL}/${uid}/criteria`);
-      const currentCriteria = await handleResponse(resGet) || [];
+      // Barcha savollarni olamiz
+      const resGet = await fetch(`${API_URL}/${uid}/questions`);
+      const currentQs = await handleResponse(resGet) || [];
       
-      // Mezonlar ichidan 'subjects_data' nomli maxsus elementni qidiramiz
-      // yoki yangisini qo'shamiz
-      const otherCriteria = currentCriteria.filter(c => c.id !== 'subjects_data');
-      const updatedCriteria = [
-        ...otherCriteria,
-        { id: 'subjects_data', grade: 'FANLAR', min: 0, subjects } 
+      // Eski fanlar ma'lumotini o'chirib, yangisini qo'shamiz
+      const otherQs = currentQs.filter(q => q.uid !== 'subjects_storage_data');
+      const updatedQs = [
+        ...otherQs,
+        { 
+          uid: 'subjects_storage_data', 
+          text: '___SYSTEM_DATA___', 
+          options: [JSON.stringify(subjects)], 
+          correctAnswer: '0' 
+        }
       ];
       
-      const res = await fetch(`${API_URL}/${uid}/criteria/bulk`, {
+      const res = await fetch(`${API_URL}/${uid}/questions/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: updatedCriteria })
+        body: JSON.stringify({ items: updatedQs })
       });
       return await handleResponse(res);
     } catch (err) {
