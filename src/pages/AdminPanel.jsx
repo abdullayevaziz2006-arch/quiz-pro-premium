@@ -334,16 +334,16 @@ const AdminPanel = () => {
       )}
 
       {/* Sidebar Menu */}
-      <aside className={`w-72 ${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border-r flex flex-col p-8 sticky top-0 h-screen shrink-0 relative z-50 transition-all duration-700`}>
-        <div className="mb-12 flex items-center gap-3 px-1">
+      <aside className={`w-72 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 sticky top-0 h-screen shrink-0 relative z-50 transition-all duration-700`}>
+        <div className="mb-12 flex items-center gap-3 px-1 text-white">
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white text-white" /></div>
           <div>
-            <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} text-[8px] font-black uppercase tracking-[0.3em] mt-1`}>Platinum v6.0</p>
+            <h1 className="text-xl font-black tracking-tighter leading-none uppercase">RANCH <span className="text-orange-500">PRO</span></h1>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v6.0</p>
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 px-2 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
           {menuItems.map(item => (
             <button
               key={item.id}
@@ -355,7 +355,7 @@ const AdminPanel = () => {
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id 
                   ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/20' 
-                  : `${isDarkMode ? 'text-white/40 hover:bg-white/5 hover:text-white' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`
+                  : 'text-white/40 hover:bg-white/5 hover:text-white'
               }`}
             >
               <item.icon size={18} className={activeTab === item.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
@@ -371,7 +371,7 @@ const AdminPanel = () => {
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border transition-all duration-500 group ${
               activeTab === 'profile' 
                 ? 'bg-orange-500 border-orange-400 shadow-lg shadow-orange-900/20' 
-                : `${isDarkMode ? 'bg-white/[0.03] border-white/5 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 hover:border-orange-500/50'}`
+                : 'bg-white/[0.03] border-white/5 hover:border-orange-500/50'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
@@ -382,10 +382,10 @@ const AdminPanel = () => {
               <User size={20} className={activeTab === 'profile' ? 'text-white' : 'text-orange-500 group-hover:text-white transition-colors'} />
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className={`text-[10px] font-black truncate uppercase tracking-widest mb-0.5 ${activeTab === 'profile' ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
+              <p className={`text-[10px] font-black truncate uppercase tracking-widest mb-0.5 text-white`}>
                 {settings.teacherName || 'Ustoz'}
               </p>
-              <p className={`text-[9px] truncate font-bold uppercase tracking-tighter ${activeTab === 'profile' ? 'text-white/60' : (isDarkMode ? 'text-white/20' : 'text-slate-400')}`}>
+              <p className={`text-[9px] truncate font-bold uppercase tracking-tighter text-white/40`}>
                 {auth.currentUser?.email || 'admin@ranch.pro'}
               </p>
             </div>
@@ -393,10 +393,10 @@ const AdminPanel = () => {
 
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl ${isDarkMode ? 'text-white/40 hover:bg-red-500/10' : 'text-slate-400 hover:bg-red-50'} hover:text-red-500 transition-all duration-300 group`}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all duration-300 group`}
           >
             <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-xs font-bold tracking-tight uppercase">Chiqish</span>
+            <span className="text-xs font-bold tracking-tight uppercase text-inherit">Chiqish</span>
           </button>
         </div>
       </aside>
