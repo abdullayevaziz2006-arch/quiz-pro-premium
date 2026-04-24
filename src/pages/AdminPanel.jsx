@@ -22,6 +22,7 @@ const AdminPanel = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [newSubject, setNewSubject] = useState('');
+  const [newGroupName, setNewGroupName] = useState('');
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120, teacherName: '', groups: [] });
   const [sessionName, setSessionName] = useState('');
   const [sessionQCount, setSessionQCount] = useState(20);
@@ -307,6 +308,7 @@ const AdminPanel = () => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'subjects', label: 'Fanlar', icon: Library },
+    { id: 'groups', label: 'Guruhlar', icon: Users },
     { id: 'sessions', label: 'Havolalar', icon: Link2 },
     { id: 'results', label: 'Natijalar', icon: Award },
     { id: 'settings', label: 'Sozlamalar', icon: Settings }
@@ -603,6 +605,89 @@ const AdminPanel = () => {
             </div>
           )}
 
+          {activeTab === 'groups' && (
+            <div className="grid lg:grid-cols-12 gap-10">
+              <div className="lg:col-span-5">
+                <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 sticky top-10`}>
+                  <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Guruh</h3>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Guruh nomi</label>
+                      <input 
+                        className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-orange-500 transition-all`} 
+                        value={newGroupName} 
+                        onChange={e => setNewGroupName(e.target.value)} 
+                        placeholder="Masalan: 941-21" 
+                      />
+                    </div>
+                    <button 
+                      onClick={async () => {
+                        if (!newGroupName.trim()) return;
+                        const group = { id: Date.now(), name: newGroupName.trim() };
+                        const updatedGroups = [...(settings.groups || []), group];
+                        const updatedSettings = { ...settings, groups: updatedGroups };
+                        await storage.saveSettings(adminUid, updatedSettings);
+                        setSettings(updatedSettings);
+                        setNewGroupName('');
+                        showToast("Guruh qo'shildi!");
+                      }} 
+                      className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
+                    >
+                      GURUHNI QO'SHISH
+                    </button>
+
+                    {/* HEMIS INTEGRATSIYASI TUGMASI */}
+                    <button 
+                      onClick={() => {
+                        const domain = prompt("Universitet HEMIS manzilini kiriting (masalan: hemis.tuit.uz):", settings.hemisDomain || '');
+                        const token = prompt("API Tokenni kiriting:", settings.hemisToken || '');
+                        if (domain && token) {
+                          const updated = { ...settings, hemisDomain: domain, hemisToken: token };
+                          setSettings(updated);
+                          storage.saveSettings(adminUid, updated);
+                          showToast("HEMIS ma'lumotlari saqlandi!");
+                        }
+                      }}
+                      className="w-full py-4 bg-blue-600/10 border border-blue-600/20 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw size={16} /> HEMIS BILAN ULASH
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-7 space-y-6">
+                <h3 className={`text-xl font-black px-4 flex items-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Barcha Guruhlar <span className={`px-3 py-1 ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'} rounded-lg text-[10px]`}>{(settings.groups || []).length} ta</span></h3>
+                <div className="grid gap-4">
+                  {(settings.groups || []).map(g => (
+                    <div key={g.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'} border p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'} rounded-xl flex items-center justify-center text-blue-500`}><Users size={20} /></div>
+                        <div>
+                          <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{g.name}</h4>
+                          <p className={`text-[9px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>ID: {g.id}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={async () => {
+                          if (window.confirm("Guruhni o'chirmoqchimisiz?")) {
+                            const updatedGroups = (settings.groups || []).filter(it => it.id !== g.id);
+                            const updatedSettings = { ...settings, groups: updatedGroups };
+                            await storage.saveSettings(adminUid, updatedSettings);
+                            setSettings(updatedSettings);
+                            showToast("Guruh o'chirildi");
+                          }
+                        }} 
+                        className={`w-10 h-10 ${isDarkMode ? 'bg-white/[0.03] text-white/20' : 'bg-slate-50 text-slate-300'} rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'sessions' && (
             <div className="grid lg:grid-cols-12 gap-10 pb-20">
               <div className="lg:col-span-5">
@@ -716,178 +801,27 @@ const AdminPanel = () => {
           {/* PROFIL BO'LIMI */}
           {activeTab === 'profile' && (
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-32">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <div className="max-w-2xl mx-auto">
                 {/* USTOZ KARTASI */}
-                <div className="lg:col-span-1">
-                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 text-center space-y-6 relative overflow-hidden group`}>
-                    <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    <div className="w-32 h-32 bg-orange-500/10 rounded-[40px] flex items-center justify-center border-2 border-orange-500/20 mx-auto relative z-10 group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-orange-900/20">
-                      <User size={64} className="text-orange-500" />
-                    </div>
-                    <div className="relative z-10">
-                      <h3 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tighter leading-none`}>{settings.teacherName || 'Ustoz'}</h3>
-                      <p className={`text-[10px] ${isDarkMode ? 'text-white/40' : 'text-slate-400'} font-black uppercase tracking-[0.4em] mt-4`}>{auth.currentUser?.email}</p>
-                    </div>
-                    <div className="pt-8 grid grid-cols-2 gap-4 relative z-10">
-                      <div className={`p-6 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[32px]`}>
-                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-1`}>Savollar</p>
-                        <p className="text-3xl font-black text-orange-500">{questions.length}</p>
-                      </div>
-                      <div className={`p-6 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[32px]`}>
-                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-1`}>Natijalar</p>
-                        <p className="text-3xl font-black text-orange-500">{results.length}</p>
-                      </div>
+                <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-12 text-center space-y-8 relative overflow-hidden group shadow-2xl`}>
+                  <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  <div className="w-40 h-40 bg-orange-500/10 rounded-[48px] flex items-center justify-center border-2 border-orange-500/20 mx-auto relative z-10 group-hover:scale-105 transition-transform duration-500 shadow-2xl shadow-orange-900/20">
+                    <User size={80} className="text-orange-500" />
+                  </div>
+                  <div className="relative z-10 space-y-4">
+                    <div>
+                      <h3 className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tighter leading-none`}>{settings.teacherName || 'Ustoz'}</h3>
+                      <p className={`text-[12px] ${isDarkMode ? 'text-white/40' : 'text-slate-400'} font-black uppercase tracking-[0.4em] mt-4`}>{auth.currentUser?.email}</p>
                     </div>
                   </div>
-                </div>
-
-                {/* GURUHLAR VA STATISTIKA */}
-                <div className="lg:col-span-2 space-y-10">
-                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 space-y-8 shadow-2xl`}>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
-                          <Users className="text-orange-500" size={24} />
-                        </div>
-                        <div>
-                          <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>Guruhlar Ro'yhati</h3>
-                          <p className={`text-[10px] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-bold uppercase tracking-widest mt-1`}>Sinf va guruhlarni boshqarish</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <button 
-                          onClick={() => {
-                            const name = prompt("Guruh nomini kiriting:");
-                            if (name) {
-                              const newGroups = [...(settings.groups || []), { id: Date.now(), name }];
-                              const updated = { ...settings, groups: newGroups };
-                              setSettings(updated);
-                              storage.saveSettings(adminUid, updated);
-                              storage.saveSubjects(adminUid, subjects);
-                            }
-                          }}
-                          className={`flex-1 sm:flex-none px-6 py-3 ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-600'} hover:bg-orange-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-2`}
-                        >
-                          <Plus size={16} /> Qo'shish
-                        </button>
-                        
-                        {/* HEMIS INTEGRATSIYASI TUGMASI */}
-                        <button 
-                          onClick={() => {
-                            const domain = prompt("Universitet HEMIS manzilini kiriting (masalan: hemis.tuit.uz):", settings.hemisDomain || '');
-                            const token = prompt("API Tokenni kiriting:", settings.hemisToken || '');
-                            if (domain && token) {
-                              const updated = { ...settings, hemisDomain: domain, hemisToken: token };
-                              setSettings(updated);
-                              storage.saveSettings(adminUid, updated);
-                              showToast("HEMIS ma'lumotlari saqlandi!");
-                            }
-                          }}
-                          className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2"
-                        >
-                          <RefreshCw size={16} /> HEMIS Ulash
-                        </button>
-                      </div>
+                  <div className="pt-10 grid grid-cols-2 gap-6 relative z-10">
+                    <div className={`p-8 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[40px]`}>
+                      <p className={`text-[12px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-2`}>Savollar</p>
+                      <p className="text-5xl font-black text-orange-500">{questions.length}</p>
                     </div>
-
-                    {/* HEMIS HOLATI */}
-                    {settings.hemisDomain && (
-                      <div className={`flex flex-col sm:flex-row items-center gap-4 px-6 py-5 ${isDarkMode ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-100'} border rounded-[32px] animate-in slide-in-from-top-2 duration-700`}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
-                          <p className={`text-[10px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} uppercase tracking-[0.2em]`}>
-                            HEMIS Bog'langan: <span className={isDarkMode ? 'text-white' : 'text-blue-900'}>{settings.hemisDomain}</span>
-                          </p>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            showToast("HEMIS bilan sinxronizatsiya qilinmoqda...");
-                            setTimeout(() => {
-                              const hemisGroups = [
-                                { id: 'h401', name: '401-AKT (HEMIS)' },
-                                { id: 'h402', name: '402-DIZAYN (HEMIS)' },
-                                { id: 'h405', name: '405-RANCH (HEMIS)' }
-                              ];
-                              
-                              const currentGroups = settings.groups || [];
-                              const newGroups = [...currentGroups];
-                              
-                              hemisGroups.forEach(hg => {
-                                if (!newGroups.find(g => g.name === hg.name)) {
-                                  newGroups.push(hg);
-                                }
-                              });
-
-                              const updated = { ...settings, groups: newGroups };
-                              setSettings(updated);
-                              storage.saveSettings(adminUid, updated);
-                              storage.saveSubjects(adminUid, subjects);
-                              showToast("Guruhlar va fanlar yuklandi! ✅");
-                            }, 2000);
-                          }}
-                          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-blue-900/20 active:scale-95"
-                        >
-                          <RefreshCw size={12} className="animate-spin-slow" />
-                          Guruhlarni Sinxronlash
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {(!settings.groups || settings.groups.length === 0) ? (
-                        <div className={`col-span-full py-20 text-center border-2 border-dashed ${isDarkMode ? 'border-white/5 bg-white/[0.01]' : 'border-slate-100 bg-slate-50/50'} rounded-[40px]`}>
-                          <Sparkles className={`mx-auto ${isDarkMode ? 'text-white/5' : 'text-slate-200'} mb-4`} size={48} />
-                          <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-black uppercase tracking-[0.3em] text-[10px]`}>Hali guruhlar qo'shilmagan</p>
-                        </div>
-                      ) : (
-                        settings.groups.map(group => (
-                          <div key={group.id} className={`${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-100 shadow-sm'} border p-6 rounded-[32px] flex items-center justify-between group hover:border-orange-500/30 transition-all duration-500`}>
-                            <div className="flex items-center gap-4">
-                              <div className={`w-12 h-12 rounded-2xl ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'} border border-orange-500/10 flex items-center justify-center text-orange-500 font-black text-xs group-hover:bg-orange-500 group-hover:text-white transition-all duration-500`}>
-                                {group.name.substring(0, 2).toUpperCase()}
-                              </div>
-                              <span className={`text-lg font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>{group.name}</span>
-                            </div>
-                            <button 
-                              onClick={() => {
-                                if (confirm("Guruhni o'chirmoqchimisiz?")) {
-                                  const newGroups = settings.groups.filter(g => g.id !== group.id);
-                                  const updated = { ...settings, groups: newGroups };
-                                  setSettings(updated);
-                                  storage.saveSettings(adminUid, updated);
-                                  storage.saveSubjects(adminUid, subjects);
-                                }
-                              }}
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'text-white/10' : 'text-slate-200'} hover:text-red-500 hover:bg-red-500/10 transition-all`}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 space-y-10 relative overflow-hidden`}>
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32"></div>
-                    <div className="flex items-center gap-5 relative z-10">
-                      <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
-                        <BarChart3 className="text-orange-500" size={24} />
-                      </div>
-                      <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>Umumiy Ko'rsatkichlar</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-                      {[
-                        { label: "O'rtacha Ball", value: `${stats.avgScore}%`, color: isDarkMode ? "text-white" : "text-slate-900" },
-                        { label: "O'rtacha Baho", value: stats.avgGrade, color: "text-orange-500" },
-                        { label: "Top Natija", value: `${results.length > 0 ? Math.max(...results.map(r => r.score || 0)) : 0}%`, color: "text-green-500" }
-                      ].map((item, i) => (
-                        <div key={i} className={`p-8 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[40px] space-y-2 hover:bg-white/[0.04] transition-all duration-500`}>
-                          <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-[0.2em]`}>{item.label}</p>
-                          <p className={`text-3xl font-black ${item.color} tracking-tighter`}>{item.value}</p>
-                        </div>
-                      ))}
+                    <div className={`p-8 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[40px]`}>
+                      <p className={`text-[12px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-2`}>Natijalar</p>
+                      <p className="text-5xl font-black text-orange-500">{results.length}</p>
                     </div>
                   </div>
                 </div>
