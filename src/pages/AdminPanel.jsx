@@ -307,7 +307,6 @@ const AdminPanel = () => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'subjects', label: 'Fanlar', icon: Library },
-    { id: 'questions', label: 'Barcha Savollar', icon: BookOpen },
     { id: 'sessions', label: 'Havolalar', icon: Link2 },
     { id: 'results', label: 'Natijalar', icon: Award },
     { id: 'settings', label: 'Sozlamalar', icon: Settings }
