@@ -349,7 +349,25 @@ const AdminPanel = () => {
                   <div className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-white/[0.03]' : 'bg-slate-50'} flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform duration-500`}><s.icon size={24} /></div>
                   <div className="space-y-1">
                     <p className={`text-[9px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{s.label}</p>
-                    <h3 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{s.val}</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{s.val}</h3>
+                      {s.label === 'SAVOLLAR' && s.val > 0 && (
+                        <button 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (window.confirm("DIQQAT! Barcha savollar o'chib ketadi. Rozimisiz?")) {
+                              showToast("Tozalanmoqda...");
+                              await storage.saveQuestions(adminUid, [], subjects);
+                              setQuestions([]);
+                              showToast("Barcha savollar o'chirildi!");
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-tighter transition-all"
+                        >
+                          Tozalash
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
