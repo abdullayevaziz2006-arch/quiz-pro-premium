@@ -86,19 +86,26 @@ const LandingPage = () => {
               
               <div className="flex flex-col items-center mb-12 text-center group">
                 <div className="relative mb-8">
-                  <div className="absolute -inset-6 bg-orange-500/20 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
-                  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transform group-hover:scale-110 transition-transform duration-700">
-                    <path d="M30 35L45 25V75L30 65V35Z" fill="#F97316" fillOpacity="0.4" />
-                    <path d="M45 25L65 15V85L45 75V25Z" fill="#F97316" fillOpacity="0.7" />
-                    <path d="M65 15L85 5V95L65 85V15Z" fill="#F97316" />
+                  <div className="absolute -inset-8 bg-orange-500/20 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transform group-hover:scale-105 transition-transform duration-700">
+                    {/* Bar 1 (Smallest) */}
+                    <path d="M15 42L32 32V68L15 58V42Z" fill="#F97316" fillOpacity="0.4" />
+                    {/* Bar 2 (Medium) */}
+                    <path d="M40 28L62 15V85L40 72V28Z" fill="#F97316" fillOpacity="0.7" />
+                    {/* Bar 3 (Largest) */}
+                    <path d="M70 12L95 0V100L70 88V12Z" fill="#F97316" />
                   </svg>
                 </div>
-                <h2 className={`text-3xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase mb-2`}>
+                <h2 className={`text-4xl font-[1000] tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase mb-2`}>
                   RANCH <span className="text-orange-500">PRO</span>
                 </h2>
-                <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} text-[10px] font-black uppercase tracking-[0.4em]`}>
-                  Testga Kirish
-                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] w-8 bg-orange-500/20"></div>
+                  <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-300'} text-[9px] font-black uppercase tracking-[0.5em]`}>
+                    Platinum v6.0
+                  </p>
+                  <div className="h-[1px] w-8 bg-orange-500/20"></div>
+                </div>
               </div>
 
               <form onSubmit={handleNextStep} className="space-y-8">
