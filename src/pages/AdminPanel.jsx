@@ -220,7 +220,7 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className={`flex min-h-screen ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-[#f8f9fc] text-slate-900'} font-sans overflow-hidden transition-colors duration-700 selection:bg-orange-500/20`}>
+    <div className={`flex h-screen ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-[#f8f9fc] text-slate-900'} font-sans overflow-hidden transition-colors duration-700 selection:bg-orange-500/20`}>
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-3 rounded-full bg-white text-black shadow-2xl animate-in slide-in-from-top-4 duration-500 font-bold text-sm flex items-center gap-3">
