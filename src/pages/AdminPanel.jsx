@@ -400,7 +400,7 @@ const AdminPanel = () => {
                 <h3 className={`text-xl font-black px-4 flex items-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Barcha Fanlar <span className={`px-3 py-1 ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'} rounded-lg text-[10px]`}>{subjects.length} ta</span></h3>
                 <div className="grid gap-4">
                   {subjects.map(s => {
-                    const qCount = questions.filter(q => q.subjectId === s.id).length;
+                    const qCount = questions.filter(q => String(q.subjectId) === String(s.id)).length;
                     return (
                       <div key={s.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'} border p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group cursor-pointer`} onClick={() => setSelectedSubject(s)}>
                         <div className="flex items-center gap-4">
@@ -440,8 +440,8 @@ const AdminPanel = () => {
                 <div className="flex gap-3">
                   <button onClick={async () => {
                     if (window.confirm("Ushbu bo'limdagi barcha savollar o'chirilsinmi?")) {
-                      const updated = questions.filter(q => selectedSubject ? q.subjectId !== selectedSubject.id : false);
-                      setQuestions(updated); await storage.saveQuestions(adminUid, updated); showToast("Tozalandi");
+                      const updated = questions.filter(q => selectedSubject ? String(q.subjectId) !== String(selectedSubject.id) : false);
+                      setQuestions(updated); await storage.saveQuestions(adminUid, updated, subjects); showToast("Tozalandi");
                     }
                   }} className={`px-6 py-4 ${isDarkMode ? 'bg-red-500/5 hover:bg-red-500 text-red-500' : 'bg-red-50 hover:bg-red-500 text-red-600'} hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase`}>Bo'limni Tozalash</button>
                   <label className={`px-6 py-4 ${isDarkMode ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08]' : 'bg-white border-slate-200 hover:bg-slate-50'} border rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all uppercase`}>
