@@ -21,6 +21,7 @@ const AdminPanel = () => {
   const [sessions, setSessions] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [newSubject, setNewSubject] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120, teacherName: '', groups: [] });
@@ -593,16 +594,19 @@ const AdminPanel = () => {
             </div>
           )}
 
-          {activeTab === 'groups' && (
+          {activeTab === 'groups' && !selectedGroup && (
             <div className="grid lg:grid-cols-12 gap-10">
               <div className="lg:col-span-5">
                 <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 sticky top-10`}>
-                  <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Guruh</h3>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 shadow-lg shadow-blue-500/20"><UserPlus size={24} /></div>
+                    <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Guruh</h3>
+                  </div>
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Guruh nomi</label>
                       <input 
-                        className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-orange-500 transition-all`} 
+                        className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-blue-500 transition-all`} 
                         value={newGroupName} 
                         onChange={e => setNewGroupName(e.target.value)} 
                         placeholder="Masalan: 941-21" 
@@ -611,7 +615,7 @@ const AdminPanel = () => {
                     <button 
                       onClick={async () => {
                         if (!newGroupName.trim()) return;
-                        const group = { id: Date.now(), name: newGroupName.trim() };
+                        const group = { id: Date.now(), name: newGroupName.trim(), assignedSubjects: [] };
                         const updatedGroups = [...(settings.groups || []), group];
                         const updatedSettings = { ...settings, groups: updatedGroups };
                         await storage.saveSettings(adminUid, updatedSettings);
@@ -619,7 +623,7 @@ const AdminPanel = () => {
                         setNewGroupName('');
                         showToast("Guruh qo'shildi!");
                       }} 
-                      className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all"
+                      className="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-blue-900/20 hover:bg-blue-700 transition-all uppercase tracking-widest"
                     >
                       GURUHNI QO'SHISH
                     </button>
@@ -627,33 +631,171 @@ const AdminPanel = () => {
                 </div>
               </div>
               <div className="lg:col-span-7 space-y-6">
-                <h3 className={`text-xl font-black px-4 flex items-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Barcha Guruhlar <span className={`px-3 py-1 ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'} rounded-lg text-[10px]`}>{(settings.groups || []).length} ta</span></h3>
-                <div className="grid gap-4">
-                  {(settings.groups || []).map(g => (
-                    <div key={g.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'} border p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group`}>
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'} rounded-xl flex items-center justify-center text-blue-500`}><Users size={20} /></div>
-                        <div>
-                          <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{g.name}</h4>
-                          <p className={`text-[9px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>ID: {g.id}</p>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className={`text-xl font-black flex items-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Barcha Guruhlar <span className={`px-3 py-1 ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'} rounded-lg text-[10px]`}>{(settings.groups || []).length} ta</span></h3>
+                </div>
+                <div className="grid gap-6">
+                  {(settings.groups || []).map(g => {
+                    const groupResults = results.filter(r => r.student?.group === g.name);
+                    const avgScore = groupResults.length > 0 ? Math.round(groupResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / groupResults.length) : 0;
+                    
+                    return (
+                      <div key={g.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5 hover:border-blue-500/30' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-blue-200/50'} border p-8 rounded-[32px] flex justify-between items-center transition-all group cursor-pointer`} onClick={() => setSelectedGroup(g)}>
+                        <div className="flex items-center gap-6">
+                          <div className={`w-16 h-16 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'} rounded-[20px] flex items-center justify-center text-blue-500 font-black text-xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-blue-500/5`}>
+                            {g.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className={`font-black text-2xl ${isDarkMode ? 'text-white' : 'text-slate-900'} group-hover:text-blue-500 transition-colors`}>{g.name}</h4>
+                            <div className="flex items-center gap-3 mt-1">
+                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{(g.assignedSubjects || []).length} ta fan biriktirilgan</p>
+                              <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+                              <p className={`text-[10px] font-black text-blue-500 uppercase tracking-widest`}>{avgScore}% o'zlashtirish</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right mr-4 hidden sm:block">
+                            <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-500" style={{ width: `${avgScore}%` }}></div>
+                            </div>
+                          </div>
+                          <ChevronRight className={`${isDarkMode ? 'text-white/10' : 'text-slate-200'} group-hover:text-blue-500 transition-all`} size={24} />
                         </div>
                       </div>
-                      <button 
-                        onClick={async () => {
-                          if (window.confirm("Guruhni o'chirmoqchimisiz?")) {
-                            const updatedGroups = (settings.groups || []).filter(it => it.id !== g.id);
-                            const updatedSettings = { ...settings, groups: updatedGroups };
-                            await storage.saveSettings(adminUid, updatedSettings);
-                            setSettings(updatedSettings);
-                            showToast("Guruh o'chirildi");
-                          }
-                        }} 
-                        className={`w-10 h-10 ${isDarkMode ? 'bg-white/[0.03] text-white/20' : 'bg-slate-50 text-slate-300'} rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'groups' && selectedGroup && (
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                <div className="flex items-center gap-6">
+                  <button onClick={() => setSelectedGroup(null)} className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'} flex items-center justify-center transition-all shadow-lg active:scale-95`}><ArrowLeft size={24} /></button>
+                  <div>
+                    <h2 className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedGroup.name}</h2>
+                    <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} mt-1`}>Guruh tahlili va boshqarish</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={async () => {
+                    if (window.confirm("Guruhni o'chirmoqchimisiz?")) {
+                      const updatedGroups = settings.groups.filter(it => it.id !== selectedGroup.id);
+                      const updatedSettings = { ...settings, groups: updatedGroups };
+                      await storage.saveSettings(adminUid, updatedSettings);
+                      setSettings(updatedSettings);
+                      setSelectedGroup(null);
+                      showToast("Guruh o'chirildi");
+                    }
+                  }}
+                  className="px-8 py-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-xs transition-all uppercase tracking-widest flex items-center gap-2"
+                >
+                  <Trash2 size={18} /> GURUHNI O'CHIRISH
+                </button>
+              </header>
+
+              <div className="grid lg:grid-cols-3 gap-10">
+                {/* Fan Biriktirish Section */}
+                <div className="lg:col-span-1 space-y-8">
+                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8`}>
+                    <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+                      <Library size={20} className="text-blue-500" /> Fan Biriktirish
+                    </h3>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {subjects.map(sub => {
+                        const isAssigned = (selectedGroup.assignedSubjects || []).includes(sub.id);
+                        return (
+                          <div key={sub.id} className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${isAssigned ? 'border-blue-500/50 bg-blue-500/5' : (isDarkMode ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50')}`}>
+                            <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{sub.name}</span>
+                            <button 
+                              onClick={async () => {
+                                const currentAssigned = selectedGroup.assignedSubjects || [];
+                                const newAssigned = isAssigned 
+                                  ? currentAssigned.filter(id => id !== sub.id) 
+                                  : [...currentAssigned, sub.id];
+                                
+                                const updatedGroup = { ...selectedGroup, assignedSubjects: newAssigned };
+                                const updatedGroups = settings.groups.map(g => g.id === selectedGroup.id ? updatedGroup : g);
+                                const updatedSettings = { ...settings, groups: updatedGroups };
+                                
+                                await storage.saveSettings(adminUid, updatedSettings);
+                                setSettings(updatedSettings);
+                                setSelectedGroup(updatedGroup);
+                                showToast(isAssigned ? "Fan ajratildi" : "Fan biriktirildi");
+                              }}
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isAssigned ? 'bg-blue-500 text-white' : (isDarkMode ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300 shadow-sm hover:text-blue-500')}`}
+                            >
+                              {isAssigned ? <Check size={20} /> : <Plus size={20} />}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
+                </div>
+
+                {/* Natijalar va Tahlil Section */}
+                <div className="lg:col-span-2 space-y-10">
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div className={`${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'} border p-10 rounded-[40px] space-y-4`}>
+                      <p className={`text-[10px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} uppercase tracking-[0.4em]`}>Umumiy O'zlashtirish</p>
+                      <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-blue-900'} tracking-tighter`}>
+                        {(() => {
+                          const grResults = results.filter(r => r.student?.group === selectedGroup.name);
+                          return grResults.length > 0 ? Math.round(grResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / grResults.length) : 0;
+                        })()}%
+                      </h3>
+                    </div>
+                    <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border p-10 rounded-[40px] space-y-4`}>
+                      <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-[0.4em]`}>Imtihonlar Soni</p>
+                      <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter`}>
+                        {results.filter(r => r.student?.group === selectedGroup.name).length}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border rounded-[40px] overflow-hidden shadow-2xl`}>
+                    <div className="p-8 border-b border-white/5 flex justify-between items-center">
+                      <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Fanlar Bo'yicha Tahlil</h3>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {(selectedGroup.assignedSubjects || []).map(subId => {
+                        const sub = subjects.find(s => s.id === subId);
+                        if (!sub) return null;
+                        
+                        // Bu fan bo'yicha guruh natijalari
+                        const subResults = results.filter(r => r.student?.group === selectedGroup.name && sessions.find(s => s.id === r.sessionId)?.questionIds?.some(qId => questions.find(q => q.uid === qId)?.subjectId === subId));
+                        // Soddaroq: Session nomi fanga mos kelsa yoki student results ichida fan ma'lumoti bo'lsa
+                        // Hozirgi tuzilmada sessionni subjectga bog'lash orqali aniqlaymiz
+                        const avg = subResults.length > 0 ? Math.round(subResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / subResults.length) : 0;
+
+                        return (
+                          <div key={subId} className="p-8 flex items-center justify-between hover:bg-white/[0.01] transition-all">
+                            <div className="space-y-1">
+                              <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sub.name}</h4>
+                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{subResults.length} ta natija</p>
+                            </div>
+                            <div className="flex items-center gap-8">
+                              <div className="text-right">
+                                <p className={`text-2xl font-black ${avg >= 70 ? 'text-green-500' : (avg >= 40 ? 'text-orange-500' : 'text-red-500')}`}>{avg}%</p>
+                                <div className="w-32 h-2 bg-white/5 rounded-full mt-2 overflow-hidden">
+                                  <div className={`h-full ${avg >= 70 ? 'bg-green-500' : (avg >= 40 ? 'bg-orange-500' : 'bg-red-500')}`} style={{ width: `${avg}%` }}></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {(selectedGroup.assignedSubjects || []).length === 0 && (
+                        <div className="p-20 text-center text-white/20 font-bold uppercase tracking-widest text-xs">
+                          Hali fanlar biriktirilmagan
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
