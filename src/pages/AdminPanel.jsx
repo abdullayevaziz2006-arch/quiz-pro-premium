@@ -210,14 +210,30 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+        {/* PROFIL QISMI (YUPORIYA KO'CHIRILDI) */}
+        <div className="px-4 mb-4">
+          <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white/[0.03] border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 transition-all duration-500">
+              <User size={20} className="text-orange-500 group-hover:text-white transition-colors" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-black text-white truncate uppercase tracking-widest mb-0.5">
+                {settings.teacherName || 'Ustoz'}
+              </p>
+              <p className="text-[9px] text-white/20 truncate font-bold uppercase tracking-tighter">
+                {auth.currentUser?.email || 'admin@ranch.pro'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {menuItems.map(item => (
             <button
               key={item.id}
               onClick={() => {
                 setActiveTab(item.id);
                 setSelectedSubject(null);
-                setShowSessionModal(false);
               }}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id 
@@ -225,16 +241,19 @@ const AdminPanel = () => {
                   : 'text-white/40 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <item.icon size={20} className={activeTab === item.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
-              <span className="text-sm font-bold tracking-tight uppercase">{item.label}</span>
+              <item.icon size={18} className={activeTab === item.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
+              <span className="text-xs font-bold tracking-tight uppercase">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="mt-auto pt-8 border-t border-white/5">
-          <button onClick={() => auth.signOut()} className="w-full flex items-center justify-between px-6 py-4 bg-white/[0.02] rounded-2xl hover:bg-red-500/10 transition-all group">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-red-500">Chiqish</span>
-            <LogOut size={16} className="text-white/10 group-hover:text-red-500" />
+        <div className="p-4 border-t border-white/5">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all duration-300 group"
+          >
+            <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-bold tracking-tight uppercase">Chiqish</span>
           </button>
         </div>
       </aside>
