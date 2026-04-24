@@ -593,115 +593,144 @@ const AdminPanel = () => {
             </div>
           )}
 
-          {activeTab === 'groups' && selectedGroup && (
-            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div className="flex items-center gap-6">
-                  <button onClick={() => setSelectedGroup(null)} className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'} flex items-center justify-center transition-all shadow-lg active:scale-95`}><ArrowLeft size={24} /></button>
-                  <div>
-                    <h2 className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedGroup.name}</h2>
-                    <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} mt-1`}>Guruh tahlili va boshqarish</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={async () => {
-                    if (window.confirm("Guruhni o'chirmoqchimisiz?")) {
-                      const updatedGroups = settings.groups.filter(it => it.id !== selectedGroup.id);
-                      const updatedSettings = { ...settings, groups: updatedGroups };
-                      await storage.saveSettings(adminUid, updatedSettings);
-                      setSettings(updatedSettings);
-                      setSelectedGroup(null);
-                      showToast("Guruh o'chirildi");
-                    }
-                  }}
-                  className="px-8 py-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-xs transition-all uppercase tracking-widest flex items-center gap-2"
-                >
-                  <Trash2 size={18} /> GURUHNI O'CHIRISH
-                </button>
-              </header>
+          {activeTab === 'groups' && selectedGroup && (() => {
+            // Guruh nomi bilan mos keladigan sessionlarni topamiz
+            const groupSessions = sessions.filter(s => 
+              s.name.trim().toLowerCase() === selectedGroup.name.trim().toLowerCase()
+            );
+            const groupSessionIds = groupSessions.map(s => s.id);
 
-              <div className="grid lg:grid-cols-3 gap-10">
-                {/* Fan Biriktirish Section */}
-                <div className="lg:col-span-1 space-y-8">
-                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8`}>
-                    <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
-                      <Library size={20} className="text-blue-500" /> Fan Biriktirish
-                    </h3>
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {subjects.map(sub => {
-                        const isAssigned = (selectedGroup.assignedSubjects || []).includes(sub.id);
-                        return (
-                          <div key={sub.id} className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${isAssigned ? 'border-blue-500/50 bg-blue-500/5' : (isDarkMode ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50')}`}>
-                            <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{sub.name}</span>
-                            <button 
-                              onClick={async () => {
-                                const currentAssigned = selectedGroup.assignedSubjects || [];
-                                const newAssigned = isAssigned 
-                                  ? currentAssigned.filter(id => id !== sub.id) 
-                                  : [...currentAssigned, sub.id];
-                                
-                                const updatedGroup = { ...selectedGroup, assignedSubjects: newAssigned };
-                                const updatedGroups = settings.groups.map(g => g.id === selectedGroup.id ? updatedGroup : g);
-                                const updatedSettings = { ...settings, groups: updatedGroups };
-                                
-                                await storage.saveSettings(adminUid, updatedSettings);
-                                setSettings(updatedSettings);
-                                setSelectedGroup(updatedGroup);
-                                showToast(isAssigned ? "Fan ajratildi" : "Fan biriktirildi");
-                              }}
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isAssigned ? 'bg-blue-500 text-white' : (isDarkMode ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300 shadow-sm hover:text-blue-500')}`}
-                            >
-                              {isAssigned ? <Check size={20} /> : <Plus size={20} />}
-                            </button>
-                          </div>
-                        );
-                      })}
+            // O'sha sessionlardan kirgan talabalarning natijalarini olamiz
+            const groupResults = results.filter(r => groupSessionIds.includes(r.sessionId));
+
+            // Umumiy o'zlashtirish foizi
+            const overallAvg = groupResults.length > 0 
+              ? Math.round(groupResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / groupResults.length)
+              : 0;
+
+            return (
+              <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                  <div className="flex items-center gap-6">
+                    <button onClick={() => setSelectedGroup(null)} className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'} flex items-center justify-center transition-all shadow-lg active:scale-95`}><ArrowLeft size={24} /></button>
+                    <div>
+                      <h2 className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedGroup.name}</h2>
+                      <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} mt-1`}>Guruh tahlili va boshqarish</p>
                     </div>
                   </div>
-                </div>
+                  <button 
+                    onClick={async () => {
+                      if (window.confirm("Guruhni o'chirmoqchimisiz?")) {
+                        const updatedGroups = settings.groups.filter(it => it.id !== selectedGroup.id);
+                        const updatedSettings = { ...settings, groups: updatedGroups };
+                        await storage.saveSettings(adminUid, updatedSettings);
+                        setSettings(updatedSettings);
+                        setSelectedGroup(null);
+                        showToast("Guruh o'chirildi");
+                      }
+                    }}
+                    className="px-8 py-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-xs transition-all uppercase tracking-widest flex items-center gap-2"
+                  >
+                    <Trash2 size={18} /> GURUHNI O'CHIRISH
+                  </button>
+                </header>
 
-                {/* Natijalar va Tahlil Section */}
-                <div className="lg:col-span-2 space-y-10">
-                  <div className="grid sm:grid-cols-2 gap-6">
-                    <div className={`${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'} border p-10 rounded-[40px] space-y-4`}>
-                      <p className={`text-[10px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} uppercase tracking-[0.4em]`}>Umumiy O'zlashtirish</p>
-                      <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-blue-900'} tracking-tighter`}>
-                        {(() => {
-                          const grResults = results.filter(r => r.student?.group === selectedGroup.name);
-                          return grResults.length > 0 ? Math.round(grResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / grResults.length) : 0;
-                        })()}%
+                <div className="grid lg:grid-cols-3 gap-10">
+                  {/* Fan Biriktirish */}
+                  <div className="lg:col-span-1 space-y-8">
+                    <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8`}>
+                      <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+                        <Library size={20} className="text-blue-500" /> Fan Biriktirish
                       </h3>
-                    </div>
-                    <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border p-10 rounded-[40px] space-y-4`}>
-                      <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-[0.4em]`}>Imtihonlar Soni</p>
-                      <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter`}>
-                        {results.filter(r => r.student?.group === selectedGroup.name).length}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border rounded-[40px] overflow-hidden shadow-2xl`}>
-                    <div className="p-8 border-b border-white/5 flex justify-between items-center">
-                      <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Fanlar Bo'yicha Tahlil</h3>
-                    </div>
-                    <div className="divide-y divide-white/5">
-                      {(selectedGroup.assignedSubjects || []).map(subId => {
-                        const sub = subjects.find(s => s.id === subId);
-                        if (!sub) return null;
-                        
-                        // Bu fan bo'yicha guruh natijalari
-                        const subResults = results.filter(r => r.student?.group === selectedGroup.name && sessions.find(s => s.id === r.sessionId)?.questionIds?.some(qId => questions.find(q => q.uid === qId)?.subjectId === subId));
-                        // Soddaroq: Session nomi fanga mos kelsa yoki student results ichida fan ma'lumoti bo'lsa
-                        // Hozirgi tuzilmada sessionni subjectga bog'lash orqali aniqlaymiz
-                        const avg = subResults.length > 0 ? Math.round(subResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / subResults.length) : 0;
-
-                        return (
-                          <div key={subId} className="p-8 flex items-center justify-between hover:bg-white/[0.01] transition-all">
-                            <div className="space-y-1">
-                              <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sub.name}</h4>
-                              <p className={`text-[10px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{subResults.length} ta natija</p>
+                      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {subjects.map(sub => {
+                          const isAssigned = (selectedGroup.assignedSubjects || []).includes(sub.id);
+                          return (
+                            <div key={sub.id} className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${isAssigned ? 'border-blue-500/50 bg-blue-500/5' : (isDarkMode ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50')}`}>
+                              <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{sub.name}</span>
+                              <button 
+                                onClick={async () => {
+                                  const currentAssigned = selectedGroup.assignedSubjects || [];
+                                  const newAssigned = isAssigned 
+                                    ? currentAssigned.filter(id => id !== sub.id) 
+                                    : [...currentAssigned, sub.id];
+                                  const updatedGroup = { ...selectedGroup, assignedSubjects: newAssigned };
+                                  const updatedGroups = settings.groups.map(g => g.id === selectedGroup.id ? updatedGroup : g);
+                                  const updatedSettings = { ...settings, groups: updatedGroups };
+                                  await storage.saveSettings(adminUid, updatedSettings);
+                                  setSettings(updatedSettings);
+                                  setSelectedGroup(updatedGroup);
+                                  showToast(isAssigned ? "Fan ajratildi" : "Fan biriktirildi");
+                                }}
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isAssigned ? 'bg-blue-500 text-white' : (isDarkMode ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300 shadow-sm hover:text-blue-500')}`}
+                              >
+                                {isAssigned ? <Check size={20} /> : <Plus size={20} />}
+                              </button>
                             </div>
-                            <div className="flex items-center gap-8">
+                          );
+                        })}
+                      </div>
+
+                      {/* Bog'liq linklar */}
+                      <div className="pt-4 border-t border-white/5">
+                        <p className={`text-[9px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>Bog'liq Havolalar</p>
+                        {groupSessions.length > 0 ? groupSessions.map(gs => (
+                          <div key={gs.id} className={`flex items-center gap-2 px-4 py-2 rounded-xl mb-2 ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'}`}>
+                            <Link2 size={14} className="text-blue-500" />
+                            <span className={`text-xs font-bold ${isDarkMode ? 'text-white/60' : 'text-slate-600'}`}>{gs.name}</span>
+                            <span className={`text-[9px] ml-auto ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>{gs.questionIds?.length || 0} savol</span>
+                          </div>
+                        )) : (
+                          <p className={`text-xs ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>
+                            "{selectedGroup.name}" nomli havola topilmadi
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Natijalar va Tahlil */}
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Umumiy statistika */}
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className={`${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'} border p-10 rounded-[40px] space-y-4`}>
+                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} uppercase tracking-[0.4em]`}>Umumiy O'zlashtirish</p>
+                        <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-blue-900'} tracking-tighter`}>{overallAvg}%</h3>
+                      </div>
+                      <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border p-10 rounded-[40px] space-y-4`}>
+                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-[0.4em]`}>Imtihonlar Soni</p>
+                        <h3 className={`text-6xl font-[1000] ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter`}>{groupResults.length}</h3>
+                      </div>
+                    </div>
+
+                    {/* Fanlar bo'yicha tahlil */}
+                    <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border rounded-[40px] overflow-hidden shadow-2xl`}>
+                      <div className="p-8 border-b border-white/5">
+                        <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Fanlar Bo'yicha Tahlil</h3>
+                      </div>
+                      <div className="divide-y divide-white/5">
+                        {(selectedGroup.assignedSubjects || []).map(subId => {
+                          const sub = subjects.find(s => s.id === subId);
+                          if (!sub) return null;
+                          // O'sha fanga tegishli sessionlardagi natijalar
+                          const subSessionIds = groupSessions
+                            .filter(gs => (gs.questionIds || []).some(qId => {
+                              const q = questions.find(qq => qq.uid === qId);
+                              return q && String(q.subjectId) === String(subId);
+                            }))
+                            .map(gs => gs.id);
+                          const subResults = groupResults.filter(r => subSessionIds.includes(r.sessionId));
+                          // Agar bo'sh bo'lsa barcha guruh natijalarini ko'rsat
+                          const displayResults = subResults.length > 0 ? subResults : groupResults;
+                          const avg = displayResults.length > 0 
+                            ? Math.round(displayResults.reduce((acc, r) => acc + (r.score / r.total * 100), 0) / displayResults.length) 
+                            : 0;
+                          return (
+                            <div key={subId} className="p-8 flex items-center justify-between hover:bg-white/[0.01] transition-all">
+                              <div className="space-y-1">
+                                <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sub.name}</h4>
+                                <p className={`text-[10px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{displayResults.length} ta natija</p>
+                              </div>
                               <div className="text-right">
                                 <p className={`text-2xl font-black ${avg >= 70 ? 'text-green-500' : (avg >= 40 ? 'text-orange-500' : 'text-red-500')}`}>{avg}%</p>
                                 <div className="w-32 h-2 bg-white/5 rounded-full mt-2 overflow-hidden">
@@ -709,20 +738,69 @@ const AdminPanel = () => {
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                      {(selectedGroup.assignedSubjects || []).length === 0 && (
-                        <div className="p-20 text-center text-white/20 font-bold uppercase tracking-widest text-xs">
-                          Hali fanlar biriktirilmagan
+                          );
+                        })}
+                        {(selectedGroup.assignedSubjects || []).length === 0 && (
+                          <div className="p-16 text-center text-white/20 font-bold uppercase tracking-widest text-xs">Hali fanlar biriktirilmagan</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Talabalar ro'yxati */}
+                    <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200'} border rounded-[40px] overflow-hidden shadow-2xl`}>
+                      <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                        <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} flex items-center gap-3`}>
+                          <Users size={20} className="text-blue-500" /> Talabalar Ro'yxati
+                        </h3>
+                        <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-500'}`}>
+                          {groupResults.length} ta
+                        </span>
+                      </div>
+                      {groupResults.length === 0 ? (
+                        <div className="p-16 text-center">
+                          <p className={`text-sm font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>
+                            "{selectedGroup.name}" nomli havola orqali hali hech kim kirmagan
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-white/5 max-h-[400px] overflow-y-auto custom-scrollbar">
+                          {groupResults.map((r, idx) => {
+                            const pct = Math.round((r.score / r.total) * 100);
+                            return (
+                              <div key={r.id || idx} className="p-6 flex items-center justify-between hover:bg-white/[0.01] transition-all">
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-500'}`}>
+                                    {idx + 1}
+                                  </div>
+                                  <div>
+                                    <p className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                      {r.student?.name} {r.student?.surname}
+                                    </p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>
+                                      {new Date(r.date).toLocaleDateString('uz-UZ')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className={`text-xl font-black ${pct >= 70 ? 'text-green-500' : (pct >= 40 ? 'text-orange-500' : 'text-red-500')}`}>
+                                    {r.score}/{r.total}
+                                  </p>
+                                  <p className={`text-[10px] font-bold ${pct >= 70 ? 'text-green-500' : (pct >= 40 ? 'text-orange-500' : 'text-red-500')}`}>
+                                    {pct}%
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
+
 
           {activeTab === 'sessions' && (
             <div className="grid lg:grid-cols-12 gap-10 pb-20">
