@@ -8,6 +8,12 @@ const StudentEntry = () => {
   const testId = searchParams.get('testId');
   const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('ranch_theme') === 'dark' || !localStorage.getItem('ranch_theme'));
 
+  useEffect(() => {
+    const handleStorage = () => setIsDarkMode(localStorage.getItem('ranch_theme') === 'dark');
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
