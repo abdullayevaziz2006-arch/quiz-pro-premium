@@ -166,17 +166,6 @@ export const storage = {
   },
 
   // Fanlar (404 xatosini aylanib o'tish: Settings orqali tunneling)
-  async getSubjects(uid) {
-    try {
-      console.log("Fetching subjects via settings tunnel...");
-      const res = await fetch(`${API_URL}/${uid}/settings`);
-      const data = await handleResponse(res);
-      return data?.subjects || [];
-    } catch (err) {
-      console.error("Subject fetch failed:", err);
-      return [];
-    }
-  },
   async saveSubjects(uid, subjects) {
     try {
       const resGet = await fetch(`${API_URL}/${uid}/settings`);
