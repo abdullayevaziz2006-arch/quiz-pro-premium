@@ -35,6 +35,7 @@ const AdminPanel = () => {
   const [hemisForm, setHemisForm] = useState({ domain: '', login: '', password: '' });
 
   const universities = [
+    { name: "Urganch Ranch Texnologiyalar Universiteti", domain: "hemis.ranch.uz" },
     { name: "TATU (Toshkent)", domain: "hemis.tuit.uz" },
     { name: "Milliy Universitet (O'zMU)", domain: "hemis.nuu.uz" },
     { name: "SamDU (Samarqand)", domain: "hemis.samdu.uz" },
@@ -168,7 +169,7 @@ const AdminPanel = () => {
         </div>
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight">RANCH <span className="text-orange-500">PRO</span></h2>
-          <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Platinum v5.2</p>
+          <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Platinum v5.4</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
@@ -326,7 +327,7 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v5.0</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v5.4</p>
           </div>
         </div>
 
