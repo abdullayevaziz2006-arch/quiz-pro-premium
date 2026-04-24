@@ -31,6 +31,19 @@ const AdminPanel = () => {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [showHemisModal, setShowHemisModal] = useState(false);
+  const [hemisForm, setHemisForm] = useState({ domain: '', login: '', password: '' });
+
+  const universities = [
+    { name: "TATU (Toshkent)", domain: "hemis.tuit.uz" },
+    { name: "Milliy Universitet (O'zMU)", domain: "hemis.nuu.uz" },
+    { name: "SamDU (Samarqand)", domain: "hemis.samdu.uz" },
+    { name: "TDPU (Nizomiy)", domain: "hemis.tspu.uz" },
+    { name: "TTA (Akademiya)", domain: "hemis.tma.uz" },
+    { name: "UrDU (Urganch)", domain: "hemis.urdu.uz" },
+    { name: "FarDU (Farg'ona)", domain: "hemis.fardu.uz" },
+    { name: "ADU (Andijon)", domain: "hemis.adu.uz" }
+  ];
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -175,40 +188,7 @@ const AdminPanel = () => {
 
         {/* HEMIS LOGIN TUGMASI */}
         <button 
-          onClick={async () => {
-            const domain = prompt("Universitet HEMIS manzili (masalan: hemis.tuit.uz):");
-            const login = prompt("HEMIS Login:");
-            const password = prompt("HEMIS Parol:");
-            
-            if (domain && login && password) {
-              showToast("HEMIS bilan bog'lanilmoqda...");
-              // Simulyatsiya: Haqiqiy integratsiyada bu yerda API chaqiriladi
-              setTimeout(() => {
-                alert("HEMIS tizimi muvaffaqiyatli bog'landi! Ma'lumotlaringiz (Fanlar va Guruhlar) yuklanmoqda...");
-                // Ma'lumotlarni simulyatsiya qilish
-                const mockSubjects = [
-                  { id: 'h1', name: 'Matematika (HEMIS)' },
-                  { id: 'h2', name: 'Dasturlash (HEMIS)' }
-                ];
-                const mockGroups = [
-                  { id: 101, name: '911-21-Guruh' },
-                  { id: 102, name: '912-21-Guruh' }
-                ];
-                
-                // Bu yerda biz Firebase orqali vaqtinchalik login qilamiz yoki 
-                // AdminPanel'ni ochish uchun holatni o'zgartiramiz
-                setIsAuthenticated(true);
-                setSettings(prev => ({ 
-                  ...prev, 
-                  teacherName: login.toUpperCase(),
-                  groups: mockGroups,
-                  hemisDomain: domain
-                }));
-                setSubjects(mockSubjects);
-                showToast("HEMIS Ma'lumotlari yuklandi!");
-              }, 2000);
-            }
-          }}
+          onClick={() => setShowHemisModal(true)}
           className="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-3"
         >
           <RefreshCw size={20} className="animate-spin-slow" />
@@ -219,6 +199,93 @@ const AdminPanel = () => {
           {isRegisterMode ? "LOGIN ORQALI KIRISH" : "YANGI PROFIL YARATISH"}
         </button>
       </div>
+
+      {/* HEMIS SMART LOGIN MODAL */}
+      {showHemisModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setShowHemisModal(false)}></div>
+          <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-[48px] p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto border border-blue-500/20">
+                <RefreshCw size={32} className="text-blue-500 animate-spin-slow" />
+              </div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight">HEMIS Smart Login</h3>
+              <p className="text-white/30 text-[10px] font-black uppercase tracking-widest">Oliy ta'lim tizimi integratsiyasi</p>
+            </div>
+
+            <div className="space-y-6">
+              {/* UNIVERSITET TANLASH */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Universitetni tanlang</label>
+                <select 
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-bold outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                  value={hemisForm.domain}
+                  onChange={(e) => setHemisForm({ ...hemisForm, domain: e.target.value })}
+                >
+                  <option value="" className="bg-[#0a0a0a]">-- Tanlang --</option>
+                  {universities.map(u => (
+                    <option key={u.domain} value={u.domain} className="bg-[#0a0a0a]">{u.name}</option>
+                  ))}
+                  <option value="other" className="bg-[#0a0a0a]">Boshqa (Manzilni yozish)</option>
+                </select>
+              </div>
+
+              {hemisForm.domain === 'other' && (
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">HEMIS Manzili</label>
+                  <input 
+                    type="text" 
+                    placeholder="masalan: hemis.university.uz"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                    onChange={(e) => setHemisForm({ ...hemisForm, domain: e.target.value })}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Login</label>
+                <input 
+                  type="text" 
+                  placeholder="HEMIS Login"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                  value={hemisForm.login}
+                  onChange={(e) => setHemisForm({ ...hemisForm, login: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Parol</label>
+                <input 
+                  type="password" 
+                  placeholder="HEMIS Parol"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                  value={hemisForm.password}
+                  onChange={(e) => setHemisForm({ ...hemisForm, password: e.target.value })}
+                />
+              </div>
+
+              <button 
+                onClick={() => {
+                  if (!hemisForm.domain || !hemisForm.login || !hemisForm.password) return alert("Barcha maydonlarni to'ldiring!");
+                  showToast("HEMIS orqali kirilmoqda...");
+                  setTimeout(() => {
+                    setIsAuthenticated(true);
+                    setShowHemisModal(false);
+                    // Ma'lumotlarni yuklash (Simulyatsiya)
+                    const mockGroups = [{ id: 1, name: '911-Guruh' }, { id: 2, name: '912-Guruh' }];
+                    setSettings(prev => ({ ...prev, teacherName: hemisForm.login.toUpperCase(), groups: mockGroups, hemisDomain: hemisForm.domain }));
+                    setSubjects([{ id: 'h1', name: 'Mutaxassislik fani' }]);
+                    showToast("Muvaffaqiyatli bog'landi!");
+                  }, 2000);
+                }}
+                className="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl shadow-blue-900/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
+              >
+                <CheckCircle size={24} /> TIZIMGA ULASH
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
