@@ -5,92 +5,97 @@ import { ArrowRight, Shield, Zap, Star, LayoutGrid, Award } from 'lucide-react';
 const LandingPage = () => {
   const navigate = useNavigate();
   const [testId, setTestId] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('ranch_theme') === 'dark' || !localStorage.getItem('ranch_theme'));
 
   const handleNextStep = (e) => {
     e.preventDefault();
     if (!testId) return;
-    // Logika: Faqat testId bilan keyingi bosqichga o'tamiz
     navigate(`/quiz?testId=${testId}`);
   };
 
   return (
-    <div className="relative overflow-hidden">
+    <div className={`relative min-h-screen overflow-hidden transition-colors duration-700 ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-slate-50 text-slate-900'}`}>
       {/* Decorative Blur Elements */}
-      <div className="absolute top-0 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-      <div className="absolute bottom-0 -right-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[120px] -z-10"></div>
+      <div className={`absolute top-0 -left-20 w-96 h-96 ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-500/5'} rounded-full blur-[120px] -z-10 animate-pulse`}></div>
+      <div className={`absolute bottom-0 -right-20 w-96 h-96 ${isDarkMode ? 'bg-blue-500/5' : 'bg-blue-500/10'} rounded-full blur-[120px] -z-10`}></div>
 
-      <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center min-h-[70vh]">
-        
-        {/* Left: Content */}
-        <div className="space-y-10">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-              <Star size={12} className="text-primary fill-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">v4.0 Final Edition</span>
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-heading font-black leading-[1.1] tracking-tight">
-              Bilimlar <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">Evolyutsiyasi</span>
-            </h1>
-            <p className="text-lg text-white/50 max-w-lg leading-relaxed">
-              Ranch Pro bilan imtihonlarni yangi darajaga olib chiqing. O'ta aniqlik, 
-              tezkorlik va xavfsizlik — hammasi bitta platformada.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { icon: Shield, title: 'Himoyalangan', desc: 'Natijalar faqat siz uchun' },
-              { icon: Zap, title: 'Tezkor', desc: 'Real vaqtda tahlillar' }
-            ].map((item, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <item.icon size={20} />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold">{item.title}</h4>
-                  <p className="text-xs text-white/40">{item.desc}</p>
-                </div>
+      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-24">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center min-h-[70vh]">
+          
+          {/* Left: Content */}
+          <div className="space-y-10">
+            <div className="space-y-6">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${isDarkMode ? 'bg-orange-500/10 border-orange-500/20' : 'bg-orange-50 border-orange-100'} border`}>
+                <Star size={12} className="text-orange-500 fill-orange-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">v6.0 Platinum Edition</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Join Form */}
-        <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-blue-500/50 rounded-[32px] blur opacity-20 transition duration-1000"></div>
-          <div className="relative bg-card border border-white/10 rounded-[32px] p-8 md:p-12 shadow-2xl">
-            <div className="text-center space-y-3 mb-10">
-              <h2 className="text-3xl font-heading font-black">Testga Kirish</h2>
-              <p className="text-white/40 text-sm">Davom etish uchun test kodini kiriting</p>
+              <h1 className="text-5xl lg:text-8xl font-black leading-[1.0] tracking-tighter uppercase">
+                Bilimlar <br />
+                <span className={`text-transparent bg-clip-text bg-gradient-to-r ${isDarkMode ? 'from-white to-white/40' : 'from-slate-900 to-slate-500'}`}>Evolyutsiyasi</span>
+              </h1>
+              <p className={`text-lg ${isDarkMode ? 'text-white/50' : 'text-slate-500'} max-w-lg leading-relaxed font-medium`}>
+                Quiz Pro bilan imtihonlarni yangi darajaga olib chiqing. O'ta aniqlik, 
+                tezkorlik va xavfsizlik — hammasi bitta platformada.
+              </p>
             </div>
 
-            <form onSubmit={handleNextStep} className="space-y-8">
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-2">Test Kodi (ID)</label>
-                <input 
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 text-white text-xl font-bold focus:outline-none focus:border-primary/50 transition-all placeholder:text-white/5" 
-                  placeholder="Masalan: Uid_SessionId" 
-                  required 
-                  autoFocus
-                  value={testId}
-                  onChange={e => setTestId(e.target.value)}
-                />
+            <div className="grid sm:grid-cols-2 gap-6">
+              {[
+                { icon: Shield, title: 'Himoyalangan', desc: 'Natijalar faqat siz uchun' },
+                { icon: Zap, title: 'Tezkor', desc: 'Real vaqtda tahlillar' }
+              ].map((item, i) => (
+                <div key={i} className={`p-8 rounded-3xl ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/30'} border space-y-4 hover:scale-105 transition-all duration-500`}>
+                  <div className={`w-12 h-12 rounded-2xl ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'} flex items-center justify-center text-orange-500 border border-orange-500/10`}>
+                    <item.icon size={24} />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
+                    <p className={`text-xs ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Join Form */}
+          <div className="relative">
+            <div className="absolute -inset-2 bg-gradient-to-r from-orange-500/50 to-blue-500/50 rounded-[40px] blur-2xl opacity-10 transition duration-1000"></div>
+            <div className={`relative ${isDarkMode ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)]'} border rounded-[48px] p-10 md:p-16`}>
+              <div className="text-center space-y-4 mb-12">
+                <div className={`w-20 h-20 mx-auto rounded-[28px] ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'} flex items-center justify-center text-orange-500 mb-6 shadow-xl shadow-orange-900/10`}>
+                  <Award size={40} />
+                </div>
+                <h2 className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Testga Kirish</h2>
+                <p className={`${isDarkMode ? 'text-white/40' : 'text-slate-500'} text-sm font-medium`}>Davom etish uchun test kodini kiriting</p>
               </div>
 
-              <button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white py-6 rounded-2xl font-black text-xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 group">
-                Davom Etish <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </form>
+              <form onSubmit={handleNextStep} className="space-y-8">
+                <div className="space-y-3">
+                  <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4`}>Test Kodi (ID)</label>
+                  <input 
+                    className={`w-full ${isDarkMode ? 'bg-white/[0.03] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-2xl px-8 py-6 text-2xl font-black focus:outline-none focus:border-orange-500 transition-all placeholder:text-slate-200/5`} 
+                    placeholder="Uid_SessionId" 
+                    required 
+                    autoFocus
+                    value={testId}
+                    onChange={e => setTestId(e.target.value)}
+                  />
+                </div>
 
-            <div className="mt-12 pt-8 border-t border-white/5 text-center">
-              <button onClick={() => navigate('/admin')} className="text-white/30 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto">
-                <LayoutGrid size={16} /> Admin Boshqaruv Paneli
-              </button>
+                <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white py-6 rounded-2xl font-black text-xl shadow-2xl shadow-orange-900/40 transition-all flex items-center justify-center gap-4 group active:scale-[0.98]">
+                  DAVOM ETISH <ArrowRight size={28} className="group-hover:translate-x-2 transition-transform" />
+                </button>
+              </form>
+
+              <div className={`mt-16 pt-10 border-t ${isDarkMode ? 'border-white/5' : 'border-slate-100'} text-center`}>
+                <button onClick={() => navigate('/admin')} className={`${isDarkMode ? 'text-white/20 hover:text-white' : 'text-slate-400 hover:text-slate-900'} transition-all text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 mx-auto`}>
+                  <LayoutGrid size={18} /> Admin Boshqaruv Paneli
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );

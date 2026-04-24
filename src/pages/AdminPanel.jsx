@@ -33,6 +33,10 @@ const AdminPanel = () => {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [showHemisModal, setShowHemisModal] = useState(false);
   const [hemisForm, setHemisForm] = useState({ domain: '', login: '', password: '' });
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('ranch_theme');
+    return saved ? saved === 'dark' : true;
+  });
 
   const universities = [
     { name: "Urganch Ranch Texnologiyalar Universiteti", domain: "hemis.ranch.uz" },
@@ -162,41 +166,42 @@ const AdminPanel = () => {
   }, [questions, selectedSubject, activeTab, searchQuery]);
 
   if (!isAuthenticated && !loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] p-6 text-white font-sans selection:bg-orange-500/30">
-      <div className="w-full max-w-md bg-[#0a0a0a] border border-white/5 p-10 rounded-[32px] shadow-2xl space-y-8 text-center relative overflow-hidden">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-[#050505]' : 'bg-[#f0f2f5]'} flex items-center justify-center p-6 font-['Outfit'] transition-colors duration-700`}>
+      <div className={`w-full max-w-md ${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-black/5 shadow-2xl shadow-slate-200'} border p-12 rounded-[48px] space-y-10 relative overflow-hidden`}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
         <div className="w-20 h-20 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-2xl flex items-center justify-center mx-auto text-white shadow-xl shadow-orange-900/20">
           {isRegisterMode ? <UserPlus size={36} /> : <Lock size={36} />}
         </div>
-        <div>
-          <h2 className="text-3xl font-black text-white uppercase tracking-tight">RANCH <span className="text-orange-500">PRO</span></h2>
-          <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Platinum v5.4</p>
+        <div className="text-center">
+          <h2 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>RANCH <span className="text-orange-500">PRO</span></h2>
+          <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} text-[10px] font-black uppercase tracking-[0.3em] mt-2`}>Platinum v6.0</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
           <div className="space-y-2">
-            <input name="email" type="email" placeholder="Email manzil" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold" required />
-            <input name="password" type="password" placeholder="Parol" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold" required />
+            <input name="email" type="email" placeholder="Email manzil" className={`w-full ${isDarkMode ? 'bg-white/5 text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold`} required />
+            <input name="password" type="password" placeholder="Parol" className={`w-full ${isDarkMode ? 'bg-white/5 text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 outline-none focus:border-orange-500 transition-all font-bold`} required />
           </div>
-          <button type="submit" className="w-full bg-orange-500 py-5 rounded-2xl font-black text-lg shadow-xl shadow-orange-900/20 hover:bg-orange-600 transition-all">
+          <button type="submit" className="w-full bg-orange-500 py-5 rounded-2xl font-black text-lg text-white shadow-xl shadow-orange-900/20 hover:bg-orange-600 transition-all">
             {isRegisterMode ? "RO'YXATDAN O'TISH" : "KIRISH"}
           </button>
         </form>
 
         <div className="relative py-4">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-          <div className="relative flex justify-center text-[10px]"><span className="bg-[#0a0a0a] px-4 text-white/20 font-black uppercase tracking-widest">Yoki</span></div>
+          <div className={`absolute inset-0 flex items-center`}><div className={`w-full border-t ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}></div></div>
+          <div className="relative flex justify-center text-[10px]"><span className={`${isDarkMode ? 'bg-[#0a0a0a] text-white/20' : 'bg-white text-slate-400'} px-4 font-black uppercase tracking-widest`}>Yoki</span></div>
         </div>
 
         {/* HEMIS LOGIN TUGMASI */}
         <button 
           onClick={() => setShowHemisModal(true)}
-          className="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-3"
+          className="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg text-white shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-3"
         >
           <RefreshCw size={20} className="animate-spin-slow" />
           HEMIS ORQALI KIRISH
         </button>
 
-        <button onClick={() => setIsRegisterMode(!isRegisterMode)} className="text-[10px] font-black text-white/20 hover:text-orange-500 transition-colors uppercase tracking-widest">
+        <button onClick={() => setIsRegisterMode(!isRegisterMode)} className={`w-full text-[10px] font-black ${isDarkMode ? 'text-white/20 hover:text-orange-500' : 'text-slate-400 hover:text-orange-600'} transition-colors uppercase tracking-widest`}>
           {isRegisterMode ? "LOGIN ORQALI KIRISH" : "YANGI PROFIL YARATISH"}
         </button>
       </div>
@@ -313,7 +318,7 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#050505] text-white font-sans overflow-hidden selection:bg-orange-500/20">
+    <div className={`flex min-h-screen ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-[#f8f9fc] text-slate-900'} font-sans overflow-hidden transition-colors duration-700 selection:bg-orange-500/20`}>
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-3 rounded-full bg-white text-black shadow-2xl animate-in slide-in-from-top-4 duration-500 font-bold text-sm flex items-center gap-3">
@@ -322,12 +327,12 @@ const AdminPanel = () => {
       )}
 
       {/* Sidebar Menu */}
-      <aside className="w-72 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 sticky top-0 h-screen shrink-0 relative z-50">
+      <aside className={`w-72 ${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border-r flex flex-col p-8 sticky top-0 h-screen shrink-0 relative z-50 transition-all duration-700`}>
         <div className="mb-12 flex items-center gap-3 px-1">
-          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
+          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white text-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v5.4</p>
+            <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} text-[8px] font-black uppercase tracking-[0.3em] mt-1`}>Platinum v6.0</p>
           </div>
         </div>
 
@@ -343,7 +348,7 @@ const AdminPanel = () => {
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id 
                   ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/20' 
-                  : 'text-white/40 hover:bg-white/5 hover:text-white'
+                  : `${isDarkMode ? 'text-white/40 hover:bg-white/5 hover:text-white' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`
               }`}
             >
               <item.icon size={18} className={activeTab === item.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
@@ -353,13 +358,13 @@ const AdminPanel = () => {
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-3">
-          {/* PROFIL TUGMASI (PASTGA QAYTARILDI VA BOSILADIGAN BO'LDI) */}
+          {/* PROFIL TUGMASI */}
           <button
             onClick={() => setActiveTab('profile')}
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border transition-all duration-500 group ${
               activeTab === 'profile' 
                 ? 'bg-orange-500 border-orange-400 shadow-lg shadow-orange-900/20' 
-                : 'bg-white/[0.03] border-white/5 hover:border-orange-500/50'
+                : `${isDarkMode ? 'bg-white/[0.03] border-white/5 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 hover:border-orange-500/50'}`
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
@@ -370,10 +375,10 @@ const AdminPanel = () => {
               <User size={20} className={activeTab === 'profile' ? 'text-white' : 'text-orange-500 group-hover:text-white transition-colors'} />
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className={`text-[10px] font-black truncate uppercase tracking-widest mb-0.5 ${activeTab === 'profile' ? 'text-white' : 'text-white'}`}>
+              <p className={`text-[10px] font-black truncate uppercase tracking-widest mb-0.5 ${activeTab === 'profile' ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
                 {settings.teacherName || 'Ustoz'}
               </p>
-              <p className={`text-[9px] truncate font-bold uppercase tracking-tighter ${activeTab === 'profile' ? 'text-white/60' : 'text-white/20'}`}>
+              <p className={`text-[9px] truncate font-bold uppercase tracking-tighter ${activeTab === 'profile' ? 'text-white/60' : (isDarkMode ? 'text-white/20' : 'text-slate-400')}`}>
                 {auth.currentUser?.email || 'admin@ranch.pro'}
               </p>
             </div>
@@ -381,7 +386,7 @@ const AdminPanel = () => {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all duration-300 group"
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl ${isDarkMode ? 'text-white/40 hover:bg-red-500/10' : 'text-slate-400 hover:bg-red-50'} hover:text-red-500 transition-all duration-300 group`}
           >
             <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
             <span className="text-xs font-bold tracking-tight uppercase">Chiqish</span>
@@ -390,25 +395,32 @@ const AdminPanel = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-500/[0.02] via-transparent to-transparent">
+      <main className={`flex-1 overflow-y-auto p-12 custom-scrollbar ${isDarkMode ? 'bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-500/[0.02] via-transparent to-transparent' : 'bg-white'}`}>
         <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
           
           <header className="flex justify-between items-end">
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/50">Tizim holati: Online</p>
-              <h2 className="text-4xl font-black tracking-tight capitalize">
+              <h2 className={`text-4xl font-black tracking-tight capitalize ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 {selectedSubject ? (
                   <div className="flex items-center gap-4">
-                    <button onClick={() => setSelectedSubject(null)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all"><ArrowLeft size={20} /></button>
-                    <span>{selectedSubject.name} <span className="text-white/20 text-xl font-medium ml-2">/ Savollar</span></span>
+                    <button onClick={() => setSelectedSubject(null)} className={`w-10 h-10 rounded-full ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200'} flex items-center justify-center transition-all`}><ArrowLeft size={20} /></button>
+                    <span>{selectedSubject.name} <span className={`${isDarkMode ? 'text-white/20' : 'text-slate-300'} text-xl font-medium ml-2`}>/ Savollar</span></span>
                   </div>
                 ) : activeTab}
               </h2>
             </div>
             <div className="flex gap-3">
-              <button onClick={loadData} className="w-12 h-12 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-center hover:bg-white/[0.08] transition-all text-white/30 hover:text-white"><RefreshCw size={20} /></button>
+              {/* THEME TOGGLE */}
+              <button 
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`w-12 h-12 ${isDarkMode ? 'bg-white/5 text-orange-500 border-white/10' : 'bg-slate-50 text-orange-600 border-slate-200'} border rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95`}
+              >
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button onClick={loadData} className={`w-12 h-12 ${isDarkMode ? 'bg-white/[0.03] border-white/5 text-white/30 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-300 hover:text-slate-900'} border rounded-xl flex items-center justify-center transition-all`}><RefreshCw size={20} /></button>
               {(activeTab === 'questions' || selectedSubject) && (
-                <button onClick={() => handleAddQuestion(selectedSubject?.id)} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all text-white">+ QO'SHISH</button>
+                <button onClick={() => handleAddQuestion(selectedSubject?.id)} className="px-8 py-4 bg-orange-500 rounded-xl font-black text-xs shadow-lg shadow-orange-900/10 hover:scale-105 active:scale-95 transition-all text-white uppercase tracking-widest">+ QO'SHISH</button>
               )}
             </div>
           </header>
@@ -421,9 +433,12 @@ const AdminPanel = () => {
                 { label: 'FANLAR', val: subjects.length, icon: Library, color: 'text-orange-500' },
                 { label: 'NATIJALAR', val: results.length, icon: Award, color: 'text-green-500' },
               ].map((s, i) => (
-                <div key={i} className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl space-y-6 hover:border-white/10 transition-all relative overflow-hidden group shadow-xl">
-                  <div className={`w-12 h-12 rounded-xl bg-white/[0.03] flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform duration-500`}><s.icon size={24} /></div>
-                  <div className="space-y-1"><p className="text-[9px] font-black text-white/20 uppercase tracking-widest">{s.label}</p><h3 className="text-3xl font-black">{s.val}</h3></div>
+                <div key={i} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/40'} border p-8 rounded-3xl space-y-6 hover:border-orange-500/30 transition-all relative overflow-hidden group`}>
+                  <div className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-white/[0.03]' : 'bg-slate-50'} flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform duration-500`}><s.icon size={24} /></div>
+                  <div className="space-y-1">
+                    <p className={`text-[9px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{s.label}</p>
+                    <h3 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{s.val}</h3>
+                  </div>
                 </div>
               ))}
             </div>
@@ -432,12 +447,12 @@ const AdminPanel = () => {
           {activeTab === 'subjects' && !selectedSubject && (
             <div className="grid lg:grid-cols-12 gap-10">
               <div className="lg:col-span-5">
-                <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 shadow-2xl sticky top-10">
-                  <h3 className="text-2xl font-black">Yangi Fan</h3>
+                <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 sticky top-10`}>
+                  <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Fan</h3>
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fan nomi</label>
-                      <input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Masalan: Matematika" />
+                      <label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Fan nomi</label>
+                      <input className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-orange-500 transition-all`} value={newSubject} onChange={e => setNewSubject(e.target.value)} placeholder="Masalan: Matematika" />
                     </div>
                     <button onClick={async () => {
                       if (!newSubject.trim()) return;
@@ -447,26 +462,26 @@ const AdminPanel = () => {
                       setSubjects(updated);
                       setNewSubject('');
                       showToast("Fan qo'shildi!");
-                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">FANNI QO'SHISH</button>
+                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">FANNI QO'SHISH</button>
                   </div>
                 </div>
               </div>
               <div className="lg:col-span-7 space-y-6">
-                <h3 className="text-xl font-black px-4 flex items-center gap-4">Barcha Fanlar <span className="px-3 py-1 bg-white/5 rounded-lg text-[10px] text-white/40">{subjects.length} ta</span></h3>
+                <h3 className={`text-xl font-black px-4 flex items-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Barcha Fanlar <span className={`px-3 py-1 ${isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'} rounded-lg text-[10px]`}>{subjects.length} ta</span></h3>
                 <div className="grid gap-4">
                   {subjects.map(s => {
                     const qCount = questions.filter(q => q.subjectId === s.id).length;
                     return (
-                      <div key={s.id} className="bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl cursor-pointer" onClick={() => setSelectedSubject(s)}>
+                      <div key={s.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'} border p-6 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group cursor-pointer`} onClick={() => setSelectedSubject(s)}>
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-orange-500"><Library size={20} /></div>
+                          <div className={`w-10 h-10 ${isDarkMode ? 'bg-white/5' : 'bg-slate-50'} rounded-xl flex items-center justify-center text-orange-500`}><Library size={20} /></div>
                           <div>
-                            <h4 className="font-black text-lg group-hover:text-orange-500 transition-colors">{s.name}</h4>
-                            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{qCount} ta savol</p>
+                            <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'} group-hover:text-orange-500 transition-colors`}>{s.name}</h4>
+                            <p className={`text-[9px] font-bold ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest`}>{qCount} ta savol</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <ChevronRight className="text-white/10 group-hover:text-orange-500 transition-all" size={24} />
+                          <ChevronRight className={`${isDarkMode ? 'text-white/10' : 'text-slate-200'} group-hover:text-orange-500 transition-all`} size={24} />
                           <button onClick={async (e) => {
                             e.stopPropagation();
                             if (window.confirm("Fanni o'chirmoqchimisiz?")) {
@@ -475,7 +490,7 @@ const AdminPanel = () => {
                               setSubjects(updated);
                               showToast("Fan o'chirildi");
                             }
-                          }} className="w-10 h-10 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={18} /></button>
+                          }} className={`w-10 h-10 ${isDarkMode ? 'bg-white/[0.03] text-white/20' : 'bg-slate-50 text-slate-300'} rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}><Trash2 size={18} /></button>
                         </div>
                       </div>
                     );
@@ -487,10 +502,10 @@ const AdminPanel = () => {
 
           {(activeTab === 'questions' || selectedSubject) && (
             <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-              <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl flex flex-wrap justify-between items-center gap-6 shadow-xl">
+              <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-8 rounded-3xl flex flex-wrap justify-between items-center gap-6 shadow-xl`}>
                 <div className="flex-1 min-w-[300px] relative">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
-                  <input className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-16 py-4 text-white text-lg font-bold outline-none focus:border-orange-500/50 transition-all" placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                  <Search className={`absolute left-6 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-white/20' : 'text-slate-300'}`} size={20} />
+                  <input className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/5' : 'bg-slate-50 text-slate-900 border-slate-100'} border rounded-2xl px-16 py-4 text-lg font-bold outline-none focus:border-orange-500/50 transition-all`} placeholder="Savollarni qidirish..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                 </div>
                 <div className="flex gap-3">
                   <button onClick={async () => {
@@ -498,8 +513,8 @@ const AdminPanel = () => {
                       const updated = questions.filter(q => selectedSubject ? q.subjectId !== selectedSubject.id : false);
                       setQuestions(updated); await storage.saveQuestions(adminUid, updated); showToast("Tozalandi");
                     }
-                  }} className="px-6 py-4 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase">Bo'limni Tozalash</button>
-                  <label className="px-6 py-4 bg-white/[0.03] hover:bg-white/[0.08] rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all border border-white/5 uppercase">
+                  }} className={`px-6 py-4 ${isDarkMode ? 'bg-red-500/5 hover:bg-red-500 text-red-500' : 'bg-red-50 hover:bg-red-500 text-red-600'} hover:text-white rounded-2xl font-black text-[10px] transition-all flex items-center gap-2 border border-red-500/10 uppercase`}>Bo'limni Tozalash</button>
+                  <label className={`px-6 py-4 ${isDarkMode ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08]' : 'bg-white border-slate-200 hover:bg-slate-50'} border rounded-2xl cursor-pointer font-black text-[10px] flex items-center gap-2 transition-all uppercase`}>
                     <FileUp size={18} className="text-orange-500" /> Word Yuklash
                     <input type="file" className="hidden" accept=".docx" onChange={async (e) => {
                       const file = e.target.files[0]; if (!file) return;
@@ -525,31 +540,31 @@ const AdminPanel = () => {
 
               <div className="grid gap-6 pb-40">
                 {currentQuestions.map((q, qIdx) => (
-                  <div key={q.uid} className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 hover:border-white/10 transition-all group shadow-xl">
+                  <div key={q.uid} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 hover:border-orange-500/10 transition-all group shadow-xl`}>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
-                        <span className="px-4 py-1.5 bg-white/5 text-white/30 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5">SAVOL #{currentQuestions.length - qIdx}</span>
+                        <span className={`px-4 py-1.5 ${isDarkMode ? 'bg-white/5 text-white/30 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100'} border rounded-xl text-[9px] font-black uppercase tracking-widest`}>SAVOL #{currentQuestions.length - qIdx}</span>
                         {!selectedSubject && q.subjectId && (
                           <span className="px-4 py-1.5 bg-orange-500/10 text-orange-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-orange-500/10">
                             {subjects.find(s => s.id === q.subjectId)?.name || "Noma'lum Fan"}
                           </span>
                         )}
                       </div>
-                      <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className="w-10 h-10 rounded-xl flex items-center justify-center text-white/5 hover:bg-red-500/10 hover:text-red-500 transition-all"><Trash2 size={20} /></button>
+                      <button onClick={() => setQuestions(questions.filter(it => it.uid !== q.uid))} className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'text-white/5' : 'text-slate-200'} hover:bg-red-500/10 hover:text-red-500 transition-all`}><Trash2 size={20} /></button>
                     </div>
                     <textarea
                       value={q.text}
                       onChange={e => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].text = e.target.value; setQuestions(u); }}
-                      className="w-full bg-transparent border-none text-2xl font-black focus:outline-none text-white resize-none"
+                      className={`w-full bg-transparent border-none text-2xl font-black focus:outline-none ${isDarkMode ? 'text-white' : 'text-slate-900'} resize-none`}
                       rows={2}
                     />
                     <div className="grid md:grid-cols-2 gap-4">
                       {q.options?.map((opt, oIdx) => {
                         const isCorrect = String(q.correctAnswer) === String(oIdx);
                         return (
-                          <div key={oIdx} className={`p-6 rounded-3xl border-2 transition-all flex items-start gap-5 ${isCorrect ? 'border-green-500 bg-green-500/[0.02]' : 'border-white/5 bg-white/[0.01]'}`}>
-                            <button onClick={() => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].correctAnswer = String(oIdx); setQuestions(u); }} className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg transition-all ${isCorrect ? 'bg-green-500 text-white' : 'bg-white/5 text-white/20'}`}>{isCorrect ? <Check size={24} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}</button>
-                            <textarea value={opt} onChange={e => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].options[oIdx] = e.target.value; setQuestions(u); }} className="flex-1 bg-transparent border-none font-bold text-base focus:outline-none resize-none text-white pt-2" rows={2} />
+                          <div key={oIdx} className={`p-6 rounded-3xl border-2 transition-all flex items-start gap-5 ${isCorrect ? 'border-green-500 bg-green-500/[0.02]' : (isDarkMode ? 'border-white/5 bg-white/[0.01]' : 'border-slate-100 bg-slate-50')}`}>
+                            <button onClick={() => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].correctAnswer = String(oIdx); setQuestions(u); }} className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg transition-all ${isCorrect ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : (isDarkMode ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300 shadow-sm')}`}>{isCorrect ? <Check size={24} strokeWidth={4} /> : String.fromCharCode(65 + oIdx)}</button>
+                            <textarea value={opt} onChange={e => { const u = [...questions]; const idx = u.findIndex(it => it.uid === q.uid); u[idx].options[oIdx] = e.target.value; setQuestions(u); }} className={`flex-1 bg-transparent border-none font-bold text-base focus:outline-none resize-none ${isDarkMode ? 'text-white' : 'text-slate-700'} pt-2`} rows={2} />
                           </div>
                         );
                       })}
@@ -558,8 +573,8 @@ const AdminPanel = () => {
                 ))}
                 {currentQuestions.length === 0 && (
                   <div className="py-40 text-center space-y-6">
-                    <div className="w-24 h-24 bg-white/[0.02] rounded-full flex items-center justify-center mx-auto text-white/10"><BookOpen size={48} /></div>
-                    <p className="text-white/20 font-bold">Hozircha savollar yo'q. Yangi savol qo'shing yoki Word fayl yuklang.</p>
+                    <div className={`w-24 h-24 ${isDarkMode ? 'bg-white/[0.02] text-white/10' : 'bg-slate-50 text-slate-200'} rounded-full flex items-center justify-center mx-auto`}><BookOpen size={48} /></div>
+                    <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-bold`}>Hozircha savollar yo'q. Yangi savol qo'shing yoki Word fayl yuklang.</p>
                   </div>
                 )}
               </div>
@@ -575,14 +590,14 @@ const AdminPanel = () => {
           {activeTab === 'sessions' && (
             <div className="grid lg:grid-cols-12 gap-10 pb-20">
               <div className="lg:col-span-5">
-                <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[40px] space-y-8 shadow-2xl sticky top-10">
-                  <h3 className="text-2xl font-black">Yangi Havola</h3>
+                <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-10 rounded-[40px] space-y-8 sticky top-10`}>
+                  <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Yangi Havola</h3>
                   <div className="space-y-6">
-                    <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Guruh nomi</label><input className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionName} onChange={e => setSessionName(e.target.value)} placeholder="Masalan: 401-Guruh" /></div>
+                    <div className="space-y-2"><label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Guruh nomi</label><input className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-orange-500 transition-all`} value={sessionName} onChange={e => setSessionName(e.target.value)} placeholder="Masalan: 401-Guruh" /></div>
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Fanni tanlang</label>
+                      <label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Fanni tanlang</label>
                       <select 
-                        className="w-full bg-[#111] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg font-black outline-none focus:border-orange-500 transition-all"
+                        className={`w-full ${isDarkMode ? 'bg-[#111] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-lg font-black outline-none focus:border-orange-500 transition-all`}
                         onChange={(e) => {
                           const subId = e.target.value;
                           const subQs = subId ? questions.filter(q => q.subjectId === subId) : questions;
@@ -594,7 +609,7 @@ const AdminPanel = () => {
                         {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
                     </div>
-                    <div className="space-y-2"><label className="text-[9px] font-black uppercase text-white/20 ml-4 tracking-widest">Savollar soni</label><input type="number" className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white text-xl font-black outline-none focus:border-orange-500 transition-all" value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} /></div>
+                    <div className="space-y-2"><label className={`text-[9px] font-black uppercase ${isDarkMode ? 'text-white/20' : 'text-slate-400'} ml-4 tracking-widest`}>Savollar soni</label><input type="number" className={`w-full ${isDarkMode ? 'bg-white/[0.03] text-white border-white/10' : 'bg-slate-50 text-slate-900 border-slate-200'} border rounded-2xl px-6 py-4 text-xl font-black outline-none focus:border-orange-500 transition-all`} value={sessionQCount} onChange={e => setSessionQCount(e.target.value)} /></div>
                     <button onClick={async () => {
                       const subId = document.getElementById('session-subject-select').value;
                       const pool = subId ? questions.filter(q => q.subjectId === subId) : questions;
@@ -604,21 +619,21 @@ const AdminPanel = () => {
                       if (qIds.length === 0) return alert("Savollar mavjud emas!");
                       await storage.saveQuestions(adminUid, questions);
                       storage.saveSession(adminUid, { name: sessionName || 'Yangi Test', questionIds: qIds }).then(s => { if (s) { setSessions([s, ...sessions]); setSessionName(''); showToast("Yaratildi"); } });
-                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">YARATISH</button>
+                    }} className="w-full bg-orange-500 py-5 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10 hover:bg-orange-600 transition-all">YARATISH</button>
                   </div>
                 </div>
               </div>
               <div className="lg:col-span-7 space-y-6">
-                <h3 className="text-xl font-black px-4">Havolalar</h3>
+                <h3 className={`text-xl font-black px-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Havolalar</h3>
                 <div className="grid gap-4">
                   {sessions.map(s => {
                     const qCount = (() => { try { const ids = typeof s.questionIds === 'string' ? JSON.parse(s.questionIds) : s.questionIds; return Array.isArray(ids) ? ids.length : 0; } catch (e) { return 0; } })();
                     return (
-                      <div key={s.id} className="bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl">
-                        <div><h4 className="font-black text-xl">{s.name}</h4><p className="text-orange-500 text-[10px] font-black mt-1 uppercase tracking-widest">{qCount} SAVOL</p></div>
+                      <div key={s.id} className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'} border p-8 rounded-3xl flex justify-between items-center hover:border-orange-500/30 transition-all group shadow-xl`}>
+                        <div><h4 className={`font-black text-xl ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{s.name}</h4><p className="text-orange-500 text-[10px] font-black mt-1 uppercase tracking-widest">{qCount} SAVOL</p></div>
                         <div className="flex gap-3">
-                          <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`); showToast("Nusxalandi"); }} className="w-12 h-12 bg-white/[0.03] rounded-xl hover:bg-orange-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Copy size={20} /></button>
-                          <button onClick={() => { if (window.confirm("O'chirilsinmi?")) { storage.deleteSession(adminUid, s.id).then(() => setSessions(sessions.filter(it => it.id !== s.id))); } }} className="w-12 h-12 bg-white/[0.03] rounded-xl hover:bg-red-500 hover:text-white transition-all text-white/20 flex items-center justify-center"><Trash2 size={20} /></button>
+                          <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/quiz?testId=${adminUid}_${s.id}`); showToast("Nusxalandi"); }} className={`w-12 h-12 ${isDarkMode ? 'bg-white/[0.03] text-white/20' : 'bg-slate-50 text-slate-300'} rounded-xl hover:bg-orange-500 hover:text-white transition-all flex items-center justify-center`}><Copy size={20} /></button>
+                          <button onClick={() => { if (window.confirm("O'chirilsinmi?")) { storage.deleteSession(adminUid, s.id).then(() => setSessions(sessions.filter(it => it.id !== s.id))); } }} className={`w-12 h-12 ${isDarkMode ? 'bg-white/[0.03] text-white/20' : 'bg-slate-50 text-slate-300'} rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}><Trash2 size={20} /></button>
                         </div>
                       </div>
                     );
@@ -629,26 +644,26 @@ const AdminPanel = () => {
           )}
 
           {activeTab === 'results' && (
-            <div className="bg-[#0a0a0a] border border-white/5 rounded-[40px] overflow-hidden shadow-2xl pb-20">
-              <div className="p-10 flex justify-between items-center border-b border-white/5">
-                <h3 className="text-2xl font-black">Natijalar</h3>
+            <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-2xl shadow-slate-200/40'} border rounded-[40px] overflow-hidden pb-20`}>
+              <div className={`p-10 flex justify-between items-center border-b ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Natijalar</h3>
                 <button onClick={() => window.print()} className="px-8 py-4 bg-green-600 rounded-xl font-black text-xs text-white transition-all shadow-lg shadow-green-900/10">PRINT (PDF)</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-white/[0.01] text-white/20 text-[10px] uppercase font-black tracking-widest border-b border-white/5">
+                  <thead className={`${isDarkMode ? 'bg-white/[0.01] text-white/20 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100'} text-[10px] uppercase font-black tracking-widest border-b`}>
                     <tr><th className="p-10">Talaba</th><th className="p-10 text-center">Ball</th><th className="p-10 text-center">Baho</th><th className="p-10 text-right">Sana</th></tr>
                   </thead>
                   <tbody>
                     {results.map(r => (
-                      <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-all group text-sm">
+                      <tr key={r.id} className={`border-b ${isDarkMode ? 'border-white/5 hover:bg-white/[0.01]' : 'border-slate-50 hover:bg-slate-50/50'} transition-all group text-sm`}>
                         <td className="p-10 font-bold">
-                          {r.student?.name} {r.student?.surname}
-                          <div className="text-[10px] text-white/20 font-medium mt-1">{r.student?.group} • {r.student?.faculty}</div>
+                          <p className={isDarkMode ? 'text-white' : 'text-slate-900'}>{r.student?.name} {r.student?.surname}</p>
+                          <div className={`text-[10px] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-medium mt-1`}>{r.student?.group} • {r.student?.faculty}</div>
                         </td>
                         <td className="p-10 text-center"><span className="font-black text-xl text-orange-500">{r.score}/{r.total}</span></td>
                         <td className="p-10 text-center font-black text-4xl text-orange-500">{r.grade}</td>
-                        <td className="p-10 text-right text-white/10 text-xs">{new Date(r.date).toLocaleString()}</td>
+                        <td className={`p-10 text-right ${isDarkMode ? 'text-white/10' : 'text-slate-300'} text-xs`}>{new Date(r.date).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -659,25 +674,25 @@ const AdminPanel = () => {
 
           {activeTab === 'settings' && (
             <div className="grid lg:grid-cols-2 gap-10 pb-32">
-              <div className="bg-[#0a0a0a] border border-white/5 p-12 rounded-[40px] space-y-10 shadow-2xl">
-                <div className="space-y-1"><h3 className="text-2xl font-black">Baholash</h3><p className="text-white/30 text-sm">Minimal ballar</p></div>
+              <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-12 rounded-[40px] space-y-10 shadow-2xl`}>
+                <div className="space-y-1"><h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Baholash</h3><p className={`${isDarkMode ? 'text-white/30' : 'text-slate-400'} text-sm`}>Minimal ballar</p></div>
                 <div className="space-y-4">
                   {criteria.map((c, i) => (
-                    <div key={i} className="flex justify-between items-center p-8 bg-white/[0.02] border border-white/5 rounded-3xl hover:border-orange-500/20 transition-all">
-                      <div className="flex items-center gap-6"><span className="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center text-2xl font-black text-white">{c.grade}</span><span className="font-black text-white/20 uppercase text-[10px]">Min. Ball</span></div>
-                      <input type="number" className="bg-black border border-white/10 rounded-xl px-6 py-3 w-32 text-center text-white text-2xl font-black focus:border-orange-500 outline-none transition-all" value={c.min} onChange={e => { const u = [...criteria]; u[i].min = parseInt(e.target.value); setCriteria(u); }} />
+                    <div key={i} className={`flex justify-between items-center p-8 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-3xl hover:border-orange-500/20 transition-all`}>
+                      <div className="flex items-center gap-6"><span className="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center text-2xl font-black text-white">{c.grade}</span><span className={`font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase text-[10px]`}>Min. Ball</span></div>
+                      <input type="number" className={`border ${isDarkMode ? 'bg-black border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl px-6 py-3 w-32 text-center text-2xl font-black focus:border-orange-500 outline-none transition-all`} value={c.min} onChange={e => { const u = [...criteria]; u[i].min = parseInt(e.target.value); setCriteria(u); }} />
                     </div>
                   ))}
                 </div>
-                <button onClick={() => storage.saveCriteria(adminUid, criteria).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10">SAQLASH</button>
+                <button onClick={() => storage.saveCriteria(adminUid, criteria).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10">SAQLASH</button>
               </div>
-              <div className="bg-[#0a0a0a] border border-white/5 p-12 rounded-[40px] space-y-10 shadow-2xl">
-                <div className="space-y-1"><h3 className="text-2xl font-black">Umumiy</h3><p className="text-white/30 text-sm">Vaqt va hajm</p></div>
+              <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border p-12 rounded-[40px] space-y-10 shadow-2xl`}>
+                <div className="space-y-1"><h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Umumiy</h3><p className={`${isDarkMode ? 'text-white/30' : 'text-slate-400'} text-sm`}>Vaqt va hajm</p></div>
                 <div className="space-y-8">
-                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Savollar Soni</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.questionsPerTest} onChange={e => setSettings({ ...settings, questionsPerTest: parseInt(e.target.value) })} /></div>
-                  <div className="space-y-3"><label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-6">Vaqt (Sekund / Savol)</label><input type="number" className="w-full bg-white/[0.02] border border-white/10 rounded-[32px] px-8 py-6 text-4xl font-black text-white focus:border-orange-500 outline-none" value={settings.timePerQuestion} onChange={e => setSettings({ ...settings, timePerQuestion: parseInt(e.target.value) })} /></div>
+                  <div className="space-y-3"><label className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest ml-6`}>Savollar Soni</label><input type="number" className={`w-full ${isDarkMode ? 'bg-white/[0.02] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-[32px] px-8 py-6 text-4xl font-black focus:border-orange-500 outline-none`} value={settings.questionsPerTest} onChange={e => setSettings({ ...settings, questionsPerTest: parseInt(e.target.value) })} /></div>
+                  <div className="space-y-3"><label className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-400'} uppercase tracking-widest ml-6`}>Vaqt (Sekund / Savol)</label><input type="number" className={`w-full ${isDarkMode ? 'bg-white/[0.02] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} border rounded-[32px] px-8 py-6 text-4xl font-black focus:border-orange-500 outline-none`} value={settings.timePerQuestion} onChange={e => setSettings({ ...settings, timePerQuestion: parseInt(e.target.value) })} /></div>
                 </div>
-                <button onClick={() => storage.saveSettings(adminUid, settings).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl shadow-lg shadow-orange-900/10">SAQLASH</button>
+                <button onClick={() => storage.saveSettings(adminUid, settings).then(() => showToast("Saqlandi"))} className="w-full bg-orange-500 py-6 rounded-2xl font-black text-xl text-white shadow-lg shadow-orange-900/10">SAQLASH</button>
               </div>
             </div>
           )}
@@ -688,22 +703,22 @@ const AdminPanel = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* USTOZ KARTASI */}
                 <div className="lg:col-span-1">
-                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 text-center space-y-6 shadow-2xl relative overflow-hidden group">
+                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 text-center space-y-6 relative overflow-hidden group`}>
                     <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                     <div className="w-32 h-32 bg-orange-500/10 rounded-[40px] flex items-center justify-center border-2 border-orange-500/20 mx-auto relative z-10 group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-orange-900/20">
                       <User size={64} className="text-orange-500" />
                     </div>
                     <div className="relative z-10">
-                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{settings.teacherName || 'Ustoz'}</h3>
-                      <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.4em] mt-4">{auth.currentUser?.email}</p>
+                      <h3 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tighter leading-none`}>{settings.teacherName || 'Ustoz'}</h3>
+                      <p className={`text-[10px] ${isDarkMode ? 'text-white/40' : 'text-slate-400'} font-black uppercase tracking-[0.4em] mt-4`}>{auth.currentUser?.email}</p>
                     </div>
                     <div className="pt-8 grid grid-cols-2 gap-4 relative z-10">
-                      <div className="p-6 bg-white/[0.02] rounded-[32px] border border-white/5">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Savollar</p>
+                      <div className={`p-6 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[32px]`}>
+                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-1`}>Savollar</p>
                         <p className="text-3xl font-black text-orange-500">{questions.length}</p>
                       </div>
-                      <div className="p-6 bg-white/[0.02] rounded-[32px] border border-white/5">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Natijalar</p>
+                      <div className={`p-6 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[32px]`}>
+                        <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-widest mb-1`}>Natijalar</p>
                         <p className="text-3xl font-black text-orange-500">{results.length}</p>
                       </div>
                     </div>
@@ -712,15 +727,15 @@ const AdminPanel = () => {
 
                 {/* GURUHLAR VA STATISTIKA */}
                 <div className="lg:col-span-2 space-y-10">
-                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 space-y-8 shadow-2xl">
+                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 space-y-8 shadow-2xl`}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                       <div className="flex items-center gap-5">
                         <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
                           <Users className="text-orange-500" size={24} />
                         </div>
                         <div>
-                          <h3 className="text-xl font-black text-white uppercase tracking-tight">Guruhlar Ro'yhati</h3>
-                          <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest mt-1">Sinf va guruhlarni boshqarish</p>
+                          <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>Guruhlar Ro'yhati</h3>
+                          <p className={`text-[10px] ${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-bold uppercase tracking-widest mt-1`}>Sinf va guruhlarni boshqarish</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -735,7 +750,7 @@ const AdminPanel = () => {
                               storage.saveSubjects(adminUid, subjects);
                             }
                           }}
-                          className="flex-1 sm:flex-none px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center gap-2"
+                          className={`flex-1 sm:flex-none px-6 py-3 ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-600'} hover:bg-orange-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-2`}
                         >
                           <Plus size={16} /> Qo'shish
                         </button>
@@ -761,11 +776,11 @@ const AdminPanel = () => {
 
                     {/* HEMIS HOLATI */}
                     {settings.hemisDomain && (
-                      <div className="flex flex-col sm:flex-row items-center gap-4 px-6 py-5 bg-blue-500/5 border border-blue-500/20 rounded-[32px] animate-in slide-in-from-top-2 duration-700">
+                      <div className={`flex flex-col sm:flex-row items-center gap-4 px-6 py-5 ${isDarkMode ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-100'} border rounded-[32px] animate-in slide-in-from-top-2 duration-700`}>
                         <div className="flex items-center gap-3">
                           <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
-                          <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">
-                            HEMIS Bog'langan: <span className="text-white ml-2">{settings.hemisDomain}</span>
+                          <p className={`text-[10px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} uppercase tracking-[0.2em]`}>
+                            HEMIS Bog'langan: <span className={isDarkMode ? 'text-white' : 'text-blue-900'}>{settings.hemisDomain}</span>
                           </p>
                         </div>
                         <button 
@@ -804,18 +819,18 @@ const AdminPanel = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {(!settings.groups || settings.groups.length === 0) ? (
-                        <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[40px] bg-white/[0.01]">
-                          <Sparkles className="mx-auto text-white/5 mb-4" size={48} />
-                          <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">Hali guruhlar qo'shilmagan</p>
+                        <div className={`col-span-full py-20 text-center border-2 border-dashed ${isDarkMode ? 'border-white/5 bg-white/[0.01]' : 'border-slate-100 bg-slate-50/50'} rounded-[40px]`}>
+                          <Sparkles className={`mx-auto ${isDarkMode ? 'text-white/5' : 'text-slate-200'} mb-4`} size={48} />
+                          <p className={`${isDarkMode ? 'text-white/20' : 'text-slate-400'} font-black uppercase tracking-[0.3em] text-[10px]`}>Hali guruhlar qo'shilmagan</p>
                         </div>
                       ) : (
                         settings.groups.map(group => (
-                          <div key={group.id} className="flex items-center justify-between p-6 bg-white/[0.02] rounded-[32px] border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
+                          <div key={group.id} className={`${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-100 shadow-sm'} border p-6 rounded-[32px] flex items-center justify-between group hover:border-orange-500/30 transition-all duration-500`}>
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 font-black text-xs border border-orange-500/10 group-hover:bg-orange-500 group-hover:text-white transition-all duration-500">
+                              <div className={`w-12 h-12 rounded-2xl ${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'} border border-orange-500/10 flex items-center justify-center text-orange-500 font-black text-xs group-hover:bg-orange-500 group-hover:text-white transition-all duration-500`}>
                                 {group.name.substring(0, 2).toUpperCase()}
                               </div>
-                              <span className="text-lg font-black text-white uppercase tracking-tight">{group.name}</span>
+                              <span className={`text-lg font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>{group.name}</span>
                             </div>
                             <button 
                               onClick={() => {
@@ -827,7 +842,7 @@ const AdminPanel = () => {
                                   storage.saveSubjects(adminUid, subjects);
                                 }
                               }}
-                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white/10 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'text-white/10' : 'text-slate-200'} hover:text-red-500 hover:bg-red-500/10 transition-all`}
                             >
                               <Trash2 size={18} />
                             </button>
@@ -837,23 +852,23 @@ const AdminPanel = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 space-y-10 shadow-2xl relative overflow-hidden">
+                  <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'} border rounded-[48px] p-10 space-y-10 relative overflow-hidden`}>
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32"></div>
                     <div className="flex items-center gap-5 relative z-10">
                       <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
                         <BarChart3 className="text-orange-500" size={24} />
                       </div>
-                      <h3 className="text-xl font-black text-white uppercase tracking-tight">Umumiy Ko'rsatkichlar</h3>
+                      <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-tight`}>Umumiy Ko'rsatkichlar</h3>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
                       {[
-                        { label: "O'rtacha Ball", value: `${stats.avgScore}%`, color: "text-white" },
+                        { label: "O'rtacha Ball", value: `${stats.avgScore}%`, color: isDarkMode ? "text-white" : "text-slate-900" },
                         { label: "O'rtacha Baho", value: stats.avgGrade, color: "text-orange-500" },
                         { label: "Top Natija", value: `${results.length > 0 ? Math.max(...results.map(r => r.score || 0)) : 0}%`, color: "text-green-500" }
                       ].map((item, i) => (
-                        <div key={i} className="p-8 bg-white/[0.02] rounded-[40px] border border-white/5 space-y-2 hover:bg-white/[0.04] transition-all duration-500">
-                          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{item.label}</p>
+                        <div key={i} className={`p-8 ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'} border rounded-[40px] space-y-2 hover:bg-white/[0.04] transition-all duration-500`}>
+                          <p className={`text-[10px] font-black ${isDarkMode ? 'text-white/20' : 'text-slate-300'} uppercase tracking-[0.2em]`}>{item.label}</p>
                           <p className={`text-3xl font-black ${item.color} tracking-tighter`}>{item.value}</p>
                         </div>
                       ))}
