@@ -111,6 +111,10 @@ const AdminPanel = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const handleLogout = () => {
+    auth.signOut();
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
