@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Shield, Zap, Star, LayoutGrid, Award, Sun, Moon } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Shield, 
+  Zap, 
+  Star, 
+  LayoutGrid, 
+  Award, 
+  Sun, 
+  Moon 
+} from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -8,9 +17,9 @@ const LandingPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('ranch_theme') === 'dark' || !localStorage.getItem('ranch_theme'));
 
   const toggleTheme = () => {
-    const newTheme = !isDarkMode;
-    setIsDarkMode(newTheme);
-    localStorage.setItem('ranch_theme', newTheme ? 'dark' : 'light');
+    const nextMode = !isDarkMode;
+    setIsDarkMode(nextMode);
+    localStorage.setItem('ranch_theme', nextMode ? 'dark' : 'light');
     window.dispatchEvent(new Event('storage'));
   };
 
