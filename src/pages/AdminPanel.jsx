@@ -596,29 +596,71 @@ const AdminPanel = () => {
                 {/* GURUHLAR VA STATISTIKA */}
                 <div className="lg:col-span-2 space-y-10">
                   <div className="bg-[#0a0a0a] border border-white/5 rounded-[48px] p-10 space-y-8 shadow-2xl">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                       <div className="flex items-center gap-5">
                         <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-lg shadow-orange-900/20">
                           <Users className="text-orange-500" size={24} />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tight">Guruhlar Ro'yhati</h3>
+                        <div>
+                          <h3 className="text-xl font-black text-white uppercase tracking-tight">Guruhlar Ro'yhati</h3>
+                          <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest mt-1">Sinf va guruhlarni boshqarish</p>
+                        </div>
                       </div>
-                      <button 
-                        onClick={() => {
-                          const name = prompt("Guruh nomini kiriting:");
-                          if (name) {
-                            const newGroups = [...(settings.groups || []), { id: Date.now(), name }];
-                            const updated = { ...settings, groups: newGroups };
-                            setSettings(updated);
-                            storage.saveSettings(adminUid, updated);
-                            storage.saveSubjects(adminUid, subjects);
-                          }
-                        }}
-                        className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-orange-900/20 flex items-center gap-2 group"
-                      >
-                        <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Guruh Qo'shish
-                      </button>
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <button 
+                          onClick={() => {
+                            const name = prompt("Guruh nomini kiriting:");
+                            if (name) {
+                              const newGroups = [...(settings.groups || []), { id: Date.now(), name }];
+                              const updated = { ...settings, groups: newGroups };
+                              setSettings(updated);
+                              storage.saveSettings(adminUid, updated);
+                              storage.saveSubjects(adminUid, subjects);
+                            }
+                          }}
+                          className="flex-1 sm:flex-none px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center gap-2"
+                        >
+                          <Plus size={16} /> Qo'shish
+                        </button>
+                        
+                        {/* HEMIS INTEGRATSIYASI TUGMASI */}
+                        <button 
+                          onClick={() => {
+                            const domain = prompt("Universitet HEMIS manzilini kiriting (masalan: hemis.tuit.uz):", settings.hemisDomain || '');
+                            const token = prompt("API Tokenni kiriting:", settings.hemisToken || '');
+                            if (domain && token) {
+                              const updated = { ...settings, hemisDomain: domain, hemisToken: token };
+                              setSettings(updated);
+                              storage.saveSettings(adminUid, updated);
+                              showToast("HEMIS ma'lumotlari saqlandi!");
+                            }
+                          }}
+                          className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2"
+                        >
+                          <RefreshCw size={16} /> HEMIS Ulash
+                        </button>
+                      </div>
                     </div>
+
+                    {/* HEMIS HOLATI */}
+                    {settings.hemisDomain && (
+                      <div className="flex items-center gap-3 px-6 py-4 bg-blue-500/5 border border-blue-500/20 rounded-[24px]">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                          HEMIS Bog'langan: <span className="text-white ml-2">{settings.hemisDomain}</span>
+                        </p>
+                        <button 
+                          onClick={() => {
+                            showToast("Guruhlar yuklanmoqda...");
+                            // Kelgusida API chaqiruvi shu yerda bo'ladi
+                            setTimeout(() => alert("HEMIS API orqali guruhlarni yuklash uchun ruxsat kerak."), 1000);
+                          }}
+                          className="ml-auto text-[9px] font-black text-blue-400 hover:text-white uppercase tracking-tighter"
+                        >
+                          Guruhlarni Sinxronlash
+                        </button>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {(!settings.groups || settings.groups.length === 0) ? (
