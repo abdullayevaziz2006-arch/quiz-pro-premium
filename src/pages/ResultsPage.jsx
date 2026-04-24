@@ -41,6 +41,10 @@ const ResultsPage = () => {
         <>
           <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/[0.08] rounded-full blur-[120px] -z-10 animate-pulse"></div>
           <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/[0.05] rounded-full blur-[100px] -z-10"></div>
+          
+          {/* RIGHT SIDE LINEAR GRADIENT ACCENT */}
+          <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-orange-500/0 via-orange-500/40 to-blue-500/0 -z-10 print:hidden"></div>
+          <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-orange-500/[0.02] to-transparent -z-10 print:hidden"></div>
         </>
       )}
 

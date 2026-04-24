@@ -409,6 +409,10 @@ const AdminPanel = () => {
             <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
             <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px] -z-10"></div>
             <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-white/20 rounded-full shadow-[0_0_100px_50px_rgba(255,255,255,0.03)] -z-10"></div>
+            
+            {/* RIGHT SIDE LINEAR GRADIENT ACCENT */}
+            <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-orange-500/0 via-orange-500/40 to-blue-500/0 -z-10"></div>
+            <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-orange-500/[0.02] to-transparent -z-10"></div>
           </>
         )}
 
