@@ -9,7 +9,8 @@ import {
   BookOpen, AlertCircle, CheckCircle, Link2,
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
-  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library, ArrowLeft
+  Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library, ArrowLeft,
+  User, Settings2, Hash
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -205,20 +206,27 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.5</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.7</p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
           {menuItems.map(item => (
             <button
               key={item.id}
-              onClick={() => { setActiveTab(item.id); setSelectedSubject(null); }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300 relative group ${activeTab === item.id ? 'bg-white/[0.03] text-orange-500' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.01]'}`}
+              onClick={() => {
+                setActiveTab(item.id);
+                setSelectedSubject(null);
+                setShowSessionModal(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
+                activeTab === item.id 
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/20' 
+                  : 'text-white/40 hover:bg-white/5 hover:text-white'
+              }`}
             >
-              {activeTab === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-orange-500 rounded-r-full"></div>}
-              <item.icon size={20} className={activeTab === item.id ? 'text-orange-500' : 'text-white/10 group-hover:text-white/30'} />
-              <span className="text-[11px] uppercase tracking-wider">{item.label}</span>
+              <item.icon size={20} className={activeTab === item.id ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
+              <span className="text-sm font-bold tracking-tight uppercase">{item.label}</span>
             </button>
           ))}
         </nav>
