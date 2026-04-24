@@ -22,7 +22,7 @@ const AdminPanel = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [newSubject, setNewSubject] = useState('');
-  const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120 });
+  const [settings, setSettings] = useState({ questionsPerTest: 20, timePerQuestion: 120, teacherName: '', groups: [] });
   const [sessionName, setSessionName] = useState('');
   const [sessionQCount, setSessionQCount] = useState(20);
   const [searchQuery, setSearchQuery] = useState('');
@@ -210,34 +210,18 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.7</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v5.0</p>
           </div>
         </div>
 
-        {/* PROFIL QISMI (YUPORIYA KO'CHIRILDI) */}
-        <div className="px-4 mb-4">
-          <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white/[0.03] border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 transition-all duration-500">
-              <User size={20} className="text-orange-500 group-hover:text-white transition-colors" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black text-white truncate uppercase tracking-widest mb-0.5">
-                {settings.teacherName || 'Ustoz'}
-              </p>
-              <p className="text-[9px] text-white/20 truncate font-bold uppercase tracking-tighter">
-                {auth.currentUser?.email || 'admin@ranch.pro'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
           {menuItems.map(item => (
             <button
               key={item.id}
               onClick={() => {
                 setActiveTab(item.id);
                 setSelectedSubject(null);
+                setShowSessionModal(false);
               }}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id 
@@ -251,7 +235,33 @@ const AdminPanel = () => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-white/5 space-y-3">
+          {/* PROFIL TUGMASI (PASTGA QAYTARILDI VA BOSILADIGAN BO'LDI) */}
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border transition-all duration-500 group ${
+              activeTab === 'profile' 
+                ? 'bg-orange-500 border-orange-400 shadow-lg shadow-orange-900/20' 
+                : 'bg-white/[0.03] border-white/5 hover:border-orange-500/50'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
+              activeTab === 'profile' 
+                ? 'bg-white/20 border-white/30' 
+                : 'bg-orange-500/10 border-orange-500/20 group-hover:bg-orange-500'
+            }`}>
+              <User size={20} className={activeTab === 'profile' ? 'text-white' : 'text-orange-500 group-hover:text-white transition-colors'} />
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className={`text-[10px] font-black truncate uppercase tracking-widest mb-0.5 ${activeTab === 'profile' ? 'text-white' : 'text-white'}`}>
+                {settings.teacherName || 'Ustoz'}
+              </p>
+              <p className={`text-[9px] truncate font-bold uppercase tracking-tighter ${activeTab === 'profile' ? 'text-white/60' : 'text-white/20'}`}>
+                {auth.currentUser?.email || 'admin@ranch.pro'}
+              </p>
+            </div>
+          </button>
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all duration-300 group"
