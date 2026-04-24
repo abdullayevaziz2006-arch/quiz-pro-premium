@@ -167,21 +167,8 @@ const QuizPage = () => {
   const progress = ((currentIdx + 1) / questions.length) * 100;
 
   return (
-    <div className={`relative min-h-screen transition-colors duration-700 ${isDarkMode ? 'bg-[#020203] text-white' : 'bg-slate-50 text-slate-900'} font-sans overflow-hidden py-12 px-6`}>
-      {/* VIBRANT DARK MODE BACKGROUND EFFECTS */}
-      {isDarkMode && (
-        <>
-          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/[0.08] rounded-full blur-[120px] -z-10 animate-pulse"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/[0.05] rounded-full blur-[100px] -z-10"></div>
-        </>
-      )}
-
-      {/* Decorative Blur (Original) */}
-      {!isDarkMode && (
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-[120px] -z-10"></div>
-      )}
-
-      <div className="max-w-5xl mx-auto space-y-10 relative z-10">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-[#050505]' : 'bg-slate-50'} py-12 px-6 transition-colors duration-700`}>
+      <div className="max-w-5xl mx-auto space-y-10">
         
         <div className={`${isDarkMode ? 'bg-[#0a0a0a] border-white/5' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/40'} border p-8 rounded-[40px] flex justify-between items-center gap-10`}>
           <div className="flex items-center gap-6">

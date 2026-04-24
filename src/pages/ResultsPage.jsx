@@ -35,20 +35,7 @@ const ResultsPage = () => {
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
   return (
-    <div className={`relative min-h-screen pb-20 font-sans print:bg-white print:text-black ${isDarkMode ? 'bg-[#020203] text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-700`}>
-      {/* VIBRANT DARK MODE BACKGROUND EFFECTS */}
-      {isDarkMode && (
-        <>
-          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/[0.08] rounded-full blur-[120px] -z-10 animate-pulse"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/[0.05] rounded-full blur-[100px] -z-10"></div>
-        </>
-      )}
-
-      {/* Decorative Blur (Original) */}
-      {!isDarkMode && (
-        <div className={`absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-[120px] -z-10 print:hidden`}></div>
-      )}
-      
+    <div className={`min-h-screen pb-20 font-sans print:bg-white print:text-black ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-slate-50 text-slate-900'} transition-colors duration-700`}>
       <div className="max-w-5xl mx-auto space-y-12 px-6 pt-12">
         
         {/* Result Card */}

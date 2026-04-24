@@ -402,17 +402,8 @@ const AdminPanel = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className={`flex-1 overflow-y-auto p-12 custom-scrollbar relative ${isDarkMode ? 'bg-[#020203]' : 'bg-white'}`}>
-        {/* VIBRANT DARK MODE BACKGROUND EFFECTS */}
-        {isDarkMode && (
-          <>
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px] -z-10"></div>
-            <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-white/20 rounded-full shadow-[0_0_100px_50px_rgba(255,255,255,0.03)] -z-10"></div>
-          </>
-        )}
-
-        <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700 relative z-10">
+      <main className={`flex-1 overflow-y-auto p-12 custom-scrollbar ${isDarkMode ? 'bg-[#050505]' : 'bg-white'}`}>
+        <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
           
           <header className="flex justify-between items-end">
             <div className="space-y-1">

@@ -30,24 +30,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className={`relative min-h-screen overflow-hidden transition-colors duration-700 ${isDarkMode ? 'bg-[#020203] text-white' : 'bg-slate-50 text-slate-900'}`}>
-      {/* VIBRANT DARK MODE BACKGROUND EFFECTS */}
-      {isDarkMode && (
-        <>
-          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-orange-500/[0.08] rounded-full blur-[120px] -z-10 animate-pulse"></div>
-          <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-blue-500/[0.05] rounded-full blur-[100px] -z-10"></div>
-          <div className="absolute top-[30%] left-[20%] w-[30%] h-[30%] bg-purple-500/[0.03] rounded-full blur-[120px] -z-10"></div>
-        </>
-      )}
-
-      {/* Decorative Blur Elements (Original) */}
-      {!isDarkMode && (
-        <>
-          <div className="absolute top-0 -left-20 w-96 h-96 bg-orange-500/5 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-          <div className="absolute bottom-0 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] -z-10"></div>
-        </>
-      )}
-
+    <div className={`min-h-screen overflow-hidden transition-colors duration-700 ${isDarkMode ? 'bg-[#050505] text-white' : 'bg-slate-50 text-slate-900'}`}>
       {/* Theme Toggle */}
       <div className="absolute top-10 right-10 z-[100]">
         <button 
