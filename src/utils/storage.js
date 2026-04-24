@@ -181,7 +181,7 @@ export const storage = {
         { id: 'subjects_data', grade: 'FANLAR', min: 0, subjects } 
       ];
       
-      const res = await fetch(`${API_URL}/${uid}/criteria`, {
+      const res = await fetch(`${API_URL}/${uid}/criteria/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: updatedCriteria })
