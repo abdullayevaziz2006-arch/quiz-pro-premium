@@ -166,16 +166,25 @@ export const storage = {
   },
 
   // Fanlar (404 xatosini aylanib o'tish: Settings orqali tunneling)
+  // Fanlar (Criteria orqali saqlash - bu 100% bazada qoladi)
   async saveSubjects(uid, subjects) {
     try {
-      const resGet = await fetch(`${API_URL}/${uid}/settings`);
-      const current = await handleResponse(resGet) || {};
-      const updated = { ...current, subjects };
+      // Mavjud mezonlarni olamiz
+      const resGet = await fetch(`${API_URL}/${uid}/criteria`);
+      const currentCriteria = await handleResponse(resGet) || [];
       
-      const res = await fetch(`${API_URL}/${uid}/settings`, {
+      // Mezonlar ichidan 'subjects_data' nomli maxsus elementni qidiramiz
+      // yoki yangisini qo'shamiz
+      const otherCriteria = currentCriteria.filter(c => c.id !== 'subjects_data');
+      const updatedCriteria = [
+        ...otherCriteria,
+        { id: 'subjects_data', grade: 'FANLAR', min: 0, subjects } 
+      ];
+      
+      const res = await fetch(`${API_URL}/${uid}/criteria`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
+        body: JSON.stringify({ items: updatedCriteria })
       });
       return await handleResponse(res);
     } catch (err) {

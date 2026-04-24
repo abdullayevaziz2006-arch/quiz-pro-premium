@@ -84,11 +84,16 @@ const AdminPanel = () => {
       setResults(Array.isArray(rs) ? rs : []);
       setSessions(Array.isArray(ss) ? ss : []);
       
-      // Sozlamalar va Fanlarni bitta obyektdan ajratib olamiz
-      if (st) {
-        setSettings(st);
-        setSubjects(Array.isArray(st.subjects) ? st.subjects : []);
-      }
+      // Sozlamalarni yuklaymiz
+      if (st) setSettings(st);
+
+      // Fanlarni 'Criteria' ichidan ajratib olamiz
+      const sbData = Array.isArray(cr) ? cr.find(c => c.id === 'subjects_data') : null;
+      setSubjects(sbData?.subjects || []);
+      
+      // Haqiqiy mezonlarni (fanlardan tashqari) filtrlaymiz
+      setCriteria(Array.isArray(cr) ? cr.filter(c => c.id !== 'subjects_data') : []);
+
     } catch (err) {
       console.error("Load error:", err);
     } finally {
@@ -196,7 +201,7 @@ const AdminPanel = () => {
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20"><Zap size={20} className="fill-white" /></div>
           <div>
             <h1 className="text-xl font-black tracking-tighter leading-none">RANCH <span className="text-orange-500">PRO</span></h1>
-            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.3</p>
+            <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.3em] mt-1">Platinum v4.4</p>
           </div>
         </div>
 
