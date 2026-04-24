@@ -10,7 +10,7 @@ import {
   BarChart3, Award, FileUp, Save, Lock,
   Search, Download, Users, Settings, ChevronRight,
   Filter, Trash, Zap, Bug, RefreshCw, LayoutDashboard, Sparkles, UserPlus, Library, ArrowLeft,
-  User, Settings2, Hash
+  User, Settings2, Hash, Sun, Moon
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -37,6 +37,13 @@ const AdminPanel = () => {
     const saved = localStorage.getItem('ranch_theme');
     return saved ? saved === 'dark' : true;
   });
+
+  useEffect(() => {
+    localStorage.setItem('ranch_theme', isDarkMode ? 'dark' : 'light');
+    window.dispatchEvent(new Event('storage'));
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   const universities = [
     { name: "Urganch Ranch Texnologiyalar Universiteti", domain: "hemis.ranch.uz" },
@@ -413,7 +420,7 @@ const AdminPanel = () => {
             <div className="flex gap-3">
               {/* THEME TOGGLE */}
               <button 
-                onClick={() => setIsDarkMode(!isDarkMode)}
+                onClick={toggleTheme}
                 className={`w-12 h-12 ${isDarkMode ? 'bg-white/5 text-orange-500 border-white/10' : 'bg-slate-50 text-orange-600 border-slate-200'} border rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95`}
               >
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
