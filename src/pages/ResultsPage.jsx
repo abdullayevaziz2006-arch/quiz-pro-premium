@@ -165,12 +165,4 @@ const ResultsPage = () => {
   );
 };
 
-      {/* Print Footer */}
-      <div className="hidden print:block fixed bottom-0 left-0 right-0 p-10 border-t border-gray-200 text-center text-xs text-gray-500">
-        Ranch Quiz Pro tizimi orqali yaratilgan rasmiy natija. Sana: {new Date().toLocaleString()}
-      </div>
-    </div>
-  );
-};
-
 export default ResultsPage;
