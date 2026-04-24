@@ -28,12 +28,37 @@ export const storage = {
       return [];
     }
   },
-  async saveQuestions(uid, questions) {
+  async saveQuestions(uid, questions, subjects = null) {
     try {
+      let itemsToSave = [...questions];
+      
+      // Agar fanlar ro'yxati berilgan bo'lsa, uni ham qo'shib saqlaymiz
+      if (subjects) {
+        itemsToSave = [
+          ...itemsToSave.filter(q => q.uid !== 'subjects_storage_data'),
+          { 
+            uid: 'subjects_storage_data', 
+            text: '___SYSTEM_DATA___', 
+            options: [JSON.stringify(subjects)], 
+            correctAnswer: '0' 
+          }
+        ];
+      } else {
+        // Agar fanlar berilmagan bo'lsa, bazadagi mavjud fanlarni saqlab qolishga harakat qilamiz
+        try {
+          const resGet = await fetch(`${API_URL}/${uid}/questions`);
+          const currentQs = await handleResponse(resGet) || [];
+          const systemData = currentQs.find(q => q.uid === 'subjects_storage_data');
+          if (systemData) {
+            itemsToSave = [...itemsToSave.filter(q => q.uid !== 'subjects_storage_data'), systemData];
+          }
+        } catch (e) { console.warn("Could not preserve subjects during save"); }
+      }
+
       const res = await fetch(`${API_URL}/${uid}/questions/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: questions }) // Backend 'items' kutmoqda
+        body: JSON.stringify({ items: itemsToSave })
       });
       return await handleResponse(res);
     } catch (err) {

@@ -155,7 +155,7 @@ const AdminPanel = () => {
 
   const currentQuestions = useMemo(() => {
     if (activeTab === 'subjects' && selectedSubject) {
-      return questions.filter(q => q.subjectId === selectedSubject.id);
+      return questions.filter(q => String(q.subjectId) === String(selectedSubject.id));
     }
     return questions.filter(q => 
       (q.text || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -492,7 +492,7 @@ const AdminPanel = () => {
               </div>
 
               <div className="fixed bottom-10 right-10 z-[100]">
-                <button onClick={() => storage.saveQuestions(adminUid, questions).then(() => showToast("Barcha o'zgarishlar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
+                <button onClick={() => storage.saveQuestions(adminUid, questions, subjects).then(() => showToast("Barcha o'zgarishlar saqlandi!"))} className="flex items-center gap-4 px-10 py-5 bg-orange-500 rounded-2xl font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all text-white">
                   <Save size={24} /> SAQLASH
                 </button>
               </div>
