@@ -307,7 +307,7 @@ const AdminPanel = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className={`flex-1 overflow-y-auto p-12 custom-scrollbar ${isDarkMode ? 'bg-[#050505]' : 'bg-white'}`}>
+      <main className={`flex-1 overflow-y-auto px-6 md:px-12 pt-12 pb-0 custom-scrollbar ${isDarkMode ? 'bg-[#050505]' : 'bg-white'}`}>
         <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
           
           <header className="flex justify-between items-end">
